@@ -1,0 +1,193 @@
+Sources/GestureFlowApp/Settings/SettingsSceneOpenDriver.swift
+  d41e510003b03935 1-61 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a0ebdd50a180dedcb9b3455","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,61]}]}]}
+Sources/GestureFlowApp/App/AppDelegate.swift
+  d41e510003b03935 8,12,15 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a0ebdd50a180dedcb9b3455","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":8},{"Single":12},{"Single":15}]}]}
+Tests/GestureFlowAppTests/AppDelegateTests.swift
+  d41e510003b03935 17-26 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a0ebdd50a180dedcb9b3455","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[17,26]}]}]}
+Sources/GestureFlowApp/App/GestureFlowShellApp.swift
+  d41e510003b03935 8-9 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a0ebdd50a180dedcb9b3455","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[8,9]}]}]}
+Tests/GestureFlowAppTests/SettingsSceneOpenDriverTests.swift
+  d41e510003b03935 1-26 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a0ebdd50a180dedcb9b3455","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[1,26]}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "f298485ffaf56578b8dc2b9f17a592af5ccfc672",
+  "prompts": {
+    "d41e510003b03935": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a0eb3590a180dedcb9b2fe3",
+        "model": "gpt-5.4__dev"
+      },
+      "human_author": "sunyongsheng.aengus <sunyongsheng.aengus@bytedance.com>",
+      "messages": [],
+      "total_additions": 327,
+      "total_deletions": 103,
+      "accepted_lines": 591,
+      "overriden_lines": 85
+    }
+  },
+  "attestation_metadata": {
+    "Sources/GestureFlowApp/App/AppDelegate.swift": [
+      {
+        "hash": "d41e510003b03935",
+        "line_ranges": [
+          {
+            "Single": 8
+          },
+          {
+            "Single": 12
+          },
+          {
+            "Single": 15
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a0ebdd50a180dedcb9b3455",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 8
+              },
+              {
+                "Single": 12
+              },
+              {
+                "Single": 15
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Sources/GestureFlowApp/App/GestureFlowShellApp.swift": [
+      {
+        "hash": "d41e510003b03935",
+        "line_ranges": [
+          {
+            "Range": [
+              8,
+              9
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a0ebdd50a180dedcb9b3455",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  8,
+                  9
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Sources/GestureFlowApp/Settings/SettingsSceneOpenDriver.swift": [
+      {
+        "hash": "d41e510003b03935",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              61
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a0ebdd50a180dedcb9b3455",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  61
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Tests/GestureFlowAppTests/AppDelegateTests.swift": [
+      {
+        "hash": "d41e510003b03935",
+        "line_ranges": [
+          {
+            "Range": [
+              17,
+              26
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a0ebdd50a180dedcb9b3455",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  17,
+                  26
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Tests/GestureFlowAppTests/SettingsSceneOpenDriverTests.swift": [
+      {
+        "hash": "d41e510003b03935",
+        "line_ranges": [
+          {
+            "Range": [
+              1,
+              26
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a0ebdd50a180dedcb9b3455",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  1,
+                  26
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "d41e510003b03935": {
+      "tool": "trae",
+      "conversation_id": "6a0eb3590a180dedcb9b2fe3",
+      "session_id": "6a0eb3590a180dedcb9b2fe3",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
