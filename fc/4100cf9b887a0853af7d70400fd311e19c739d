@@ -1,0 +1,148 @@
+Sources/GestureFlowApp/App/GestureFlowApplication.swift
+  d41e510003b03935 17,39-40,252 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a0ec0d40a180dedcb9b366b","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":17},{"Range":[39,40]},{"Single":252}]}]}
+Tests/GestureFlowAppTests/GestureFlowApplicationTests.swift
+  d41e510003b03935 424,438-444,449-451,453-454,460-492 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a0ec0d40a180dedcb9b366b","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":424},{"Range":[438,444]},{"Range":[449,451]},{"Range":[453,454]},{"Range":[460,492]}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "fc4100cf9b887a0853af7d70400fd311e19c739d",
+  "prompts": {
+    "d41e510003b03935": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a0eb3590a180dedcb9b2fe3",
+        "model": "gpt-5.4__dev"
+      },
+      "human_author": "sunyongsheng.aengus <sunyongsheng.aengus@bytedance.com>",
+      "messages": [],
+      "total_additions": 51,
+      "total_deletions": 64,
+      "accepted_lines": 569,
+      "overriden_lines": 0
+    }
+  },
+  "attestation_metadata": {
+    "Sources/GestureFlowApp/App/GestureFlowApplication.swift": [
+      {
+        "hash": "d41e510003b03935",
+        "line_ranges": [
+          {
+            "Single": 17
+          },
+          {
+            "Range": [
+              39,
+              40
+            ]
+          },
+          {
+            "Single": 252
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a0ec0d40a180dedcb9b366b",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 17
+              },
+              {
+                "Range": [
+                  39,
+                  40
+                ]
+              },
+              {
+                "Single": 252
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Tests/GestureFlowAppTests/GestureFlowApplicationTests.swift": [
+      {
+        "hash": "d41e510003b03935",
+        "line_ranges": [
+          {
+            "Single": 424
+          },
+          {
+            "Range": [
+              438,
+              444
+            ]
+          },
+          {
+            "Range": [
+              449,
+              451
+            ]
+          },
+          {
+            "Range": [
+              453,
+              454
+            ]
+          },
+          {
+            "Range": [
+              460,
+              492
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a0ec0d40a180dedcb9b366b",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 424
+              },
+              {
+                "Range": [
+                  438,
+                  444
+                ]
+              },
+              {
+                "Range": [
+                  449,
+                  451
+                ]
+              },
+              {
+                "Range": [
+                  453,
+                  454
+                ]
+              },
+              {
+                "Range": [
+                  460,
+                  492
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "d41e510003b03935": {
+      "tool": "trae",
+      "conversation_id": "6a0eb3590a180dedcb9b2fe3",
+      "session_id": "6a0eb3590a180dedcb9b2fe3",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
