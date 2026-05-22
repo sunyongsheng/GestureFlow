@@ -1,11 +1,11 @@
 import SwiftUI
 
-struct SettingsSceneRoot: View {
-    @ObservedObject var bridge: SettingsSceneBridge
+struct SettingsRootView: View {
+    @ObservedObject var coordinator: SettingsWindowCoordinator
 
     var body: some View {
         Group {
-            if let viewModel = bridge.viewModel {
+            if let viewModel = coordinator.viewModel {
                 MainSettingsView(viewModel: viewModel)
             } else {
                 ProgressView("Loading GestureFlow Settings…")
@@ -13,8 +13,8 @@ struct SettingsSceneRoot: View {
             }
         }
         .background(
-            SettingsWindowLifecycleObserver(bridge: bridge)
-            .frame(width: 0, height: 0)
+            SettingsWindowLifecycleObserver(coordinator: coordinator)
+                .frame(width: 0, height: 0)
         )
     }
 }

@@ -3,96 +3,87 @@ import XCTest
 @testable import GestureFlowApp
 import GestureFlowCore
 
-final class SettingsSceneBridgeTests: XCTestCase {
-    func testBridgeStoresSingleSettingsViewModelInstance() {
-        let bridge = SettingsSceneBridge()
-        let initialViewModel = makeSettingsSceneBridgeViewModel(
+final class SettingsWindowCoordinatorTests: XCTestCase {
+    func testCoordinatorStoresSingleSettingsViewModelInstance() {
+        let coordinator = SettingsWindowCoordinator()
+        let initialViewModel = makeSettingsViewModel(
             isRunning: false,
             isAccessibilityTrusted: true
         )
-        let replacementViewModel = makeSettingsSceneBridgeViewModel(
+        let replacementViewModel = makeSettingsViewModel(
             isRunning: true,
             isAccessibilityTrusted: false
         )
 
-        bridge.install(viewModel: initialViewModel)
-        bridge.install(viewModel: replacementViewModel)
+        coordinator.install(viewModel: initialViewModel)
+        coordinator.install(viewModel: replacementViewModel)
 
-        XCTAssertTrue(bridge.viewModel === initialViewModel)
+        XCTAssertTrue(coordinator.viewModel === initialViewModel)
     }
 
-    func testBridgePublishesRuntimeUpdatesWithoutReplacingViewModel() {
-        let bridge = SettingsSceneBridge()
-        let viewModel = makeSettingsSceneBridgeViewModel(
+    func testCoordinatorPublishesRuntimeUpdatesWithoutReplacingViewModel() {
+        let coordinator = SettingsWindowCoordinator()
+        let viewModel = makeSettingsViewModel(
             isRunning: false,
             isAccessibilityTrusted: false
         )
 
-        bridge.install(viewModel: viewModel)
+        coordinator.install(viewModel: viewModel)
         viewModel.updateRuntimeStatus(isRunning: true, isAccessibilityTrusted: true)
 
-        XCTAssertTrue(bridge.viewModel === viewModel)
-        XCTAssertEqual(bridge.viewModel?.isRunning, true)
-        XCTAssertEqual(bridge.viewModel?.isAccessibilityTrusted, true)
+        XCTAssertTrue(coordinator.viewModel === viewModel)
+        XCTAssertEqual(coordinator.viewModel?.isRunning, true)
+        XCTAssertEqual(coordinator.viewModel?.isAccessibilityTrusted, true)
     }
 
-    func testBridgeForwardsSettingsDidAppearLifecycleEvent() {
+    @MainActor
+    func testCoordinatorForwardsSettingsDidAppearWhenWindowAttaches() {
         var didAppearCount = 0
-        let bridge = SettingsSceneBridge(
+        let coordinator = SettingsWindowCoordinator(
             onSettingsDidAppear: { didAppearCount += 1 }
         )
+        let window = makeSettingsWindow()
 
-        bridge.handleSettingsDidAppear()
+        coordinator.attachSettingsWindow(window)
 
         XCTAssertEqual(didAppearCount, 1)
+        XCTAssertEqual(
+            window.identifier?.rawValue,
+            SettingsWindowSceneIDs.settings
+        )
     }
 
-    func testBridgeForwardsLastSettingsWindowDidCloseLifecycleEvent() {
+    @MainActor
+    func testCoordinatorForwardsLastSettingsWindowDidClose() {
+        let notificationCenter = NotificationCenter()
         var didCloseCount = 0
-        let bridge = SettingsSceneBridge(
+        let coordinator = SettingsWindowCoordinator(
+            notificationCenter: notificationCenter,
             onLastSettingsWindowDidClose: { didCloseCount += 1 }
         )
+        let window = makeSettingsWindow()
 
-        bridge.handleLastSettingsWindowDidClose()
+        coordinator.attachSettingsWindow(window)
+        notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
 
         XCTAssertEqual(didCloseCount, 1)
     }
 
     @MainActor
-    func testBridgeRetainsWindowLifecycleObservationAcrossWindowClose() {
+    func testCoordinatorReattachesWhenSettingsWindowOpensAgain() {
         let notificationCenter = NotificationCenter()
         var didAppearCount = 0
         var didCloseCount = 0
-        let bridge = SettingsSceneBridge(
+        let coordinator = SettingsWindowCoordinator(
             notificationCenter: notificationCenter,
             onSettingsDidAppear: { didAppearCount += 1 },
             onLastSettingsWindowDidClose: { didCloseCount += 1 }
         )
-        let window = makeSettingsSceneBridgeWindow()
+        let window = makeSettingsWindow()
 
-        bridge.attachSettingsWindow(window)
+        coordinator.attachSettingsWindow(window)
         notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
-
-        XCTAssertEqual(didAppearCount, 1)
-        XCTAssertEqual(didCloseCount, 1)
-    }
-
-    @MainActor
-    func testBridgeReattachesWindowWhenSettingsWindowBecomesVisibleAgain() {
-        let notificationCenter = NotificationCenter()
-        var didAppearCount = 0
-        var didCloseCount = 0
-        let bridge = SettingsSceneBridge(
-            notificationCenter: notificationCenter,
-            onSettingsDidAppear: { didAppearCount += 1 },
-            onLastSettingsWindowDidClose: { didCloseCount += 1 }
-        )
-        let window = makeSettingsSceneBridgeWindow()
-        window.title = "GestureFlowApp Settings"
-
-        bridge.attachSettingsWindow(window)
-        notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
-        notificationCenter.post(name: NSWindow.didBecomeKeyNotification, object: window)
+        coordinator.attachSettingsWindow(window)
         notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
 
         XCTAssertEqual(didAppearCount, 2)
@@ -100,7 +91,7 @@ final class SettingsSceneBridgeTests: XCTestCase {
     }
 }
 
-private func makeSettingsSceneBridgeViewModel(
+private func makeSettingsViewModel(
     isRunning: Bool,
     isAccessibilityTrusted: Bool
 ) -> SettingsViewModel {
@@ -118,7 +109,7 @@ private func makeSettingsSceneBridgeViewModel(
 }
 
 @MainActor
-private func makeSettingsSceneBridgeWindow() -> NSWindow {
+private func makeSettingsWindow() -> NSWindow {
     NSWindow(
         contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
         styleMask: [.titled, .closable, .resizable],

@@ -76,18 +76,18 @@ final class SettingsWindowLifecycleCoordinator {
 }
 
 struct SettingsWindowLifecycleObserver: NSViewRepresentable {
-    let bridge: SettingsSceneBridge
+    let coordinator: SettingsWindowCoordinator
 
     func makeNSView(context: Context) -> SettingsWindowLifecycleTrackingView {
         let view = SettingsWindowLifecycleTrackingView()
         view.onWindowChange = { window in
-            bridge.attachSettingsWindow(window)
+            coordinator.attachSettingsWindow(window)
         }
         return view
     }
 
     func updateNSView(_ nsView: SettingsWindowLifecycleTrackingView, context: Context) {
-        bridge.attachSettingsWindow(nsView.window)
+        coordinator.attachSettingsWindow(nsView.window)
     }
 }
 

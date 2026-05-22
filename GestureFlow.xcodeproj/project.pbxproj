@@ -40,23 +40,24 @@
 		95FE636493DE4FE816976B00 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D316F2D45E3E76F350724CB /* PermissionService.swift */; };
 		96FEC5E96E804F2F84017F2D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 417098F3262B735C581E1651 /* Cocoa.framework */; };
 		9C7C002ACABA0A147FF7D1AB /* SettingsWindowLifecycleObserverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */; };
-		9CB56860EA8B584DD7B884FD /* SettingsSceneBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B51A39120A47537F3CA19E /* SettingsSceneBridge.swift */; };
+		A8F1E2D30B4C5A69708192A3 /* SettingsWindowSceneIDs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C6D5E40A39281746505162 /* SettingsWindowSceneIDs.swift */; };
+		9CB56860EA8B584DD7B884FD /* SettingsWindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B51A39120A47537F3CA19E /* SettingsWindowCoordinator.swift */; };
 		9CE9A72563FDFB4D9FD4A6A5 /* GestureFlowApplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */; };
 		ABEF9DC1F7560BA6B3BCF4CD /* GestureFlowCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */; };
 		AE91F24309E20B1AEC917E3E /* GestureOverlayGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282FBEE420718AB2FDBF90E5 /* GestureOverlayGeometry.swift */; };
-		B2B0AF3951666CEDBC358483 /* SettingsSceneRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9726F7B2CEECBE4AAAA493 /* SettingsSceneRoot.swift */; };
+		B2B0AF3951666CEDBC358483 /* SettingsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9726F7B2CEECBE4AAAA493 /* SettingsRootView.swift */; };
 		B33826328B3E89A4F426387D /* ConflictDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B045D62F33B0560A3B4D9680 /* ConflictDetectorTests.swift */; };
 		B711FF69CF4513AD7901F54D /* GestureFlowCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */; };
-		B7EEBA03710D9BE9EC09E172 /* SettingsSceneServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA928898503E6B21ED2597C6 /* SettingsSceneServices.swift */; };
+		B7EEBA03710D9BE9EC09E172 /* SettingsWindowDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA928898503E6B21ED2597C6 /* SettingsWindowDependencies.swift */; };
 		B9A9C60EB34DB710B27CF477 /* StatusBarControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA855F54F132B7FE60EA8D0B /* StatusBarControllerTests.swift */; };
 		C16751AFEB4EA3E67A4B554B /* GestureFlowApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FB763932E2D29FBA279B6E /* GestureFlowApplication.swift */; };
-		C5552C025D22E9B83EA7B70F /* SettingsSceneOpenDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26AC90A3BC050551F37D0A1F /* SettingsSceneOpenDriver.swift */; };
+		C5552C025D22E9B83EA7B70F /* SettingsWindowOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26AC90A3BC050551F37D0A1F /* SettingsWindowOpener.swift */; };
 		CF857DED13C113DA6789BBD6 /* AppPresentationControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0727874AE8B2F5CFFA1956F /* AppPresentationControllerTests.swift */; };
 		D5B044F8BD11A55C74D1548F /* GestureMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F21DA1D037EC4AB66536A4B /* GestureMatcherTests.swift */; };
 		DF2D990A680B05A07B50A753 /* FeedbackSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93E5651AB16B621B5E49586 /* FeedbackSettingsView.swift */; };
 		E01C3EFA4306629E38218C93 /* ConfigurationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B9ADFEA2B1F885E88B3897 /* ConfigurationStore.swift */; };
 		E26F0D9DACDE4A8CDF49BCFA /* PermissionGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE14999613F8DB16A7BD5A1 /* PermissionGuideView.swift */; };
-		E66F5ABF562CF6A14DF7670B /* SettingsSceneOpenDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AEA743DB6743F3087CAC78 /* SettingsSceneOpenDriverTests.swift */; };
+		E66F5ABF562CF6A14DF7670B /* SettingsWindowOpenerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AEA743DB6743F3087CAC78 /* SettingsWindowOpenerTests.swift */; };
 		EA7A2A3B417BBAE2DE8B961B /* GestureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C483FF9C710FF74C05D13B /* GestureOverlayWindow.swift */; };
 		EE0E5FDB1FEE6C84A9031FC2 /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85597E92C5F3F66FC294009F /* SettingsViewModelTests.swift */; };
 		EF40A344F544A55448031305 /* GestureOverlayWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */; };
@@ -65,7 +66,7 @@
 		F712799818C32382C8A79B43 /* GestureFlowShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A82DCAFD63B2F2CBCBB5BA /* GestureFlowShellApp.swift */; };
 		F8DCC85669E15AA34D36845E /* GestureListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B22C6166DC2C256691E26E2 /* GestureListView.swift */; };
 		FBB552B02864BB311DCDC449 /* PublicAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 667EFB5B0EDFECBAC20F10F6 /* PublicAPITests.swift */; };
-		FC580C899A5782136F3908B9 /* SettingsSceneBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD7C0628561595B19BE5527 /* SettingsSceneBridgeTests.swift */; };
+		FC580C899A5782136F3908B9 /* SettingsWindowCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD7C0628561595B19BE5527 /* SettingsWindowCoordinatorTests.swift */; };
 		FE4E3FFAE7D1EED8C2093C96 /* MouseEventTapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -123,13 +124,14 @@
 		19E8C6516A12999F2BAE7767 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1E37DC1583A40D7D7DB11C88 /* GestureRecognizerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureRecognizerTests.swift; sourceTree = "<group>"; };
 		2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayWindowTests.swift; sourceTree = "<group>"; };
-		26AC90A3BC050551F37D0A1F /* SettingsSceneOpenDriver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneOpenDriver.swift; sourceTree = "<group>"; };
+		26AC90A3BC050551F37D0A1F /* SettingsWindowOpener.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowOpener.swift; sourceTree = "<group>"; };
 		282FBEE420718AB2FDBF90E5 /* GestureOverlayGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayGeometry.swift; sourceTree = "<group>"; };
 		29F74C1EC51067D5CBB87483 /* GestureMatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureMatcher.swift; sourceTree = "<group>"; };
 		2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
-		31B51A39120A47537F3CA19E /* SettingsSceneBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneBridge.swift; sourceTree = "<group>"; };
+		31B51A39120A47537F3CA19E /* SettingsWindowCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowCoordinator.swift; sourceTree = "<group>"; };
+		B7C6D5E40A39281746505162 /* SettingsWindowSceneIDs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowSceneIDs.swift; sourceTree = "<group>"; };
 		35FB763932E2D29FBA279B6E /* GestureFlowApplication.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowApplication.swift; sourceTree = "<group>"; };
-		37AEA743DB6743F3087CAC78 /* SettingsSceneOpenDriverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneOpenDriverTests.swift; sourceTree = "<group>"; };
+		37AEA743DB6743F3087CAC78 /* SettingsWindowOpenerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowOpenerTests.swift; sourceTree = "<group>"; };
 		37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GestureFlowCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B22C6166DC2C256691E26E2 /* GestureListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureListView.swift; sourceTree = "<group>"; };
 		412955FCC03F9363D03F8D7C /* GestureNormalizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureNormalizer.swift; sourceTree = "<group>"; };
@@ -161,7 +163,7 @@
 		C0727874AE8B2F5CFFA1956F /* AppPresentationControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppPresentationControllerTests.swift; sourceTree = "<group>"; };
 		C71602D50CD5375F63932F7A /* SettingsWindowLifecycleObserver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowLifecycleObserver.swift; sourceTree = "<group>"; };
 		CC1214E7E3323BC8B9AB7BF2 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		CDD7C0628561595B19BE5527 /* SettingsSceneBridgeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneBridgeTests.swift; sourceTree = "<group>"; };
+		CDD7C0628561595B19BE5527 /* SettingsWindowCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowCoordinatorTests.swift; sourceTree = "<group>"; };
 		CE04815AFE4C4CA2B5DB75BF /* AppConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		D4A56CD14C941898F62D798F /* GestureEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureEngine.swift; sourceTree = "<group>"; };
 		D4A82DCAFD63B2F2CBCBB5BA /* GestureFlowShellApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowShellApp.swift; sourceTree = "<group>"; };
@@ -171,8 +173,8 @@
 		EDD6A92421A4EC2763AAB1D0 /* ActionExecutorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActionExecutorTests.swift; sourceTree = "<group>"; };
 		F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowLifecycleObserverTests.swift; sourceTree = "<group>"; };
 		F93E5651AB16B621B5E49586 /* FeedbackSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FeedbackSettingsView.swift; sourceTree = "<group>"; };
-		FA928898503E6B21ED2597C6 /* SettingsSceneServices.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneServices.swift; sourceTree = "<group>"; };
-		FB9726F7B2CEECBE4AAAA493 /* SettingsSceneRoot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneRoot.swift; sourceTree = "<group>"; };
+		FA928898503E6B21ED2597C6 /* SettingsWindowDependencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowDependencies.swift; sourceTree = "<group>"; };
+		FB9726F7B2CEECBE4AAAA493 /* SettingsRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsRootView.swift; sourceTree = "<group>"; };
 		FEE14999613F8DB16A7BD5A1 /* PermissionGuideView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionGuideView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -265,12 +267,13 @@
 				14175BCA4CB68BD5B738C6CC /* GestureTriggerSettingsView.swift */,
 				8564B8A7336E94EFBDF2AEF8 /* MainSettingsView.swift */,
 				FEE14999613F8DB16A7BD5A1 /* PermissionGuideView.swift */,
-				31B51A39120A47537F3CA19E /* SettingsSceneBridge.swift */,
-				26AC90A3BC050551F37D0A1F /* SettingsSceneOpenDriver.swift */,
-				FB9726F7B2CEECBE4AAAA493 /* SettingsSceneRoot.swift */,
-				FA928898503E6B21ED2597C6 /* SettingsSceneServices.swift */,
+				31B51A39120A47537F3CA19E /* SettingsWindowCoordinator.swift */,
+				26AC90A3BC050551F37D0A1F /* SettingsWindowOpener.swift */,
+				FB9726F7B2CEECBE4AAAA493 /* SettingsRootView.swift */,
+				FA928898503E6B21ED2597C6 /* SettingsWindowDependencies.swift */,
 				DCD24BDA9E2E22EF408EDA57 /* SettingsViewModel.swift */,
 				C71602D50CD5375F63932F7A /* SettingsWindowLifecycleObserver.swift */,
+				B7C6D5E40A39281746505162 /* SettingsWindowSceneIDs.swift */,
 			);
 			name = Settings;
 			path = Settings;
@@ -326,8 +329,8 @@
 				2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */,
 				91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */,
 				2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */,
-				CDD7C0628561595B19BE5527 /* SettingsSceneBridgeTests.swift */,
-				37AEA743DB6743F3087CAC78 /* SettingsSceneOpenDriverTests.swift */,
+				CDD7C0628561595B19BE5527 /* SettingsWindowCoordinatorTests.swift */,
+				37AEA743DB6743F3087CAC78 /* SettingsWindowOpenerTests.swift */,
 				85597E92C5F3F66FC294009F /* SettingsViewModelTests.swift */,
 				F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */,
 				AA855F54F132B7FE60EA8D0B /* StatusBarControllerTests.swift */,
@@ -676,8 +679,8 @@
 				EF40A344F544A55448031305 /* GestureOverlayWindowTests.swift in Sources */,
 				FE4E3FFAE7D1EED8C2093C96 /* MouseEventTapTests.swift in Sources */,
 				F5DBFD6162AF15B5B67EC30B /* PermissionServiceTests.swift in Sources */,
-				FC580C899A5782136F3908B9 /* SettingsSceneBridgeTests.swift in Sources */,
-				E66F5ABF562CF6A14DF7670B /* SettingsSceneOpenDriverTests.swift in Sources */,
+				FC580C899A5782136F3908B9 /* SettingsWindowCoordinatorTests.swift in Sources */,
+				E66F5ABF562CF6A14DF7670B /* SettingsWindowOpenerTests.swift in Sources */,
 				EE0E5FDB1FEE6C84A9031FC2 /* SettingsViewModelTests.swift in Sources */,
 				9C7C002ACABA0A147FF7D1AB /* SettingsWindowLifecycleObserverTests.swift in Sources */,
 				B9A9C60EB34DB710B27CF477 /* StatusBarControllerTests.swift in Sources */,
@@ -708,12 +711,13 @@
 				065A532C55C5C65BC9EDDFB5 /* GestureTriggerSettingsView.swift in Sources */,
 				63F4A4419C7F7EDB324EC992 /* MainSettingsView.swift in Sources */,
 				E26F0D9DACDE4A8CDF49BCFA /* PermissionGuideView.swift in Sources */,
-				9CB56860EA8B584DD7B884FD /* SettingsSceneBridge.swift in Sources */,
-				C5552C025D22E9B83EA7B70F /* SettingsSceneOpenDriver.swift in Sources */,
-				B2B0AF3951666CEDBC358483 /* SettingsSceneRoot.swift in Sources */,
-				B7EEBA03710D9BE9EC09E172 /* SettingsSceneServices.swift in Sources */,
+				9CB56860EA8B584DD7B884FD /* SettingsWindowCoordinator.swift in Sources */,
+				C5552C025D22E9B83EA7B70F /* SettingsWindowOpener.swift in Sources */,
+				B2B0AF3951666CEDBC358483 /* SettingsRootView.swift in Sources */,
+				B7EEBA03710D9BE9EC09E172 /* SettingsWindowDependencies.swift in Sources */,
 				452CFEF6F00A30E99D33150D /* SettingsViewModel.swift in Sources */,
 				4BC9307F636CA8802D5891BF /* SettingsWindowLifecycleObserver.swift in Sources */,
+				A8F1E2D30B4C5A69708192A3 /* SettingsWindowSceneIDs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

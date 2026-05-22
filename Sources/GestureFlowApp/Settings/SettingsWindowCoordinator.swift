@@ -1,0 +1,43 @@
+import AppKit
+import SwiftUI
+
+/// Owns the shared settings `SettingsViewModel` and attaches lifecycle handling to the
+/// settings `WindowGroup` host window (via `SettingsWindowLifecycleObserver`).
+final class SettingsWindowCoordinator: ObservableObject {
+    var onSettingsDidAppear: () -> Void
+    var onLastSettingsWindowDidClose: () -> Void
+
+    @Published private(set) var viewModel: SettingsViewModel?
+    private let lifecycleCoordinator: SettingsWindowLifecycleCoordinator
+
+    init(
+        notificationCenter: NotificationCenter = .default,
+        onSettingsDidAppear: @escaping () -> Void = {},
+        onLastSettingsWindowDidClose: @escaping () -> Void = {}
+    ) {
+        self.onSettingsDidAppear = onSettingsDidAppear
+        self.onLastSettingsWindowDidClose = onLastSettingsWindowDidClose
+        self.lifecycleCoordinator = SettingsWindowLifecycleCoordinator(
+            notificationCenter: notificationCenter,
+            onSettingsDidAppear: {},
+            onLastSettingsWindowDidClose: {}
+        )
+        self.lifecycleCoordinator.updateCallbacks(
+            onSettingsDidAppear: { [weak self] in self?.onSettingsDidAppear() },
+            onLastSettingsWindowDidClose: { [weak self] in self?.onLastSettingsWindowDidClose() }
+        )
+    }
+
+    func install(viewModel: SettingsViewModel) {
+        if self.viewModel == nil {
+            self.viewModel = viewModel
+        }
+    }
+
+    func attachSettingsWindow(_ window: NSWindow?) {
+        if let window {
+            window.identifier = NSUserInterfaceItemIdentifier(SettingsWindowSceneIDs.settings)
+        }
+        lifecycleCoordinator.attach(to: window)
+    }
+}

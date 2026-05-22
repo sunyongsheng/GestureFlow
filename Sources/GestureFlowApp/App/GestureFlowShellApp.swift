@@ -5,21 +5,22 @@ struct GestureFlowShellApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        // The app shell declares the system-managed settings surface.
-        // First-open behavior is handled outside the settings content lifecycle.
-        SettingsWindowScene(bridge: SettingsSceneServices.shared.bridge)
+        // Settings UI is hosted by a dedicated WindowGroup (not SwiftUI's Settings scene).
+        // First-open and menu-bar reopen go through SettingsWindowDependencies / SettingsWindowOpener.
+        SettingsHostedWindowScene(coordinator: SettingsWindowDependencies.shared.coordinator)
             .commands {
                 SettingsWindowCommands()
             }
     }
 }
 
-private struct SettingsWindowScene: Scene {
-    let bridge: SettingsSceneBridge
+private struct SettingsHostedWindowScene: Scene {
+    let coordinator: SettingsWindowCoordinator
 
     var body: some Scene {
         WindowGroup(id: SettingsWindowSceneIDs.settings) {
-            SettingsSceneRoot(bridge: bridge)
+            SettingsRootView(coordinator: coordinator)
+                .background(SettingsWindowOpenActionInstaller())
         }
         .defaultSize(width: 920, height: 620)
     }

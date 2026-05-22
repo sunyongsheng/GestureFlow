@@ -293,9 +293,9 @@ final class GestureFlowApplicationTests: XCTestCase {
             permissionService: permissionService,
             eventTap: eventTap
         )
-        let bridge = SettingsSceneBridge()
+        let coordinator = SettingsWindowCoordinator()
         var openSettingsWindowCount = 0
-        let openDriver = SettingsSceneOpenDriver(
+        let opener = SettingsWindowOpener(
             resolveOpenAction: {
                 { openSettingsWindowCount += 1 }
             }
@@ -305,14 +305,14 @@ final class GestureFlowApplicationTests: XCTestCase {
             permissionService: permissionService,
             gestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
-                bridge.install(viewModel: viewModel)
-                _ = openDriver.openSettingsWindow()
+                coordinator.install(viewModel: viewModel)
+                _ = opener.openSettingsWindow()
             }
         )
 
         application.launch()
 
-        XCTAssertNotNil(bridge.viewModel)
+        XCTAssertNotNil(coordinator.viewModel)
         XCTAssertEqual(openSettingsWindowCount, 1)
     }
 
@@ -525,7 +525,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             activateApp: {},
             scheduleOnMain: { scheduledAccessoryFallback = $0 }
         )
-        let bridge = SettingsSceneBridge(
+        let coordinator = SettingsWindowCoordinator(
             onSettingsDidAppear: {
                 presentationController.handleSettingsDidAppear()
             },
@@ -533,10 +533,10 @@ final class GestureFlowApplicationTests: XCTestCase {
                 presentationController.handleLastSettingsWindowDidClose()
             }
         )
-        let openDriver = SettingsSceneOpenDriver(
+        let opener = SettingsWindowOpener(
             resolveOpenAction: {
                 {
-                    bridge.handleSettingsDidAppear()
+                    presentationController.handleSettingsDidAppear()
                 }
             }
         )
@@ -547,14 +547,14 @@ final class GestureFlowApplicationTests: XCTestCase {
             showSettings: { viewModel, _ in
                 presentationController.cancelPendingAccessoryFallbackIfNeeded()
                 presentationController.prepareToShowSettings()
-                bridge.install(viewModel: viewModel)
-                _ = openDriver.openSettingsWindow()
+                coordinator.install(viewModel: viewModel)
+                _ = opener.openSettingsWindow()
             }
         )
 
         application.launch()
         application.startGestureFlow()
-        bridge.handleLastSettingsWindowDidClose()
+        presentationController.handleLastSettingsWindowDidClose()
         scheduledAccessoryFallback?()
 
         XCTAssertEqual(eventTap.stopCount, 0)
@@ -592,16 +592,6 @@ final class GestureFlowApplicationTests: XCTestCase {
 
         scheduledOpenSettings.removeFirst()()
 
-        XCTAssertEqual(showSettingsCount, 0)
-        XCTAssertEqual(scheduledOpenSettings.count, 1)
-
-        scheduledOpenSettings.removeFirst()()
-
-        XCTAssertEqual(showSettingsCount, 0)
-        XCTAssertEqual(scheduledOpenSettings.count, 1)
-
-        scheduledOpenSettings.removeFirst()()
-
         XCTAssertEqual(showSettingsCount, 1)
     }
 
@@ -624,7 +614,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             activateApp: {},
             scheduleOnMain: { _ in }
         )
-        let bridge = SettingsSceneBridge(
+        let coordinator = SettingsWindowCoordinator(
             onSettingsDidAppear: {
                 presentationController.handleSettingsDidAppear()
             },
@@ -632,10 +622,10 @@ final class GestureFlowApplicationTests: XCTestCase {
                 presentationController.handleLastSettingsWindowDidClose()
             }
         )
-        let openDriver = SettingsSceneOpenDriver(
+        let opener = SettingsWindowOpener(
             resolveOpenAction: {
                 {
-                    bridge.handleSettingsDidAppear()
+                    presentationController.handleSettingsDidAppear()
                 }
             }
         )
@@ -652,8 +642,8 @@ final class GestureFlowApplicationTests: XCTestCase {
             showSettings: { viewModel, _ in
                 presentationController.cancelPendingAccessoryFallbackIfNeeded()
                 presentationController.prepareToShowSettings()
-                bridge.install(viewModel: viewModel)
-                _ = openDriver.openSettingsWindow()
+                coordinator.install(viewModel: viewModel)
+                _ = opener.openSettingsWindow()
             }
         )
 
@@ -682,9 +672,9 @@ final class GestureFlowApplicationTests: XCTestCase {
             eventTap: eventTap
         )
         var scheduledOpenSettings: [() -> Void] = []
-        let bridge = SettingsSceneBridge()
+        let coordinator = SettingsWindowCoordinator()
         var openSettingsWindowCount = 0
-        let openDriver = SettingsSceneOpenDriver(
+        let opener = SettingsWindowOpener(
             resolveOpenAction: {
                 { openSettingsWindowCount += 1 }
             }
@@ -694,9 +684,9 @@ final class GestureFlowApplicationTests: XCTestCase {
             permissionService: permissionService,
             gestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
-                bridge.install(viewModel: viewModel)
+                coordinator.install(viewModel: viewModel)
                 scheduledOpenSettings.append {
-                    _ = openDriver.openSettingsWindow()
+                    _ = opener.openSettingsWindow()
                 }
             }
             ,
@@ -709,14 +699,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         XCTAssertEqual(openSettingsWindowCount, 0)
         XCTAssertEqual(scheduledOpenSettings.count, 1)
         scheduledOpenSettings.removeFirst()()
-        XCTAssertEqual(openSettingsWindowCount, 0)
-        XCTAssertEqual(scheduledOpenSettings.count, 1)
-        scheduledOpenSettings.removeFirst()()
-        XCTAssertEqual(openSettingsWindowCount, 0)
-        XCTAssertEqual(scheduledOpenSettings.count, 1)
-        scheduledOpenSettings.removeFirst()()
 
-        XCTAssertNotNil(bridge.viewModel)
+        XCTAssertNotNil(coordinator.viewModel)
         XCTAssertEqual(openSettingsWindowCount, 1)
     }
 
@@ -744,12 +728,11 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
 
         application.launch()
+        XCTAssertEqual(shownViewModels.count, 1)
+
         application.statusBarController?.performMenuItem(tag: StatusBarMenuItemTag.preferences)
         XCTAssertEqual(scheduledOpenSettings.count, 1)
-        scheduledOpenSettings.removeFirst()()
-        XCTAssertEqual(scheduledOpenSettings.count, 1)
-        scheduledOpenSettings.removeFirst()()
-        XCTAssertEqual(scheduledOpenSettings.count, 1)
+
         scheduledOpenSettings.removeFirst()()
 
         XCTAssertEqual(shownViewModels.count, 2)

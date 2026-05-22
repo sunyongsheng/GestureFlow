@@ -2,46 +2,45 @@ import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     typealias ApplicationControllerFactory = (
-        SettingsSceneBridge,
-        SettingsSceneOpenDriver
+        SettingsWindowCoordinator,
+        SettingsWindowOpener
     ) -> any GestureFlowApplicationCoordinating
 
     private let makeApplicationController: ApplicationControllerFactory
     private let scheduleOnMain: (@escaping () -> Void) -> Void
 
-    let settingsSceneBridge: SettingsSceneBridge
-    let settingsSceneOpenDriver: SettingsSceneOpenDriver
+    let settingsCoordinator: SettingsWindowCoordinator
+    let settingsOpener: SettingsWindowOpener
     let presentationController: AppPresentationController
     private(set) var applicationController: (any GestureFlowApplicationCoordinating)?
 
     override init() {
-        let settingsSceneBridge = SettingsSceneServices.shared.bridge
-        let settingsSceneOpenDriver = SettingsSceneServices.shared.openDriver
-        let presentationController = SettingsSceneServices.shared.presentationController
-
-        self.settingsSceneBridge = settingsSceneBridge
-        self.settingsSceneOpenDriver = settingsSceneOpenDriver
-        self.presentationController = presentationController
+        let dependencies = SettingsWindowDependencies.shared
+        self.settingsCoordinator = dependencies.coordinator
+        self.settingsOpener = dependencies.opener
+        self.presentationController = dependencies.presentationController
         self.scheduleOnMain = { DispatchQueue.main.async(execute: $0) }
         self.makeApplicationController = Self.defaultApplicationControllerFactory(
-            presentationController: presentationController,
+            dependencies: dependencies,
             scheduleOnMain: self.scheduleOnMain
         )
         super.init()
     }
 
     init(
-        settingsSceneBridge: SettingsSceneBridge = SettingsSceneServices.shared.bridge,
-        settingsSceneOpenDriver: SettingsSceneOpenDriver = SettingsSceneServices.shared.openDriver,
-        presentationController: AppPresentationController = SettingsSceneServices.shared.presentationController,
+        settingsCoordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
+        settingsOpener: SettingsWindowOpener = SettingsWindowDependencies.shared.opener,
+        presentationController: AppPresentationController = SettingsWindowDependencies.shared.presentationController,
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) },
         makeApplicationController: ApplicationControllerFactory? = nil
     ) {
-        self.settingsSceneBridge = settingsSceneBridge
-        self.settingsSceneOpenDriver = settingsSceneOpenDriver
+        self.settingsCoordinator = settingsCoordinator
+        self.settingsOpener = settingsOpener
         self.presentationController = presentationController
         self.scheduleOnMain = scheduleOnMain
         self.makeApplicationController = makeApplicationController ?? Self.defaultApplicationControllerFactory(
+            coordinator: settingsCoordinator,
+            opener: settingsOpener,
             presentationController: presentationController,
             scheduleOnMain: scheduleOnMain
         )
@@ -49,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let controller = makeApplicationController(settingsSceneBridge, settingsSceneOpenDriver)
+        let controller = makeApplicationController(settingsCoordinator, settingsOpener)
         applicationController = controller
         controller.launch()
     }
@@ -57,14 +56,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension AppDelegate {
     static func defaultApplicationControllerFactory(
+        dependencies: SettingsWindowDependencies,
+        scheduleOnMain: @escaping (@escaping () -> Void) -> Void
+    ) -> ApplicationControllerFactory {
+        defaultApplicationControllerFactory(
+            coordinator: dependencies.coordinator,
+            opener: dependencies.opener,
+            presentationController: dependencies.presentationController,
+            scheduleOnMain: scheduleOnMain
+        )
+    }
+
+    static func defaultApplicationControllerFactory(
+        coordinator: SettingsWindowCoordinator,
+        opener: SettingsWindowOpener,
         presentationController: AppPresentationController,
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void
     ) -> ApplicationControllerFactory {
-        { bridge, openDriver in
+        { injectedCoordinator, injectedOpener in
             GestureFlowApplication(
                 showSettings: makeShowSettingsHandler(
-                    bridge: bridge,
-                    openDriver: openDriver,
+                    coordinator: injectedCoordinator,
+                    opener: injectedOpener,
                     presentationController: presentationController,
                     scheduleOnMain: scheduleOnMain
                 )
@@ -73,26 +86,20 @@ extension AppDelegate {
     }
 
     static func makeShowSettingsHandler(
-        bridge: SettingsSceneBridge,
-        openDriver: SettingsSceneOpenDriver,
+        coordinator: SettingsWindowCoordinator,
+        opener: SettingsWindowOpener,
         presentationController: AppPresentationController,
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void
     ) -> (SettingsViewModel, SettingsPresentationSource) -> Void {
         { viewModel, source in
-            presentationController.cancelPendingAccessoryFallbackIfNeeded()
-            switch source {
-            case .launch:
-                bridge.install(viewModel: viewModel)
-                scheduleOnMain {
-                    presentationController.prepareToShowSettings()
-                }
-            case .menuBar:
-                bridge.install(viewModel: viewModel)
-                scheduleOnMain {
-                    _ = openDriver.openSettingsWindow()
-                    presentationController.prepareToShowSettings()
-                }
-            }
+            SettingsWindowDependencies.presentSettings(
+                viewModel: viewModel,
+                source: source,
+                coordinator: coordinator,
+                opener: opener,
+                presentationController: presentationController,
+                scheduleOnMain: scheduleOnMain
+            )
         }
     }
 }

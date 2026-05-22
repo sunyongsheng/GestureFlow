@@ -128,11 +128,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
     private func scheduleOpenSettings() {
         scheduleOnMain { [weak self] in
-            self?.scheduleOnMain { [weak self] in
-                self?.scheduleOnMain { [weak self] in
-                    self?.openSettings(source: .menuBar)
-                }
-            }
+            self?.openSettings(source: .menuBar)
         }
     }
 

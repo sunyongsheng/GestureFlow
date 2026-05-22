@@ -20,45 +20,45 @@ final class AppDelegateTests: XCTestCase {
         XCTAssertTrue(delegate.applicationController === coordinator)
     }
 
-    func testAppDelegateExposesSharedSettingsSceneOpenDriver() {
-        let driver = SettingsSceneOpenDriver(resolveOpenAction: { nil })
+    func testAppDelegateExposesInjectedSettingsOpener() {
+        let opener = SettingsWindowOpener(resolveOpenAction: { nil })
         let delegate = AppDelegate(
-            settingsSceneOpenDriver: driver,
+            settingsOpener: opener,
             makeApplicationController: { _, _ in ApplicationCoordinatorSpy() }
         )
 
-        XCTAssertTrue(delegate.settingsSceneOpenDriver === driver)
+        XCTAssertTrue(delegate.settingsOpener === opener)
     }
 
-    func testAppDelegateExposesSharedSettingsSceneBridge() {
-        let bridge = SettingsSceneBridge()
+    func testAppDelegateExposesInjectedSettingsCoordinator() {
+        let coordinator = SettingsWindowCoordinator()
         let delegate = AppDelegate(
-            settingsSceneBridge: bridge,
+            settingsCoordinator: coordinator,
             makeApplicationController: { _, _ in ApplicationCoordinatorSpy() }
         )
 
-        XCTAssertTrue(delegate.settingsSceneBridge === bridge)
+        XCTAssertTrue(delegate.settingsCoordinator === coordinator)
     }
 
-    func testDefaultAppDelegateUsesSharedSettingsSceneDependencies() {
+    func testDefaultAppDelegateUsesSharedSettingsWindowDependencies() {
         let delegate = AppDelegate(makeApplicationController: { _, _ in ApplicationCoordinatorSpy() })
 
-        XCTAssertTrue(delegate.settingsSceneBridge === SettingsSceneServices.shared.bridge)
-        XCTAssertTrue(delegate.settingsSceneOpenDriver === SettingsSceneServices.shared.openDriver)
+        XCTAssertTrue(delegate.settingsCoordinator === SettingsWindowDependencies.shared.coordinator)
+        XCTAssertTrue(delegate.settingsOpener === SettingsWindowDependencies.shared.opener)
     }
 
     func testDefaultAppDelegateUsesSharedPresentationController() {
         let delegate = AppDelegate(makeApplicationController: { _, _ in ApplicationCoordinatorSpy() })
 
-        XCTAssertTrue(delegate.presentationController === SettingsSceneServices.shared.presentationController)
+        XCTAssertTrue(delegate.presentationController === SettingsWindowDependencies.shared.presentationController)
     }
 
-    func testDefaultInitUsesSharedSettingsSceneDependencies() {
+    func testDefaultInitUsesSharedSettingsWindowDependencies() {
         let delegate = AppDelegate()
 
-        XCTAssertTrue(delegate.settingsSceneBridge === SettingsSceneServices.shared.bridge)
-        XCTAssertTrue(delegate.settingsSceneOpenDriver === SettingsSceneServices.shared.openDriver)
-        XCTAssertTrue(delegate.presentationController === SettingsSceneServices.shared.presentationController)
+        XCTAssertTrue(delegate.settingsCoordinator === SettingsWindowDependencies.shared.coordinator)
+        XCTAssertTrue(delegate.settingsOpener === SettingsWindowDependencies.shared.opener)
+        XCTAssertTrue(delegate.presentationController === SettingsWindowDependencies.shared.presentationController)
     }
 
     func testCustomAppDelegateCanInjectPresentationController() {
@@ -77,9 +77,9 @@ final class AppDelegateTests: XCTestCase {
     }
 
     func testShowSettingsHandlerForLaunchInstallsViewModelWithoutOpeningSettingsWindow() {
-        let bridge = SettingsSceneBridge()
+        let coordinator = SettingsWindowCoordinator()
         var openCount = 0
-        let openDriver = SettingsSceneOpenDriver(resolveOpenAction: {
+        let opener = SettingsWindowOpener(resolveOpenAction: {
             { openCount += 1 }
         })
         let presentationController = AppPresentationController(
@@ -89,8 +89,8 @@ final class AppDelegateTests: XCTestCase {
             scheduleOnMain: { $0() }
         )
         let showSettings = AppDelegate.makeShowSettingsHandler(
-            bridge: bridge,
-            openDriver: openDriver,
+            coordinator: coordinator,
+            opener: opener,
             presentationController: presentationController,
             scheduleOnMain: { $0() }
         )
@@ -98,14 +98,14 @@ final class AppDelegateTests: XCTestCase {
 
         showSettings(viewModel, SettingsPresentationSource.launch)
 
-        XCTAssertTrue(bridge.viewModel === viewModel)
+        XCTAssertTrue(coordinator.viewModel === viewModel)
         XCTAssertEqual(openCount, 0)
     }
 
     func testShowSettingsHandlerForLaunchDefersForegroundPreparation() {
-        let bridge = SettingsSceneBridge()
+        let coordinator = SettingsWindowCoordinator()
         var scheduledBlocks: [() -> Void] = []
-        let openDriver = SettingsSceneOpenDriver(resolveOpenAction: { nil })
+        let opener = SettingsWindowOpener(resolveOpenAction: { nil })
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
@@ -113,8 +113,8 @@ final class AppDelegateTests: XCTestCase {
             scheduleOnMain: { _ in }
         )
         let showSettings = AppDelegate.makeShowSettingsHandler(
-            bridge: bridge,
-            openDriver: openDriver,
+            coordinator: coordinator,
+            opener: opener,
             presentationController: presentationController,
             scheduleOnMain: { scheduledBlocks.append($0) }
         )
@@ -122,7 +122,7 @@ final class AppDelegateTests: XCTestCase {
 
         showSettings(viewModel, SettingsPresentationSource.launch)
 
-        XCTAssertTrue(bridge.viewModel === viewModel)
+        XCTAssertTrue(coordinator.viewModel === viewModel)
         XCTAssertEqual(scheduledBlocks.count, 1)
         XCTAssertEqual(presentationController.state, .accessoryBackground)
 
@@ -132,9 +132,9 @@ final class AppDelegateTests: XCTestCase {
     }
 
     func testShowSettingsHandlerForMenuBarOpensSettingsWindow() {
-        let bridge = SettingsSceneBridge()
+        let coordinator = SettingsWindowCoordinator()
         var openCount = 0
-        let openDriver = SettingsSceneOpenDriver(resolveOpenAction: {
+        let opener = SettingsWindowOpener(resolveOpenAction: {
             { openCount += 1 }
         })
         let presentationController = AppPresentationController(
@@ -144,8 +144,8 @@ final class AppDelegateTests: XCTestCase {
             scheduleOnMain: { $0() }
         )
         let showSettings = AppDelegate.makeShowSettingsHandler(
-            bridge: bridge,
-            openDriver: openDriver,
+            coordinator: coordinator,
+            opener: opener,
             presentationController: presentationController,
             scheduleOnMain: { $0() }
         )
@@ -153,7 +153,7 @@ final class AppDelegateTests: XCTestCase {
 
         showSettings(viewModel, SettingsPresentationSource.menuBar)
 
-        XCTAssertTrue(bridge.viewModel === viewModel)
+        XCTAssertTrue(coordinator.viewModel === viewModel)
         XCTAssertEqual(openCount, 1)
     }
 }
