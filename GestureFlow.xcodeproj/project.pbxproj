@@ -1,0 +1,1084 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		040EB070BBEECCD11BFF23D8 /* GestureEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C9074BF974E894A112AA03 /* GestureEditorView.swift */; };
+		065A532C55C5C65BC9EDDFB5 /* GestureTriggerSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14175BCA4CB68BD5B738C6CC /* GestureTriggerSettingsView.swift */; };
+		07C4F0D93B4001D810FECD08 /* ActionExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD6A92421A4EC2763AAB1D0 /* ActionExecutorTests.swift */; };
+		11CCADD5B4C2D2C1226B0CAF /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1766889B544862BA0E04BF40 /* AppDelegateTests.swift */; };
+		12C204AC8CE4170053C52407 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 417098F3262B735C581E1651 /* Cocoa.framework */; };
+		13429230484BEFE81ECFD0BF /* GestureOverlayDisplaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3A07E6536A9627F20D36E /* GestureOverlayDisplaying.swift */; };
+		19B1C6B7C86F57B21DB16BF0 /* GestureFlowCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */; };
+		1CF3A3C6F1444B984D7898F2 /* GestureOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7837C84C0A6C8D866F7B6797 /* GestureOverlayView.swift */; };
+		26E66E45BDB9D5837A02A2CD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 417098F3262B735C581E1651 /* Cocoa.framework */; };
+		289CBBD1F7DA270AA3CE6185 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04815AFE4C4CA2B5DB75BF /* AppConfiguration.swift */; };
+		29766FD4E68CB075B475182F /* GestureOverlayGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88C40365794474B38BB09446 /* GestureOverlayGeometryTests.swift */; };
+		452CFEF6F00A30E99D33150D /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD24BDA9E2E22EF408EDA57 /* SettingsViewModel.swift */; };
+		47E370BFD227D1CF75FA6B74 /* GestureOverlayCoordinateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9495F29F933AF0BB482BDE84 /* GestureOverlayCoordinateConverter.swift */; };
+		4BC9307F636CA8802D5891BF /* SettingsWindowLifecycleObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C71602D50CD5375F63932F7A /* SettingsWindowLifecycleObserver.swift */; };
+		566B836192AB4D380DC8889A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F24FE8A3C96369FBA30C018 /* AppDelegate.swift */; };
+		5711CEB463A971300D8190FE /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 417098F3262B735C581E1651 /* Cocoa.framework */; };
+		5821982633F9A2176E526C8F /* GestureNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412955FCC03F9363D03F8D7C /* GestureNormalizer.swift */; };
+		5AA51CECE1D58A4AAC6D6CF0 /* GestureRecognizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E37DC1583A40D7D7DB11C88 /* GestureRecognizerTests.swift */; };
+		5AB87EDE8EECB1DCD4846165 /* MouseEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C6F466E4BEE66AFAD08DB88 /* MouseEventTap.swift */; };
+		5DBDDA546B791ECFCB0113EE /* GestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F7F98199CD95F7F6525DE2 /* GestureRecognizer.swift */; };
+		63F4A4419C7F7EDB324EC992 /* MainSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8564B8A7336E94EFBDF2AEF8 /* MainSettingsView.swift */; };
+		6ACC8ECC6C22E7D532A7BEE5 /* ConfigurationStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30ADA683DE3875BB4963869 /* ConfigurationStoreTests.swift */; };
+		76067FD22F74F251719460C2 /* GestureMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29F74C1EC51067D5CBB87483 /* GestureMatcher.swift */; };
+		76F0034C5AC53BD8FAD94392 /* ConflictDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 505E58F99B9CD49F65E9E296 /* ConflictDetector.swift */; };
+		77BF91E52F878756C638CDFE /* GestureDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42306C61FBDBE6D19119D7F /* GestureDefinition.swift */; };
+		79C5BC5DDFF0DAE404E1550C /* GestureEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A56CD14C941898F62D798F /* GestureEngine.swift */; };
+		821C412ADFD094D46D9B7AEC /* GestureEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8F2E209E88A880F6D8497B /* GestureEngineTests.swift */; };
+		82610804BD74EAC6CD8A9673 /* AppPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACAFB5E787DBF9E568E41C90 /* AppPresentationController.swift */; };
+		8E089634989161BF4C76C862 /* ActionExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DBDB5D095502443340B774 /* ActionExecutor.swift */; };
+		927227F91FAF29D401862515 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC1214E7E3323BC8B9AB7BF2 /* Assets.xcassets */; };
+		95FE636493DE4FE816976B00 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D316F2D45E3E76F350724CB /* PermissionService.swift */; };
+		96FEC5E96E804F2F84017F2D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 417098F3262B735C581E1651 /* Cocoa.framework */; };
+		9C7C002ACABA0A147FF7D1AB /* SettingsWindowLifecycleObserverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */; };
+		9CB56860EA8B584DD7B884FD /* SettingsSceneBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B51A39120A47537F3CA19E /* SettingsSceneBridge.swift */; };
+		9CE9A72563FDFB4D9FD4A6A5 /* GestureFlowApplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */; };
+		ABEF9DC1F7560BA6B3BCF4CD /* GestureFlowCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */; };
+		AE91F24309E20B1AEC917E3E /* GestureOverlayGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282FBEE420718AB2FDBF90E5 /* GestureOverlayGeometry.swift */; };
+		B2B0AF3951666CEDBC358483 /* SettingsSceneRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9726F7B2CEECBE4AAAA493 /* SettingsSceneRoot.swift */; };
+		B33826328B3E89A4F426387D /* ConflictDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B045D62F33B0560A3B4D9680 /* ConflictDetectorTests.swift */; };
+		B711FF69CF4513AD7901F54D /* GestureFlowCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */; };
+		B7EEBA03710D9BE9EC09E172 /* SettingsSceneServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA928898503E6B21ED2597C6 /* SettingsSceneServices.swift */; };
+		B9A9C60EB34DB710B27CF477 /* StatusBarControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA855F54F132B7FE60EA8D0B /* StatusBarControllerTests.swift */; };
+		C16751AFEB4EA3E67A4B554B /* GestureFlowApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FB763932E2D29FBA279B6E /* GestureFlowApplication.swift */; };
+		C5552C025D22E9B83EA7B70F /* SettingsSceneOpenDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26AC90A3BC050551F37D0A1F /* SettingsSceneOpenDriver.swift */; };
+		CF857DED13C113DA6789BBD6 /* AppPresentationControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0727874AE8B2F5CFFA1956F /* AppPresentationControllerTests.swift */; };
+		D5B044F8BD11A55C74D1548F /* GestureMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F21DA1D037EC4AB66536A4B /* GestureMatcherTests.swift */; };
+		DF2D990A680B05A07B50A753 /* FeedbackSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93E5651AB16B621B5E49586 /* FeedbackSettingsView.swift */; };
+		E01C3EFA4306629E38218C93 /* ConfigurationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B9ADFEA2B1F885E88B3897 /* ConfigurationStore.swift */; };
+		E26F0D9DACDE4A8CDF49BCFA /* PermissionGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE14999613F8DB16A7BD5A1 /* PermissionGuideView.swift */; };
+		E66F5ABF562CF6A14DF7670B /* SettingsSceneOpenDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AEA743DB6743F3087CAC78 /* SettingsSceneOpenDriverTests.swift */; };
+		EA7A2A3B417BBAE2DE8B961B /* GestureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C483FF9C710FF74C05D13B /* GestureOverlayWindow.swift */; };
+		EE0E5FDB1FEE6C84A9031FC2 /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85597E92C5F3F66FC294009F /* SettingsViewModelTests.swift */; };
+		EF40A344F544A55448031305 /* GestureOverlayWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */; };
+		F16F621BBAE6A7CAD0B16081 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 938F8FF11E6A912D4C3DD619 /* StatusBarController.swift */; };
+		F5DBFD6162AF15B5B67EC30B /* PermissionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */; };
+		F712799818C32382C8A79B43 /* GestureFlowShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A82DCAFD63B2F2CBCBB5BA /* GestureFlowShellApp.swift */; };
+		F8DCC85669E15AA34D36845E /* GestureListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B22C6166DC2C256691E26E2 /* GestureListView.swift */; };
+		FBB552B02864BB311DCDC449 /* PublicAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 667EFB5B0EDFECBAC20F10F6 /* PublicAPITests.swift */; };
+		FC580C899A5782136F3908B9 /* SettingsSceneBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD7C0628561595B19BE5527 /* SettingsSceneBridgeTests.swift */; };
+		FE4E3FFAE7D1EED8C2093C96 /* MouseEventTapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2FFAC6F0CB2D34EBF14099A8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C0BDF17E8902E2F062ABD8B2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 93243DC42E2773A7251E3E0C;
+			remoteInfo = GestureFlowCore;
+		};
+		763D747DE690774B88EB3A2E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C0BDF17E8902E2F062ABD8B2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 93243DC42E2773A7251E3E0C;
+			remoteInfo = GestureFlowCore;
+		};
+		B68A463D6006A15DD6BBDDED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C0BDF17E8902E2F062ABD8B2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 93243DC42E2773A7251E3E0C;
+			remoteInfo = GestureFlowCore;
+		};
+		DB423549E1769109AE2661B4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C0BDF17E8902E2F062ABD8B2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 91BD3E75712457D38E30CA1F;
+			remoteInfo = GestureFlowApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		264B770648A9E4847A04A1B5 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				ABEF9DC1F7560BA6B3BCF4CD /* GestureFlowCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0F24FE8A3C96369FBA30C018 /* AppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		10B9ADFEA2B1F885E88B3897 /* ConfigurationStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConfigurationStore.swift; sourceTree = "<group>"; };
+		14175BCA4CB68BD5B738C6CC /* GestureTriggerSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureTriggerSettingsView.swift; sourceTree = "<group>"; };
+		15F7F98199CD95F7F6525DE2 /* GestureRecognizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureRecognizer.swift; sourceTree = "<group>"; };
+		1766889B544862BA0E04BF40 /* AppDelegateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDelegateTests.swift; sourceTree = "<group>"; };
+		19E8C6516A12999F2BAE7767 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1E37DC1583A40D7D7DB11C88 /* GestureRecognizerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureRecognizerTests.swift; sourceTree = "<group>"; };
+		2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayWindowTests.swift; sourceTree = "<group>"; };
+		26AC90A3BC050551F37D0A1F /* SettingsSceneOpenDriver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneOpenDriver.swift; sourceTree = "<group>"; };
+		282FBEE420718AB2FDBF90E5 /* GestureOverlayGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayGeometry.swift; sourceTree = "<group>"; };
+		29F74C1EC51067D5CBB87483 /* GestureMatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureMatcher.swift; sourceTree = "<group>"; };
+		2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
+		31B51A39120A47537F3CA19E /* SettingsSceneBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneBridge.swift; sourceTree = "<group>"; };
+		35FB763932E2D29FBA279B6E /* GestureFlowApplication.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowApplication.swift; sourceTree = "<group>"; };
+		37AEA743DB6743F3087CAC78 /* SettingsSceneOpenDriverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneOpenDriverTests.swift; sourceTree = "<group>"; };
+		37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GestureFlowCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3B22C6166DC2C256691E26E2 /* GestureListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureListView.swift; sourceTree = "<group>"; };
+		412955FCC03F9363D03F8D7C /* GestureNormalizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureNormalizer.swift; sourceTree = "<group>"; };
+		417098F3262B735C581E1651 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		42C9074BF974E894A112AA03 /* GestureEditorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureEditorView.swift; sourceTree = "<group>"; };
+		4F21DA1D037EC4AB66536A4B /* GestureMatcherTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureMatcherTests.swift; sourceTree = "<group>"; };
+		505E58F99B9CD49F65E9E296 /* ConflictDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConflictDetector.swift; sourceTree = "<group>"; };
+		5D316F2D45E3E76F350724CB /* PermissionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionService.swift; sourceTree = "<group>"; };
+		5D8F2E209E88A880F6D8497B /* GestureEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureEngineTests.swift; sourceTree = "<group>"; };
+		5EC3A07E6536A9627F20D36E /* GestureOverlayDisplaying.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayDisplaying.swift; sourceTree = "<group>"; };
+		6455AF75FE0F8606532BDFA0 /* GestureFlowCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GestureFlowCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		667EFB5B0EDFECBAC20F10F6 /* PublicAPITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PublicAPITests.swift; sourceTree = "<group>"; };
+		7837C84C0A6C8D866F7B6797 /* GestureOverlayView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayView.swift; sourceTree = "<group>"; };
+		7C6F466E4BEE66AFAD08DB88 /* MouseEventTap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MouseEventTap.swift; sourceTree = "<group>"; };
+		85597E92C5F3F66FC294009F /* SettingsViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsViewModelTests.swift; sourceTree = "<group>"; };
+		8564B8A7336E94EFBDF2AEF8 /* MainSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainSettingsView.swift; sourceTree = "<group>"; };
+		85DBDB5D095502443340B774 /* ActionExecutor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActionExecutor.swift; sourceTree = "<group>"; };
+		88C40365794474B38BB09446 /* GestureOverlayGeometryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayGeometryTests.swift; sourceTree = "<group>"; };
+		91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MouseEventTapTests.swift; sourceTree = "<group>"; };
+		938F8FF11E6A912D4C3DD619 /* StatusBarController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
+		9495F29F933AF0BB482BDE84 /* GestureOverlayCoordinateConverter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayCoordinateConverter.swift; sourceTree = "<group>"; };
+		9D7742FB88F604C4EA4BBCF3 /* GestureFlowAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GestureFlowAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowApplicationTests.swift; sourceTree = "<group>"; };
+		AA855F54F132B7FE60EA8D0B /* StatusBarControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatusBarControllerTests.swift; sourceTree = "<group>"; };
+		ACAFB5E787DBF9E568E41C90 /* AppPresentationController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppPresentationController.swift; sourceTree = "<group>"; };
+		B045D62F33B0560A3B4D9680 /* ConflictDetectorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConflictDetectorTests.swift; sourceTree = "<group>"; };
+		B2C483FF9C710FF74C05D13B /* GestureOverlayWindow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayWindow.swift; sourceTree = "<group>"; };
+		B4A0BD4BCBBE39E9137D88A5 /* GestureFlowApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GestureFlowApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0727874AE8B2F5CFFA1956F /* AppPresentationControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppPresentationControllerTests.swift; sourceTree = "<group>"; };
+		C71602D50CD5375F63932F7A /* SettingsWindowLifecycleObserver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowLifecycleObserver.swift; sourceTree = "<group>"; };
+		CC1214E7E3323BC8B9AB7BF2 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CDD7C0628561595B19BE5527 /* SettingsSceneBridgeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneBridgeTests.swift; sourceTree = "<group>"; };
+		CE04815AFE4C4CA2B5DB75BF /* AppConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		D4A56CD14C941898F62D798F /* GestureEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureEngine.swift; sourceTree = "<group>"; };
+		D4A82DCAFD63B2F2CBCBB5BA /* GestureFlowShellApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowShellApp.swift; sourceTree = "<group>"; };
+		DCD24BDA9E2E22EF408EDA57 /* SettingsViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		E30ADA683DE3875BB4963869 /* ConfigurationStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConfigurationStoreTests.swift; sourceTree = "<group>"; };
+		E42306C61FBDBE6D19119D7F /* GestureDefinition.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureDefinition.swift; sourceTree = "<group>"; };
+		EDD6A92421A4EC2763AAB1D0 /* ActionExecutorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ActionExecutorTests.swift; sourceTree = "<group>"; };
+		F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowLifecycleObserverTests.swift; sourceTree = "<group>"; };
+		F93E5651AB16B621B5E49586 /* FeedbackSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FeedbackSettingsView.swift; sourceTree = "<group>"; };
+		FA928898503E6B21ED2597C6 /* SettingsSceneServices.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneServices.swift; sourceTree = "<group>"; };
+		FB9726F7B2CEECBE4AAAA493 /* SettingsSceneRoot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsSceneRoot.swift; sourceTree = "<group>"; };
+		FEE14999613F8DB16A7BD5A1 /* PermissionGuideView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionGuideView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4D2F812E50D5008CA1A7D0BE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26E66E45BDB9D5837A02A2CD /* Cocoa.framework in Frameworks */,
+				19B1C6B7C86F57B21DB16BF0 /* GestureFlowCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5C2F93A04E745879D0CB71DE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5711CEB463A971300D8190FE /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		73E9621A7CFEE63423E4BD90 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96FEC5E96E804F2F84017F2D /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1BD3BC94F12360973AB87D6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				12C204AC8CE4170053C52407 /* Cocoa.framework in Frameworks */,
+				B711FF69CF4513AD7901F54D /* GestureFlowCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0945A08D9E0F4AA1B5AFCAF8 /* GestureFlowCore */ = {
+			isa = PBXGroup;
+			children = (
+				F29C8B3D0DD69806BC14DD9A /* Configuration */,
+				A0B4DAF46654458CB524C483 /* Matching */,
+				254136130F8F50E3AD4E7710 /* Models */,
+				638BC5D6B830E906C595FB9A /* Recognition */,
+				C6B8229398FD3794F1DAD3EE /* Validation */,
+			);
+			name = GestureFlowCore;
+			path = GestureFlowCore;
+			sourceTree = "<group>";
+		};
+		160B0E6739690CA2C7FE8DE8 /* EventTap */ = {
+			isa = PBXGroup;
+			children = (
+				7C6F466E4BEE66AFAD08DB88 /* MouseEventTap.swift */,
+			);
+			name = EventTap;
+			path = EventTap;
+			sourceTree = "<group>";
+		};
+		254136130F8F50E3AD4E7710 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				CE04815AFE4C4CA2B5DB75BF /* AppConfiguration.swift */,
+				E42306C61FBDBE6D19119D7F /* GestureDefinition.swift */,
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
+		3EB1E86B3722916038E9BD9B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				19E8C6516A12999F2BAE7767 /* Info.plist */,
+				CC1214E7E3323BC8B9AB7BF2 /* Assets.xcassets */,
+			);
+			name = Resources;
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		4F125DD5BD93BD3D440783DE /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				F93E5651AB16B621B5E49586 /* FeedbackSettingsView.swift */,
+				42C9074BF974E894A112AA03 /* GestureEditorView.swift */,
+				3B22C6166DC2C256691E26E2 /* GestureListView.swift */,
+				14175BCA4CB68BD5B738C6CC /* GestureTriggerSettingsView.swift */,
+				8564B8A7336E94EFBDF2AEF8 /* MainSettingsView.swift */,
+				FEE14999613F8DB16A7BD5A1 /* PermissionGuideView.swift */,
+				31B51A39120A47537F3CA19E /* SettingsSceneBridge.swift */,
+				26AC90A3BC050551F37D0A1F /* SettingsSceneOpenDriver.swift */,
+				FB9726F7B2CEECBE4AAAA493 /* SettingsSceneRoot.swift */,
+				FA928898503E6B21ED2597C6 /* SettingsSceneServices.swift */,
+				DCD24BDA9E2E22EF408EDA57 /* SettingsViewModel.swift */,
+				C71602D50CD5375F63932F7A /* SettingsWindowLifecycleObserver.swift */,
+			);
+			name = Settings;
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		526B8E3D89EAA1F5FD9E36A3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */,
+				B4A0BD4BCBBE39E9137D88A5 /* GestureFlowApp.app */,
+				6455AF75FE0F8606532BDFA0 /* GestureFlowCoreTests.xctest */,
+				9D7742FB88F604C4EA4BBCF3 /* GestureFlowAppTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5E41948C14F8D29E3FE2A63E /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				417098F3262B735C581E1651 /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
+		622FC9398C6BB9E44CAF1AB7 /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				D4A56CD14C941898F62D798F /* GestureEngine.swift */,
+			);
+			name = Engine;
+			path = Engine;
+			sourceTree = "<group>";
+		};
+		638BC5D6B830E906C595FB9A /* Recognition */ = {
+			isa = PBXGroup;
+			children = (
+				412955FCC03F9363D03F8D7C /* GestureNormalizer.swift */,
+				15F7F98199CD95F7F6525DE2 /* GestureRecognizer.swift */,
+			);
+			name = Recognition;
+			path = Recognition;
+			sourceTree = "<group>";
+		};
+		84DFBDB7992EED5B98094519 /* GestureFlowAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				EDD6A92421A4EC2763AAB1D0 /* ActionExecutorTests.swift */,
+				1766889B544862BA0E04BF40 /* AppDelegateTests.swift */,
+				C0727874AE8B2F5CFFA1956F /* AppPresentationControllerTests.swift */,
+				5D8F2E209E88A880F6D8497B /* GestureEngineTests.swift */,
+				A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */,
+				88C40365794474B38BB09446 /* GestureOverlayGeometryTests.swift */,
+				2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */,
+				91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */,
+				2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */,
+				CDD7C0628561595B19BE5527 /* SettingsSceneBridgeTests.swift */,
+				37AEA743DB6743F3087CAC78 /* SettingsSceneOpenDriverTests.swift */,
+				85597E92C5F3F66FC294009F /* SettingsViewModelTests.swift */,
+				F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */,
+				AA855F54F132B7FE60EA8D0B /* StatusBarControllerTests.swift */,
+			);
+			name = GestureFlowAppTests;
+			path = GestureFlowAppTests;
+			sourceTree = "<group>";
+		};
+		86F1D6FC6BEA0829F35BE7E3 /* GestureFlowCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				E30ADA683DE3875BB4963869 /* ConfigurationStoreTests.swift */,
+				B045D62F33B0560A3B4D9680 /* ConflictDetectorTests.swift */,
+				4F21DA1D037EC4AB66536A4B /* GestureMatcherTests.swift */,
+				1E37DC1583A40D7D7DB11C88 /* GestureRecognizerTests.swift */,
+				667EFB5B0EDFECBAC20F10F6 /* PublicAPITests.swift */,
+			);
+			name = GestureFlowCoreTests;
+			path = GestureFlowCoreTests;
+			sourceTree = "<group>";
+		};
+		8D43A8D1ACF2075041C8AEFE /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				86F1D6FC6BEA0829F35BE7E3 /* GestureFlowCoreTests */,
+				84DFBDB7992EED5B98094519 /* GestureFlowAppTests */,
+			);
+			name = Tests;
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		91E89580EA2ACA9EF1260337 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				0945A08D9E0F4AA1B5AFCAF8 /* GestureFlowCore */,
+				986526D7334D8CF02C86D791 /* GestureFlowApp */,
+			);
+			name = Sources;
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		978B1235635FDC81CDABE917 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				0F24FE8A3C96369FBA30C018 /* AppDelegate.swift */,
+				ACAFB5E787DBF9E568E41C90 /* AppPresentationController.swift */,
+				35FB763932E2D29FBA279B6E /* GestureFlowApplication.swift */,
+				D4A82DCAFD63B2F2CBCBB5BA /* GestureFlowShellApp.swift */,
+			);
+			name = App;
+			path = App;
+			sourceTree = "<group>";
+		};
+		986526D7334D8CF02C86D791 /* GestureFlowApp */ = {
+			isa = PBXGroup;
+			children = (
+				BF105091485CF50E61FA0C03 /* Actions */,
+				978B1235635FDC81CDABE917 /* App */,
+				622FC9398C6BB9E44CAF1AB7 /* Engine */,
+				160B0E6739690CA2C7FE8DE8 /* EventTap */,
+				BF555A5BB04E96BF9F855B65 /* Menu */,
+				BA53182FC867F177289E336A /* Overlay */,
+				E7DC39358A74FC9BE731A57C /* Permissions */,
+				4F125DD5BD93BD3D440783DE /* Settings */,
+			);
+			name = GestureFlowApp;
+			path = GestureFlowApp;
+			sourceTree = "<group>";
+		};
+		A0B4DAF46654458CB524C483 /* Matching */ = {
+			isa = PBXGroup;
+			children = (
+				29F74C1EC51067D5CBB87483 /* GestureMatcher.swift */,
+			);
+			name = Matching;
+			path = Matching;
+			sourceTree = "<group>";
+		};
+		BA53182FC867F177289E336A /* Overlay */ = {
+			isa = PBXGroup;
+			children = (
+				9495F29F933AF0BB482BDE84 /* GestureOverlayCoordinateConverter.swift */,
+				5EC3A07E6536A9627F20D36E /* GestureOverlayDisplaying.swift */,
+				282FBEE420718AB2FDBF90E5 /* GestureOverlayGeometry.swift */,
+				7837C84C0A6C8D866F7B6797 /* GestureOverlayView.swift */,
+				B2C483FF9C710FF74C05D13B /* GestureOverlayWindow.swift */,
+			);
+			name = Overlay;
+			path = Overlay;
+			sourceTree = "<group>";
+		};
+		BF105091485CF50E61FA0C03 /* Actions */ = {
+			isa = PBXGroup;
+			children = (
+				85DBDB5D095502443340B774 /* ActionExecutor.swift */,
+			);
+			name = Actions;
+			path = Actions;
+			sourceTree = "<group>";
+		};
+		BF555A5BB04E96BF9F855B65 /* Menu */ = {
+			isa = PBXGroup;
+			children = (
+				938F8FF11E6A912D4C3DD619 /* StatusBarController.swift */,
+			);
+			name = Menu;
+			path = Menu;
+			sourceTree = "<group>";
+		};
+		C6B8229398FD3794F1DAD3EE /* Validation */ = {
+			isa = PBXGroup;
+			children = (
+				505E58F99B9CD49F65E9E296 /* ConflictDetector.swift */,
+			);
+			name = Validation;
+			path = Validation;
+			sourceTree = "<group>";
+		};
+		E7DC39358A74FC9BE731A57C /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+				5D316F2D45E3E76F350724CB /* PermissionService.swift */,
+			);
+			name = Permissions;
+			path = Permissions;
+			sourceTree = "<group>";
+		};
+		EFBEEC1F6B38E4C28B3474EB = {
+			isa = PBXGroup;
+			children = (
+				526B8E3D89EAA1F5FD9E36A3 /* Products */,
+				FC6D4E46EA1342E9590DD35B /* Frameworks */,
+				91E89580EA2ACA9EF1260337 /* Sources */,
+				8D43A8D1ACF2075041C8AEFE /* Tests */,
+				3EB1E86B3722916038E9BD9B /* Resources */,
+			);
+			sourceTree = "<group>";
+		};
+		F29C8B3D0DD69806BC14DD9A /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				10B9ADFEA2B1F885E88B3897 /* ConfigurationStore.swift */,
+			);
+			name = Configuration;
+			path = Configuration;
+			sourceTree = "<group>";
+		};
+		FC6D4E46EA1342E9590DD35B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5E41948C14F8D29E3FE2A63E /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		0649340139B1A0192AD6E6CE /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		6986742C80FF70689B98491D /* GestureFlowCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F5D5D8C8FB6793AF40D82360 /* Build configuration list for PBXNativeTarget "GestureFlowCoreTests" */;
+			buildPhases = (
+				7057C05BF3EC625FD5748D1F /* Sources */,
+				A1BD3BC94F12360973AB87D6 /* Frameworks */,
+				115E1DEDE37F86743156D822 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F14F72E56509CA021DAAC844 /* PBXTargetDependency */,
+			);
+			name = GestureFlowCoreTests;
+			productName = GestureFlowCoreTests;
+			productReference = 6455AF75FE0F8606532BDFA0 /* GestureFlowCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		91BD3E75712457D38E30CA1F /* GestureFlowApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2FDC965E9732B46FA0A72E38 /* Build configuration list for PBXNativeTarget "GestureFlowApp" */;
+			buildPhases = (
+				27A001C369611A53113A5187 /* Sources */,
+				4D2F812E50D5008CA1A7D0BE /* Frameworks */,
+				C8F3921AF38378FFC84B6680 /* Resources */,
+				264B770648A9E4847A04A1B5 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D3EFE63E03F655B3F0ED8DCD /* PBXTargetDependency */,
+			);
+			name = GestureFlowApp;
+			productName = GestureFlowApp;
+			productReference = B4A0BD4BCBBE39E9137D88A5 /* GestureFlowApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		93243DC42E2773A7251E3E0C /* GestureFlowCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EBF3E1A65C25B124EB363E5B /* Build configuration list for PBXNativeTarget "GestureFlowCore" */;
+			buildPhases = (
+				0649340139B1A0192AD6E6CE /* Headers */,
+				11883D71E89D767818A5AF69 /* Sources */,
+				5C2F93A04E745879D0CB71DE /* Frameworks */,
+				8E846AC14A52582E79A4923C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GestureFlowCore;
+			productName = GestureFlowCore;
+			productReference = 37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		DDD1BB92708619E6E9C80549 /* GestureFlowAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2767D4681F8BE8D0468B11A7 /* Build configuration list for PBXNativeTarget "GestureFlowAppTests" */;
+			buildPhases = (
+				14EAB0F72AEF9229A108B4DA /* Sources */,
+				73E9621A7CFEE63423E4BD90 /* Frameworks */,
+				2EBB006BF57E788A3032FCA6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6750CCE1A501688963977B34 /* PBXTargetDependency */,
+				5D79E6810D52B55415DA84D2 /* PBXTargetDependency */,
+			);
+			name = GestureFlowAppTests;
+			productName = GestureFlowAppTests;
+			productReference = 9D7742FB88F604C4EA4BBCF3 /* GestureFlowAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C0BDF17E8902E2F062ABD8B2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					6986742C80FF70689B98491D = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					91BD3E75712457D38E30CA1F = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					93243DC42E2773A7251E3E0C = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					DDD1BB92708619E6E9C80549 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = 062DEB4BBE04DA71FB5C20B6 /* Build configuration list for PBXProject "GestureFlow" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = EFBEEC1F6B38E4C28B3474EB;
+			minimizedProjectReferenceProxies = 0;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 526B8E3D89EAA1F5FD9E36A3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				93243DC42E2773A7251E3E0C /* GestureFlowCore */,
+				91BD3E75712457D38E30CA1F /* GestureFlowApp */,
+				6986742C80FF70689B98491D /* GestureFlowCoreTests */,
+				DDD1BB92708619E6E9C80549 /* GestureFlowAppTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		115E1DEDE37F86743156D822 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2EBB006BF57E788A3032FCA6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E846AC14A52582E79A4923C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8F3921AF38378FFC84B6680 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				927227F91FAF29D401862515 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		11883D71E89D767818A5AF69 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E01C3EFA4306629E38218C93 /* ConfigurationStore.swift in Sources */,
+				76067FD22F74F251719460C2 /* GestureMatcher.swift in Sources */,
+				289CBBD1F7DA270AA3CE6185 /* AppConfiguration.swift in Sources */,
+				77BF91E52F878756C638CDFE /* GestureDefinition.swift in Sources */,
+				5821982633F9A2176E526C8F /* GestureNormalizer.swift in Sources */,
+				5DBDDA546B791ECFCB0113EE /* GestureRecognizer.swift in Sources */,
+				76F0034C5AC53BD8FAD94392 /* ConflictDetector.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		14EAB0F72AEF9229A108B4DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07C4F0D93B4001D810FECD08 /* ActionExecutorTests.swift in Sources */,
+				11CCADD5B4C2D2C1226B0CAF /* AppDelegateTests.swift in Sources */,
+				CF857DED13C113DA6789BBD6 /* AppPresentationControllerTests.swift in Sources */,
+				821C412ADFD094D46D9B7AEC /* GestureEngineTests.swift in Sources */,
+				9CE9A72563FDFB4D9FD4A6A5 /* GestureFlowApplicationTests.swift in Sources */,
+				29766FD4E68CB075B475182F /* GestureOverlayGeometryTests.swift in Sources */,
+				EF40A344F544A55448031305 /* GestureOverlayWindowTests.swift in Sources */,
+				FE4E3FFAE7D1EED8C2093C96 /* MouseEventTapTests.swift in Sources */,
+				F5DBFD6162AF15B5B67EC30B /* PermissionServiceTests.swift in Sources */,
+				FC580C899A5782136F3908B9 /* SettingsSceneBridgeTests.swift in Sources */,
+				E66F5ABF562CF6A14DF7670B /* SettingsSceneOpenDriverTests.swift in Sources */,
+				EE0E5FDB1FEE6C84A9031FC2 /* SettingsViewModelTests.swift in Sources */,
+				9C7C002ACABA0A147FF7D1AB /* SettingsWindowLifecycleObserverTests.swift in Sources */,
+				B9A9C60EB34DB710B27CF477 /* StatusBarControllerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		27A001C369611A53113A5187 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E089634989161BF4C76C862 /* ActionExecutor.swift in Sources */,
+				566B836192AB4D380DC8889A /* AppDelegate.swift in Sources */,
+				82610804BD74EAC6CD8A9673 /* AppPresentationController.swift in Sources */,
+				C16751AFEB4EA3E67A4B554B /* GestureFlowApplication.swift in Sources */,
+				F712799818C32382C8A79B43 /* GestureFlowShellApp.swift in Sources */,
+				79C5BC5DDFF0DAE404E1550C /* GestureEngine.swift in Sources */,
+				5AB87EDE8EECB1DCD4846165 /* MouseEventTap.swift in Sources */,
+				F16F621BBAE6A7CAD0B16081 /* StatusBarController.swift in Sources */,
+				47E370BFD227D1CF75FA6B74 /* GestureOverlayCoordinateConverter.swift in Sources */,
+				13429230484BEFE81ECFD0BF /* GestureOverlayDisplaying.swift in Sources */,
+				AE91F24309E20B1AEC917E3E /* GestureOverlayGeometry.swift in Sources */,
+				1CF3A3C6F1444B984D7898F2 /* GestureOverlayView.swift in Sources */,
+				EA7A2A3B417BBAE2DE8B961B /* GestureOverlayWindow.swift in Sources */,
+				95FE636493DE4FE816976B00 /* PermissionService.swift in Sources */,
+				DF2D990A680B05A07B50A753 /* FeedbackSettingsView.swift in Sources */,
+				040EB070BBEECCD11BFF23D8 /* GestureEditorView.swift in Sources */,
+				F8DCC85669E15AA34D36845E /* GestureListView.swift in Sources */,
+				065A532C55C5C65BC9EDDFB5 /* GestureTriggerSettingsView.swift in Sources */,
+				63F4A4419C7F7EDB324EC992 /* MainSettingsView.swift in Sources */,
+				E26F0D9DACDE4A8CDF49BCFA /* PermissionGuideView.swift in Sources */,
+				9CB56860EA8B584DD7B884FD /* SettingsSceneBridge.swift in Sources */,
+				C5552C025D22E9B83EA7B70F /* SettingsSceneOpenDriver.swift in Sources */,
+				B2B0AF3951666CEDBC358483 /* SettingsSceneRoot.swift in Sources */,
+				B7EEBA03710D9BE9EC09E172 /* SettingsSceneServices.swift in Sources */,
+				452CFEF6F00A30E99D33150D /* SettingsViewModel.swift in Sources */,
+				4BC9307F636CA8802D5891BF /* SettingsWindowLifecycleObserver.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7057C05BF3EC625FD5748D1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6ACC8ECC6C22E7D532A7BEE5 /* ConfigurationStoreTests.swift in Sources */,
+				B33826328B3E89A4F426387D /* ConflictDetectorTests.swift in Sources */,
+				D5B044F8BD11A55C74D1548F /* GestureMatcherTests.swift in Sources */,
+				5AA51CECE1D58A4AAC6D6CF0 /* GestureRecognizerTests.swift in Sources */,
+				FBB552B02864BB311DCDC449 /* PublicAPITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5D79E6810D52B55415DA84D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GestureFlowCore;
+			target = 93243DC42E2773A7251E3E0C /* GestureFlowCore */;
+			targetProxy = 2FFAC6F0CB2D34EBF14099A8 /* PBXContainerItemProxy */;
+		};
+		6750CCE1A501688963977B34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GestureFlowApp;
+			target = 91BD3E75712457D38E30CA1F /* GestureFlowApp */;
+			targetProxy = DB423549E1769109AE2661B4 /* PBXContainerItemProxy */;
+		};
+		D3EFE63E03F655B3F0ED8DCD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GestureFlowCore;
+			target = 93243DC42E2773A7251E3E0C /* GestureFlowCore */;
+			targetProxy = B68A463D6006A15DD6BBDDED /* PBXContainerItemProxy */;
+		};
+		F14F72E56509CA021DAAC844 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GestureFlowCore;
+			target = 93243DC42E2773A7251E3E0C /* GestureFlowCore */;
+			targetProxy = 763D747DE690774B88EB3A2E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		00E7DF71B3D8F6BDBE89B255 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.core;
+				PRODUCT_NAME = GestureFlowCore;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.9;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		0B9D4839D7619EB520F4AE31 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		2A95ACE0A951CEC0B4980B83 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.core;
+				PRODUCT_NAME = GestureFlowCore;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.9;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		3A5775F4AE5F6D498E0FC6BB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				EXECUTABLE_NAME = GestureFlowApp;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.app;
+				PRODUCT_MODULE_NAME = GestureFlowApp;
+				PRODUCT_NAME = GestureFlow;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		3F58E5E1818F28F5A379B7B7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				EXECUTABLE_NAME = GestureFlowApp;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.app;
+				PRODUCT_MODULE_NAME = GestureFlowApp;
+				PRODUCT_NAME = GestureFlow;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		40E28AD235CB93F51A0FCC5A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.appTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GestureFlow.app/Contents/MacOS/GestureFlowApp";
+			};
+			name = Debug;
+		};
+		56EAE3EB9300D126488FE635 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.appTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GestureFlow.app/Contents/MacOS/GestureFlowApp";
+			};
+			name = Release;
+		};
+		9782EE5FB3BC32637070C666 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		CFEC3494B5494D4BAA92E496 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.coreTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "";
+			};
+			name = Release;
+		};
+		FC03863EC91BD2C8722E83C4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "";
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gestureflow.coreTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		062DEB4BBE04DA71FB5C20B6 /* Build configuration list for PBXProject "GestureFlow" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9782EE5FB3BC32637070C666 /* Debug */,
+				0B9D4839D7619EB520F4AE31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2767D4681F8BE8D0468B11A7 /* Build configuration list for PBXNativeTarget "GestureFlowAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56EAE3EB9300D126488FE635 /* Release */,
+				40E28AD235CB93F51A0FCC5A /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2FDC965E9732B46FA0A72E38 /* Build configuration list for PBXNativeTarget "GestureFlowApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F58E5E1818F28F5A379B7B7 /* Release */,
+				3A5775F4AE5F6D498E0FC6BB /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EBF3E1A65C25B124EB363E5B /* Build configuration list for PBXNativeTarget "GestureFlowCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A95ACE0A951CEC0B4980B83 /* Release */,
+				00E7DF71B3D8F6BDBE89B255 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F5D5D8C8FB6793AF40D82360 /* Build configuration list for PBXNativeTarget "GestureFlowCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFEC3494B5494D4BAA92E496 /* Release */,
+				FC03863EC91BD2C8722E83C4 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C0BDF17E8902E2F062ABD8B2 /* Project object */;
+}
