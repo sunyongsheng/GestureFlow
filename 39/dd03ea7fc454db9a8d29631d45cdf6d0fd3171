@@ -1,0 +1,57 @@
+.gitignore
+  1424fe30dd47353f 5 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a105459cc476bb9c865a786","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":5}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "39dd03ea7fc454db9a8d29631d45cdf6d0fd3171",
+  "prompts": {
+    "1424fe30dd47353f": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a100b85cc476bb9c8659e1d",
+        "model": "gpt-5.4__dev"
+      },
+      "human_author": "sunyongsheng.aengus <sunyongsheng.aengus@bytedance.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  },
+  "attestation_metadata": {
+    ".gitignore": [
+      {
+        "hash": "1424fe30dd47353f",
+        "line_ranges": [
+          {
+            "Single": 5
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a105459cc476bb9c865a786",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "1424fe30dd47353f": {
+      "tool": "trae",
+      "conversation_id": "6a100b85cc476bb9c8659e1d",
+      "session_id": "6a100b85cc476bb9c8659e1d",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
