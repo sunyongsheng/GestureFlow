@@ -8,9 +8,9 @@ final class StatusBarControllerTests: XCTestCase {
         XCTAssertEqual(
             controller.menuItemTitles,
             [
-                "Start GestureFlow",
-                "Preferences",
-                "Quit"
+                "启动 GestureFlow",
+                "设置…",
+                "退出"
             ]
         )
     }
@@ -23,9 +23,6 @@ final class StatusBarControllerTests: XCTestCase {
                 start: { started = true },
                 stop: { stopped = true },
                 openSettings: {},
-                showCommonGestures: {},
-                showPreferences: {},
-                requestAccessibilityPermission: {},
                 quit: {}
             )
         )
@@ -40,9 +37,8 @@ final class StatusBarControllerTests: XCTestCase {
         XCTAssertTrue(stopped)
     }
 
-    func testPreferencesMenuItemInvokesOpenSettingsAction() {
+    func testSettingsMenuItemInvokesOpenSettingsAction() {
         var openedSettings = false
-        var showedPreferences = false
         var scheduledActions: [() -> Void] = []
         var dismissMenuTrackingCount = 0
         let controller = StatusBarController(
@@ -50,17 +46,18 @@ final class StatusBarControllerTests: XCTestCase {
                 start: {},
                 stop: {},
                 openSettings: { openedSettings = true },
-                showCommonGestures: {},
-                showPreferences: { showedPreferences = true },
-                requestAccessibilityPermission: {},
                 quit: {}
             ),
             scheduleOnMain: { scheduledActions.append($0) },
             dismissMenuTracking: { dismissMenuTrackingCount += 1 }
         )
 
-        let item = NSMenuItem(title: "Preferences", action: #selector(StatusBarController.openSettingsMenuItem(_:)), keyEquivalent: "")
-        item.tag = StatusBarMenuItemTag.preferences.rawValue
+        let item = NSMenuItem(
+            title: "设置…",
+            action: #selector(StatusBarController.openSettingsMenuItem(_:)),
+            keyEquivalent: ""
+        )
+        item.tag = StatusBarMenuItemTag.settings.rawValue
 
         controller.openSettingsMenuItem(item)
 
@@ -76,13 +73,15 @@ final class StatusBarControllerTests: XCTestCase {
         scheduledActions.removeFirst()()
 
         XCTAssertTrue(openedSettings)
-        XCTAssertFalse(showedPreferences)
     }
 
-    func testPreferencesMenuItemDoesNotUseSystemPreferencesSelector() {
+    func testSettingsMenuItemDoesNotUseSystemPreferencesSelector() {
         let controller = StatusBarController(actions: .stub)
 
-        XCTAssertEqual(controller.menuItemAction(tag: .preferences), #selector(StatusBarController.openSettingsMenuItem(_:)))
+        XCTAssertEqual(
+            controller.menuItemAction(tag: .settings),
+            #selector(StatusBarController.openSettingsMenuItem(_:))
+        )
     }
 
     func testQuitMenuItemInvokesQuitAction() {
@@ -92,9 +91,6 @@ final class StatusBarControllerTests: XCTestCase {
                 start: {},
                 stop: {},
                 openSettings: {},
-                showCommonGestures: {},
-                showPreferences: {},
-                requestAccessibilityPermission: {},
                 quit: { quitCount += 1 }
             )
         )
@@ -111,16 +107,16 @@ final class StatusBarControllerTests: XCTestCase {
             state: StatusBarState(isRunning: false, isAccessibilityTrusted: true)
         )
 
-        XCTAssertTrue(controller.menuItemTitles.contains("Start GestureFlow"))
-        XCTAssertFalse(controller.menuItemTitles.contains("Stop GestureFlow"))
+        XCTAssertTrue(controller.menuItemTitles.contains("启动 GestureFlow"))
+        XCTAssertFalse(controller.menuItemTitles.contains("停止 GestureFlow"))
         XCTAssertTrue(controller.isMenuItemEnabled(tag: .gestureFlow))
 
         controller.update(
             state: StatusBarState(isRunning: true, isAccessibilityTrusted: true)
         )
 
-        XCTAssertFalse(controller.menuItemTitles.contains("Start GestureFlow"))
-        XCTAssertTrue(controller.menuItemTitles.contains("Stop GestureFlow"))
+        XCTAssertFalse(controller.menuItemTitles.contains("启动 GestureFlow"))
+        XCTAssertTrue(controller.menuItemTitles.contains("停止 GestureFlow"))
         XCTAssertTrue(controller.isMenuItemEnabled(tag: .gestureFlow))
     }
 }
@@ -131,9 +127,6 @@ private extension StatusBarActions {
             start: {},
             stop: {},
             openSettings: {},
-            showCommonGestures: {},
-            showPreferences: {},
-            requestAccessibilityPermission: {},
             quit: {}
         )
     }

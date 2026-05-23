@@ -111,12 +111,6 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             start: { [weak self] in self?.startGestureFlow() },
             stop: { [weak self] in self?.stopGestureFlow() },
             openSettings: { [weak self] in self?.scheduleOpenSettings() },
-            showCommonGestures: { [weak self] in self?.showPlaceholder(title: "Common Gestures") },
-            showPreferences: { [weak self] in self?.showPlaceholder(title: "Preferences") },
-            requestAccessibilityPermission: { [weak self] in
-                self?.permissionService.promptForAccessibilityPermission()
-                self?.refreshApplicationState(promptIfNeeded: false)
-            },
             quit: { [weak self] in self?.quitApplication() }
         )
     }

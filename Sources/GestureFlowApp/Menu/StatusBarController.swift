@@ -2,11 +2,18 @@ import AppKit
 
 enum StatusBarMenuItemTag: Int {
     case gestureFlow = 1001
-    case openSettings = 1002
-    case commonGestures = 1003
-    case preferences = 1004
-    case accessibilityPermission = 1005
-    case quit = 1006
+    case settings = 1002
+    case quit = 1003
+}
+
+private enum StatusBarMenuCopy {
+    static let startGestureFlow = "启动 GestureFlow"
+    static let stopGestureFlow = "停止 GestureFlow"
+    static let settings = "设置…"
+    static let quit = "退出"
+    static let statusItemTitle = "GF"
+    static let statusItemTitleRunning = "GF 开"
+    static let statusItemToolTip = "GestureFlow 手势控制"
 }
 
 struct StatusBarState: Equatable {
@@ -18,9 +25,6 @@ struct StatusBarActions {
     var start: () -> Void
     var stop: () -> Void
     var openSettings: () -> Void
-    var showCommonGestures: () -> Void
-    var showPreferences: () -> Void
-    var requestAccessibilityPermission: () -> Void
     var quit: () -> Void
 }
 
@@ -76,11 +80,15 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     func update(state: StatusBarState) {
         menuState = state
         if let gestureFlowItem = menu.item(withTag: StatusBarMenuItemTag.gestureFlow.rawValue) {
-            gestureFlowItem.title = state.isRunning ? "Stop GestureFlow" : "Start GestureFlow"
+            gestureFlowItem.title = state.isRunning
+                ? StatusBarMenuCopy.stopGestureFlow
+                : StatusBarMenuCopy.startGestureFlow
             gestureFlowItem.isEnabled = true
         }
-        menu.item(withTag: StatusBarMenuItemTag.accessibilityPermission.rawValue)?.isEnabled = !state.isAccessibilityTrusted
-        statusItem.button?.title = state.isRunning ? "GF On" : "GF"
+        statusItem.button?.title = state.isRunning
+            ? StatusBarMenuCopy.statusItemTitleRunning
+            : StatusBarMenuCopy.statusItemTitle
+        statusItem.button?.toolTip = StatusBarMenuCopy.statusItemToolTip
     }
 
     func isMenuItemEnabled(title: String) -> Bool {
@@ -95,30 +103,34 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         menu.item(withTag: tag.rawValue)?.action
     }
 
-    func simulateDeferredPreferencesDispatchForTesting() {
-        deferMenuAction(tag: .preferences)
+    func simulateDeferredSettingsDispatchForTesting() {
+        deferMenuAction(tag: .settings)
     }
 
     private func configureStatusItem() {
-        statusItem.button?.title = "GF"
-        statusItem.button?.toolTip = "GestureFlow"
+        statusItem.button?.title = StatusBarMenuCopy.statusItemTitle
+        statusItem.button?.toolTip = StatusBarMenuCopy.statusItemToolTip
         statusItem.menu = menu
     }
 
     private func configureMenu() {
         menu.delegate = self
         addItem(
-            title: "Start GestureFlow",
+            title: StatusBarMenuCopy.startGestureFlow,
             action: #selector(toggleGestureFlow),
             tag: StatusBarMenuItemTag.gestureFlow.rawValue
         )
         addItem(
-            title: "Preferences",
+            title: StatusBarMenuCopy.settings,
             action: #selector(openSettingsMenuItem),
-            tag: StatusBarMenuItemTag.preferences.rawValue
+            tag: StatusBarMenuItemTag.settings.rawValue
         )
         menu.addItem(.separator())
-        addItem(title: "Quit", action: #selector(quit), tag: StatusBarMenuItemTag.quit.rawValue)
+        addItem(
+            title: StatusBarMenuCopy.quit,
+            action: #selector(quit),
+            tag: StatusBarMenuItemTag.quit.rawValue
+        )
     }
 
     private func addItem(title: String, action: Selector, tag: Int = 0) {
@@ -136,14 +148,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             } else {
                 actions.start()
             }
-        case .openSettings:
+        case .settings:
             actions.openSettings()
-        case .commonGestures:
-            actions.showCommonGestures()
-        case .preferences:
-            actions.openSettings()
-        case .accessibilityPermission:
-            actions.requestAccessibilityPermission()
         case .quit:
             actions.quit()
         case nil:
@@ -155,14 +161,10 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         handleMenuItem(sender)
     }
 
-    @objc private func openSettings(_ sender: NSMenuItem) {
-        handleMenuItem(sender)
-    }
-
     @objc func openSettingsMenuItem(_ sender: NSMenuItem) {
         sender.image = nil
         dismissMenuTracking()
-        deferMenuAction(tag: .preferences)
+        deferMenuAction(tag: .settings)
     }
 
     func menuDidClose(_ menu: NSMenu) {}
@@ -176,18 +178,6 @@ final class StatusBarController: NSObject, NSMenuDelegate {
                 self.handleMenuItem(item)
             }
         }
-    }
-
-    @objc private func showCommonGestures(_ sender: NSMenuItem) {
-        handleMenuItem(sender)
-    }
-
-    @objc private func showPreferences(_ sender: NSMenuItem) {
-        handleMenuItem(sender)
-    }
-
-    @objc private func requestAccessibilityPermission(_ sender: NSMenuItem) {
-        handleMenuItem(sender)
     }
 
     @objc private func quit(_ sender: NSMenuItem) {

@@ -464,7 +464,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         application.startGestureFlow()
 
-        application.statusBarController?.performMenuItem(title: "Quit")
+        application.statusBarController?.performMenuItem(title: "退出")
 
         XCTAssertEqual(eventTap.stopCount, 1)
         XCTAssertEqual(terminateCallCount, 1)
@@ -585,7 +585,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             scheduleOnMain: { scheduledOpenSettings.append($0) }
         )
 
-        application.statusBarController?.performMenuItem(tag: StatusBarMenuItemTag.preferences)
+        application.statusBarController?.performMenuItem(tag: StatusBarMenuItemTag.settings)
 
         XCTAssertEqual(showSettingsCount, 0)
         XCTAssertEqual(scheduledOpenSettings.count, 1)
@@ -649,7 +649,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
         application.launch()
         application.startGestureFlow()
-        application.statusBarController?.performMenuItem(title: "Quit")
+        application.statusBarController?.performMenuItem(title: "退出")
 
         XCTAssertEqual(eventTap.stopCount, 1)
         XCTAssertEqual(terminateCallCount, 1)
@@ -693,7 +693,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             scheduleOnMain: { scheduledOpenSettings.append($0) }
         )
 
-        application.statusBarController?.performMenuItem(tag: StatusBarMenuItemTag.preferences)
+        application.statusBarController?.performMenuItem(tag: StatusBarMenuItemTag.settings)
         XCTAssertEqual(scheduledOpenSettings.count, 1)
         scheduledOpenSettings.removeFirst()()
         XCTAssertEqual(openSettingsWindowCount, 0)
@@ -730,7 +730,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         application.launch()
         XCTAssertEqual(shownViewModels.count, 1)
 
-        application.statusBarController?.performMenuItem(tag: StatusBarMenuItemTag.preferences)
+        application.statusBarController?.performMenuItem(tag: StatusBarMenuItemTag.settings)
         XCTAssertEqual(scheduledOpenSettings.count, 1)
 
         scheduledOpenSettings.removeFirst()()
