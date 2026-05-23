@@ -1,22 +1,27 @@
+import AppKit
 import Foundation
 import GestureFlowCore
 
 enum GestureEngineFeedback: Equatable {
-    case recognized(trigger: GestureTrigger, signature: GestureSignature)
+    case recognized(trigger: GestureTrigger, name: String)
     case unmatched(trigger: GestureTrigger, signature: GestureSignature)
     case rejected(trigger: GestureTrigger)
     case actionFailed(trigger: GestureTrigger, signature: GestureSignature, message: String)
 }
 
 final class GestureEngine {
-    typealias ConfigurationProvider = () -> AppConfiguration
+    typealias AppConfigurationProvider = () -> AppConfiguration
+    typealias GestureConfigurationProvider = () -> GestureConfiguration
+    typealias ForegroundApplicationBundleIdentifierProvider = () -> String?
     typealias FeedbackHandler = (GestureEngineFeedback) -> Void
 
-    private let configurationProvider: ConfigurationProvider
+    private let appConfigurationProvider: AppConfigurationProvider
+    private let gestureConfigurationProvider: GestureConfigurationProvider
+    private let foregroundApplicationBundleIdentifierProvider: ForegroundApplicationBundleIdentifierProvider
     private let permissionService: PermissionService
     private let eventTap: MouseEventTapControlling
     private let recognizer: GestureRecognizer
-    private let matcher: GestureMatcher
+    private let matcher: ScopedGestureMatcher
     private let actionExecutor: ActionExecuting
     private let feedbackHandler: FeedbackHandler
     private let overlay: GestureOverlayDisplaying
@@ -25,18 +30,24 @@ final class GestureEngine {
     private(set) var isRunning = false
 
     init(
-        configurationProvider: @escaping ConfigurationProvider,
+        appConfigurationProvider: @escaping AppConfigurationProvider,
+        gestureConfigurationProvider: @escaping GestureConfigurationProvider,
+        foregroundApplicationBundleIdentifierProvider: @escaping ForegroundApplicationBundleIdentifierProvider = {
+            NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        },
         permissionService: PermissionService = PermissionService(),
         eventTap: MouseEventTapControlling = MouseEventTap(),
         recognizer: GestureRecognizer = GestureRecognizer(),
-        matcher: GestureMatcher = GestureMatcher(),
+        matcher: ScopedGestureMatcher = ScopedGestureMatcher(),
         overlay: GestureOverlayDisplaying = NoopGestureOverlay(),
         actionExecutor: ActionExecuting = ActionExecutor(),
         feedbackHandler: @escaping FeedbackHandler = { feedback in
             print("GestureFlow feedback: \(feedback)")
         }
     ) {
-        self.configurationProvider = configurationProvider
+        self.appConfigurationProvider = appConfigurationProvider
+        self.gestureConfigurationProvider = gestureConfigurationProvider
+        self.foregroundApplicationBundleIdentifierProvider = foregroundApplicationBundleIdentifierProvider
         self.permissionService = permissionService
         self.eventTap = eventTap
         self.recognizer = recognizer
@@ -91,7 +102,7 @@ final class GestureEngine {
     }
 
     private func handleGestureBegan(at point: GesturePoint) {
-        let appearance = GestureTrailAppearance(feedback: configurationProvider().feedback)
+        let appearance = GestureTrailAppearance(feedback: appConfigurationProvider().feedback)
         overlay.beginGesture(at: displayPoint(for: point), appearance: appearance)
     }
 
@@ -105,19 +116,31 @@ final class GestureEngine {
             return
         }
 
-        let configuration = configurationProvider()
         guard let gesture = matcher.match(
             trigger: trigger,
             signature: signature,
-            in: configuration.gestures
+            foregroundBundleIdentifier: foregroundApplicationBundleIdentifierProvider(),
+            in: gestureConfigurationProvider().gestures
         ) else {
             overlay.completeGesture(with: .unmatched, at: completionPoint)
             feedbackHandler(.unmatched(trigger: trigger, signature: signature))
             return
         }
 
+        guard gesture.shortcut.isRecorded else {
+            overlay.completeGesture(with: .actionFailed, at: completionPoint)
+            feedbackHandler(
+                .actionFailed(
+                    trigger: trigger,
+                    signature: signature,
+                    message: "Shortcut is not configured"
+                )
+            )
+            return
+        }
+
         do {
-            try actionExecutor.execute(gesture.action)
+            try actionExecutor.execute(.keyboardShortcut(gesture.shortcut))
         } catch {
             overlay.completeGesture(with: .actionFailed, at: completionPoint)
             feedbackHandler(
@@ -130,8 +153,8 @@ final class GestureEngine {
             return
         }
 
-        overlay.completeGesture(with: .recognized, at: completionPoint)
-        feedbackHandler(.recognized(trigger: trigger, signature: signature))
+        overlay.completeGesture(with: .recognized(name: gesture.name), at: completionPoint)
+        feedbackHandler(.recognized(trigger: trigger, name: gesture.name))
     }
 
     private func displayPoint(for point: GesturePoint) -> GesturePoint {
@@ -139,7 +162,7 @@ final class GestureEngine {
     }
 
     private func showTimeoutMarker(at point: GesturePoint) {
-        let appearance = GestureTrailAppearance(feedback: configurationProvider().feedback)
+        let appearance = GestureTrailAppearance(feedback: appConfigurationProvider().feedback)
         isTimeoutMarkerVisible = true
         overlay.showMarker(
             GestureOverlayMarker(

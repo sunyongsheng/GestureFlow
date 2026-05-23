@@ -7,14 +7,6 @@ final class ConfigurationStoreTests: XCTestCase {
         let store = ConfigurationStore(fileURL: fileURL)
         let configuration = AppConfiguration(
             isEnabled: true,
-            gestures: [
-                GestureDefinition(
-                    name: "Lock",
-                    trigger: .middleMouse,
-                    signature: GestureSignature(tokens: [.up]),
-                    action: .systemCommand(.lockScreen)
-                )
-            ],
             feedback: FeedbackConfiguration(
                 trailColorHex: "#FF0000",
                 trailWidth: 8,
@@ -57,7 +49,6 @@ final class ConfigurationStoreTests: XCTestCase {
             "trailOpacity" : 0.8,
             "trailWidth" : 4
           },
-          "gestures" : [ ],
           "isEnabled" : true
         }
         """

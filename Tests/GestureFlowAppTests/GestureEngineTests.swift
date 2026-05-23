@@ -6,8 +6,7 @@ final class GestureEngineTests: XCTestCase {
     func testStartWithoutAccessibilityPermissionPromptsAndDoesNotStartTap() {
         var promptCount = 0
         let tap = SpyMouseEventTapController()
-        let engine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+        let engine = makeEngine(
             permissionService: PermissionService(
                 trustCheck: { false },
                 permissionPrompt: { promptCount += 1 }
@@ -24,11 +23,7 @@ final class GestureEngineTests: XCTestCase {
 
     func testStartWithAccessibilityPermissionStartsTapAndStopStopsTap() {
         let tap = SpyMouseEventTapController()
-        let engine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
-            eventTap: tap
-        )
+        let engine = makeEngine(eventTap: tap)
 
         engine.start()
         engine.stop()
@@ -39,26 +34,22 @@ final class GestureEngineTests: XCTestCase {
     }
 
     func testCompletedGestureRecognizesMatchesAndExecutesAction() {
-        let expectedAction = GestureAction.keyboardShortcut(
-            KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
-        )
-        let configuration = AppConfiguration(
-            isEnabled: true,
+        let expectedShortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
             gestures: [
                 GestureDefinition(
                     name: "Back",
                     trigger: .rightMouse,
                     signature: GestureSignature(tokens: [.left]),
-                    action: expectedAction
+                    shortcut: expectedShortcut
                 )
             ]
         )
         let tap = SpyMouseEventTapController()
         let actionExecutor = SpyActionExecutor()
         var feedback: [GestureEngineFeedback] = []
-        let engine = GestureEngine(
-            configurationProvider: { configuration },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
             eventTap: tap,
             actionExecutor: actionExecutor,
             feedbackHandler: { feedback.append($0) }
@@ -74,17 +65,67 @@ final class GestureEngineTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(actionExecutor.executedActions, [expectedAction])
-        XCTAssertEqual(feedback, [.recognized(trigger: .rightMouse, signature: GestureSignature(tokens: [.left]))])
+        XCTAssertEqual(
+            actionExecutor.executedActions,
+            [.keyboardShortcut(expectedShortcut)]
+        )
+        XCTAssertEqual(feedback, [.recognized(trigger: .rightMouse, name: "Back")])
+    }
+
+    func testAppSpecificGestureBeatsGlobalGesture() {
+        let globalShortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let safariShortcut = KeyboardShortcutAction(keyCode: 124, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Global",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: globalShortcut
+                ),
+                GestureDefinition(
+                    targetBundleIdentifier: "com.apple.Safari",
+                    name: "Safari Back",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: safariShortcut
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let actionExecutor = SpyActionExecutor()
+        var feedback: [GestureEngineFeedback] = []
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
+            foregroundBundleIdentifier: { "com.apple.Safari" },
+            eventTap: tap,
+            actionExecutor: actionExecutor,
+            feedbackHandler: { feedback.append($0) }
+        )
+
+        engine.start()
+        tap.onGestureEnded?(
+            .rightMouse,
+            [
+                GesturePoint(x: 100, y: 0),
+                GesturePoint(x: 60, y: 0),
+                GesturePoint(x: 20, y: 0)
+            ]
+        )
+
+        XCTAssertEqual(
+            actionExecutor.executedActions,
+            [.keyboardShortcut(safariShortcut)]
+        )
+        XCTAssertEqual(feedback, [.recognized(trigger: .rightMouse, name: "Safari Back")])
     }
 
     func testCompletedGestureReportsUnmatchedSignatureWithoutExecutingAction() {
         let tap = SpyMouseEventTapController()
         let actionExecutor = SpyActionExecutor()
         var feedback: [GestureEngineFeedback] = []
-        let engine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true, gestures: []) },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        let engine = makeEngine(
+            gestureConfiguration: GestureConfiguration(gestures: []),
             eventTap: tap,
             actionExecutor: actionExecutor,
             feedbackHandler: { feedback.append($0) }
@@ -104,29 +145,25 @@ final class GestureEngineTests: XCTestCase {
     }
 
     func testCompletedGestureReportsActionFailureWithoutRecognizedFeedback() {
-        let expectedAction = GestureAction.openURL(
-            OpenURLAction(url: URL(string: "https://example.com")!)
-        )
-        let configuration = AppConfiguration(
-            isEnabled: true,
+        let shortcut = KeyboardShortcutAction(keyCode: 13, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
             gestures: [
                 GestureDefinition(
-                    name: "Docs",
+                    name: "Close",
                     trigger: .rightMouse,
                     signature: GestureSignature(tokens: [.right]),
-                    action: expectedAction
+                    shortcut: shortcut
                 )
             ]
         )
         let tap = SpyMouseEventTapController()
         let overlay = SpyGestureOverlay()
         let actionExecutor = SpyActionExecutor(
-            error: ActionExecutionError.urlOpenFailed(URL(string: "https://example.com")!)
+            error: ActionExecutionError.keyboardEventCreationFailed(keyCode: 13, isKeyDown: true)
         )
         var feedback: [GestureEngineFeedback] = []
-        let engine = GestureEngine(
-            configurationProvider: { configuration },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
             eventTap: tap,
             overlay: overlay,
             actionExecutor: actionExecutor,
@@ -142,7 +179,7 @@ final class GestureEngineTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(actionExecutor.executedActions, [expectedAction])
+        XCTAssertEqual(actionExecutor.executedActions, [.keyboardShortcut(shortcut)])
         XCTAssertEqual(overlay.events, [.completed(.actionFailed, GesturePoint(x: 50, y: 0))])
         XCTAssertEqual(
             feedback,
@@ -150,7 +187,7 @@ final class GestureEngineTests: XCTestCase {
                 .actionFailed(
                     trigger: .rightMouse,
                     signature: GestureSignature(tokens: [.right]),
-                    message: "Failed to open URL: https://example.com"
+                    message: "Failed to create key down event for key code 13"
                 )
             ]
         )
@@ -162,24 +199,23 @@ final class GestureEngineTests: XCTestCase {
             trailWidth: 7,
             trailOpacity: 0.4
         )
-        let configuration = AppConfiguration(
-            isEnabled: true,
+        let shortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
             gestures: [
                 GestureDefinition(
                     name: "Back",
                     trigger: .rightMouse,
                     signature: GestureSignature(tokens: [.left]),
-                    action: .systemCommand(.showDesktop)
+                    shortcut: shortcut
                 )
-            ],
-            feedback: feedbackConfiguration
+            ]
         )
         let tap = SpyMouseEventTapController()
         let overlay = SpyGestureOverlay()
         let actionExecutor = SpyActionExecutor()
-        let engine = GestureEngine(
-            configurationProvider: { configuration },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        let engine = makeEngine(
+            appConfiguration: AppConfiguration(isEnabled: true, feedback: feedbackConfiguration),
+            gestureConfiguration: gestureConfiguration,
             eventTap: tap,
             overlay: overlay,
             actionExecutor: actionExecutor,
@@ -206,30 +242,29 @@ final class GestureEngineTests: XCTestCase {
                     GestureTrailAppearance(feedback: feedbackConfiguration)
                 ),
                 .moved(GesturePoint(x: 80, y: 100)),
-                .completed(.recognized, GesturePoint(x: 20, y: 100))
+                .completed(.recognized(name: "Back"), GesturePoint(x: 20, y: 100))
             ]
         )
-        XCTAssertEqual(actionExecutor.executedActions, [.systemCommand(.showDesktop)])
+        XCTAssertEqual(actionExecutor.executedActions, [.keyboardShortcut(shortcut)])
     }
 
     func testCompletionFeedbackUsesRawReleasePointNearScreenBoundary() {
-        let configuration = AppConfiguration(
-            isEnabled: true,
+        let shortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
             gestures: [
                 GestureDefinition(
                     name: "Back",
                     trigger: .rightMouse,
                     signature: GestureSignature(tokens: [.left]),
-                    action: .systemCommand(.showDesktop)
+                    shortcut: shortcut
                 )
             ]
         )
         let tap = SpyMouseEventTapController()
         let overlay = SpyGestureOverlay()
         let actionExecutor = SpyActionExecutor()
-        let engine = GestureEngine(
-            configurationProvider: { configuration },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
             eventTap: tap,
             overlay: overlay,
             actionExecutor: actionExecutor,
@@ -249,19 +284,17 @@ final class GestureEngineTests: XCTestCase {
         XCTAssertEqual(
             overlay.events,
             [
-                .completed(.recognized, GesturePoint(x: 1442, y: 80))
+                .completed(.recognized(name: "Back"), GesturePoint(x: 1442, y: 80))
             ]
         )
-        XCTAssertEqual(actionExecutor.executedActions, [.systemCommand(.showDesktop)])
+        XCTAssertEqual(actionExecutor.executedActions, [.keyboardShortcut(shortcut)])
     }
 
     func testCancelledGestureHidesOverlayWithoutFeedback() {
         let tap = SpyMouseEventTapController()
         let overlay = SpyGestureOverlay()
         var feedback: [GestureEngineFeedback] = []
-        let engine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        let engine = makeEngine(
             eventTap: tap,
             overlay: overlay,
             feedbackHandler: { feedback.append($0) }
@@ -292,11 +325,8 @@ final class GestureEngineTests: XCTestCase {
             trailWidth: 5,
             trailOpacity: 0.5
         )
-        let engine = GestureEngine(
-            configurationProvider: {
-                AppConfiguration(isEnabled: true, feedback: feedbackConfiguration)
-            },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        let engine = makeEngine(
+            appConfiguration: AppConfiguration(isEnabled: true, feedback: feedbackConfiguration),
             eventTap: tap,
             overlay: overlay,
             feedbackHandler: { _ in }
@@ -321,12 +351,7 @@ final class GestureEngineTests: XCTestCase {
     func testStopCancelsOverlayForActiveGesture() {
         let tap = SpyMouseEventTapController()
         let overlay = SpyGestureOverlay()
-        let engine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
-            permissionService: PermissionService(trustCheck: { true }, permissionPrompt: {}),
-            eventTap: tap,
-            overlay: overlay
-        )
+        let engine = makeEngine(eventTap: tap, overlay: overlay)
 
         engine.start()
         tap.onGestureBegan?(.rightMouse, GesturePoint(x: 20, y: 30))
@@ -344,6 +369,28 @@ final class GestureEngineTests: XCTestCase {
         )
         XCTAssertFalse(engine.isRunning)
         XCTAssertEqual(tap.stopCount, 1)
+    }
+
+    private func makeEngine(
+        appConfiguration: AppConfiguration = AppConfiguration(isEnabled: true),
+        gestureConfiguration: GestureConfiguration = GestureConfiguration.defaultTemplate,
+        foregroundBundleIdentifier: @escaping () -> String? = { nil },
+        permissionService: PermissionService = PermissionService(trustCheck: { true }, permissionPrompt: {}),
+        eventTap: SpyMouseEventTapController = SpyMouseEventTapController(),
+        overlay: GestureOverlayDisplaying = NoopGestureOverlay(),
+        actionExecutor: ActionExecuting = SpyActionExecutor(),
+        feedbackHandler: @escaping (GestureEngineFeedback) -> Void = { _ in }
+    ) -> GestureEngine {
+        GestureEngine(
+            appConfigurationProvider: { appConfiguration },
+            gestureConfigurationProvider: { gestureConfiguration },
+            foregroundApplicationBundleIdentifierProvider: foregroundBundleIdentifier,
+            permissionService: permissionService,
+            eventTap: eventTap,
+            overlay: overlay,
+            actionExecutor: actionExecutor,
+            feedbackHandler: feedbackHandler
+        )
     }
 }
 

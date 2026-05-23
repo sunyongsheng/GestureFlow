@@ -23,7 +23,7 @@ struct GestureOverlayMarker: Equatable {
 }
 
 enum GestureOverlayCompletion: Equatable {
-    case recognized
+    case recognized(name: String)
     case unmatched
     case rejected
     case actionFailed

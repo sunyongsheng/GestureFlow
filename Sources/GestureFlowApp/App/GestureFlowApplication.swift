@@ -11,8 +11,22 @@ enum SettingsPresentationSource {
 }
 
 final class GestureFlowApplication: GestureFlowApplicationCoordinating {
+    private final class RuntimeState {
+        var appConfiguration: AppConfiguration
+        let gestureConfigurationService: GestureConfigurationService
+
+        init(
+            appConfiguration: AppConfiguration,
+            gestureConfigurationService: GestureConfigurationService
+        ) {
+            self.appConfiguration = appConfiguration
+            self.gestureConfigurationService = gestureConfigurationService
+        }
+    }
+
     private let application: NSApplication
     private let configurationStore: ConfigurationStore
+    private let runtimeState: RuntimeState
     private let permissionService: PermissionService
     private let gestureEngine: GestureEngine
     private let notificationCenter: NotificationCenter
@@ -35,8 +49,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     init(
         application: NSApplication = .shared,
         configurationStore: ConfigurationStore = ConfigurationStore(),
+        gestureConfigurationService: GestureConfigurationService = GestureConfigurationService(),
         permissionService: PermissionService = PermissionService(),
-        gestureEngine: GestureEngine? = nil,
+        injectedGestureEngine: GestureEngine? = nil,
         notificationCenter: NotificationCenter = .default,
         activationNotificationName: Notification.Name = NSApplication.didBecomeActiveNotification,
         terminationNotificationName: Notification.Name = NSApplication.willTerminateNotification,
@@ -54,12 +69,20 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.showSettingsHandler = showSettings
         self.scheduleOnMain = scheduleOnMain
         self.initialLoadResult = configurationStore.loadRecovering()
-        self.configuration = initialLoadResult.configuration
-        self.gestureEngine = gestureEngine ?? GestureEngine(
-            configurationProvider: { configurationStore.loadRecovering().configuration },
+        self.runtimeState = RuntimeState(
+            appConfiguration: initialLoadResult.configuration,
+            gestureConfigurationService: gestureConfigurationService
+        )
+        self.configuration = runtimeState.appConfiguration
+        runtimeState.gestureConfigurationService.load()
+
+        let runtimeState = self.runtimeState
+        self.gestureEngine = injectedGestureEngine ?? GestureEngine(
+            appConfigurationProvider: { runtimeState.appConfiguration },
+            gestureConfigurationProvider: { runtimeState.gestureConfigurationService.configuration },
             permissionService: permissionService,
             eventTap: MouseEventTap(
-                triggerConfigurationProvider: { configurationStore.loadRecovering().configuration.trigger }
+                triggerConfigurationProvider: { runtimeState.appConfiguration.trigger }
             ),
             overlay: GestureOverlayWindow()
         )
@@ -133,10 +156,14 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
                 didRecoverFromCorruption: initialLoadResult.didRecoverFromCorruption,
                 backupURL: initialLoadResult.backupURL
             ),
+            gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
             saveConfiguration: { [weak self] newConfiguration in
                 try self?.applySettingsConfiguration(newConfiguration)
+            },
+            saveGestureConfiguration: { [weak self] newGestureConfiguration in
+                try self?.applyGestureConfiguration(newGestureConfiguration)
             },
             requestAccessibilityPermission: { [weak self] in
                 self?.permissionService.promptForAccessibilityPermission()
@@ -161,10 +188,24 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
     private func applySettingsConfiguration(_ newConfiguration: AppConfiguration) throws {
         configuration = newConfiguration
+        runtimeState.appConfiguration = newConfiguration
         try configurationStore.save(configuration)
         statusBarController?.update(state: currentStatusBarState())
         settingsViewModel?.updateRuntimeStatus(
             configuration: configuration,
+            gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
+            isRunning: gestureEngine.isRunning,
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+        )
+    }
+
+    private func applyGestureConfiguration(_ newGestureConfiguration: GestureConfiguration) throws {
+        runtimeState.gestureConfigurationService.configuration = newGestureConfiguration
+        try runtimeState.gestureConfigurationService.save()
+        settingsViewModel?.syncGestureConfiguration(runtimeState.gestureConfigurationService.configuration)
+        settingsViewModel?.updateRuntimeStatus(
+            configuration: configuration,
+            gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted
         )
@@ -172,11 +213,13 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
     private func setGestureFlowEnabled(_ isEnabled: Bool) {
         configuration.isEnabled = isEnabled
+        runtimeState.appConfiguration.isEnabled = isEnabled
         do {
             try configurationStore.save(configuration)
             statusBarController?.update(state: currentStatusBarState())
             settingsViewModel?.updateRuntimeStatus(
                 configuration: configuration,
+                gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
                 isRunning: gestureEngine.isRunning,
                 isAccessibilityTrusted: permissionService.isAccessibilityTrusted
             )
@@ -234,6 +277,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         statusBarController?.update(state: currentStatusBarState())
         settingsViewModel?.updateRuntimeStatus(
             configuration: configuration,
+            gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted
         )
@@ -259,6 +303,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         settingsViewModel = viewModel
         viewModel.updateRuntimeStatus(
             configuration: configuration,
+            gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted
         )
@@ -278,5 +323,4 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         alert.informativeText = message
         alert.runModal()
     }
-
 }

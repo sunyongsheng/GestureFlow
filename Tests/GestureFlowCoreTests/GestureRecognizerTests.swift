@@ -51,12 +51,10 @@ final class GestureRecognizerTests: XCTestCase {
         ])
     }
 
-    func testDefaultConfigurationIncludesBackAndForwardGestures() {
-        let configuration = AppConfiguration()
+    func testDefaultGestureTemplateIncludesCloseWindowGesture() {
+        let configuration = GestureConfiguration.defaultTemplate
 
-        XCTAssertFalse(configuration.isEnabled)
-        XCTAssertEqual(configuration.feedback, .default)
-        XCTAssertEqual(configuration.gestures.map(\.name), ["Back", "Forward"])
-        XCTAssertEqual(configuration.gestures.map(\.signature.tokens), [[.left], [.right]])
+        XCTAssertEqual(configuration.gestures.map(\.name), ["关闭窗口"])
+        XCTAssertEqual(configuration.gestures.map(\.signature.tokens), [[.down, .right]])
     }
 }

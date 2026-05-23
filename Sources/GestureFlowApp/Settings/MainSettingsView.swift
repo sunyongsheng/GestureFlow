@@ -61,10 +61,10 @@ struct MainSettingsView: View {
         case .appearance:
             AppearanceSettingsView(viewModel: viewModel)
         case .gestures:
-            SettingsPage {
-                GestureListView(viewModel: viewModel)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            GestureSettingsView(viewModel: viewModel)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 20)
         case .about:
             AboutSettingsView()
         }

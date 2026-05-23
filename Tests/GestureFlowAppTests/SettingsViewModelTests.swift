@@ -5,16 +5,12 @@ import GestureFlowCore
 final class SettingsViewModelTests: XCTestCase {
     func testRecoveredConfigurationExposesRecoveryNoticeAndBackupPath() {
         let backupURL = URL(fileURLWithPath: "/tmp/config.json.corrupt-123")
-        let viewModel = SettingsViewModel(
+        let viewModel = makeViewModel(
             loadResult: ConfigurationLoadResult(
                 configuration: AppConfiguration(),
                 didRecoverFromCorruption: true,
                 backupURL: backupURL
-            ),
-            isRunning: false,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { _ in },
-            requestAccessibilityPermission: {}
+            )
         )
 
         XCTAssertEqual(
@@ -25,43 +21,28 @@ final class SettingsViewModelTests: XCTestCase {
     }
 
     func testHealthyConfigurationDoesNotExposeRecoveryNotice() {
-        let viewModel = SettingsViewModel(
-            loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(),
-                didRecoverFromCorruption: false,
-                backupURL: nil
-            ),
-            isRunning: false,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { _ in },
-            requestAccessibilityPermission: {}
-        )
+        let viewModel = makeViewModel()
 
         XCTAssertNil(viewModel.recoveryNoticeMessage)
         XCTAssertNil(viewModel.recoveryBackupPath)
     }
 
-    func testUpdatingGesturePersistsConfiguration() throws {
-        let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+    func testUpdatingGesturePersistsGestureConfiguration() throws {
+        let directory = try makeTemporaryDirectory()
+        let gestureStore = GestureConfigurationStore(
+            fileURL: directory.appendingPathComponent("gestures.json")
+        )
         let gesture = GestureDefinition(
             id: UUID(uuidString: "4A3BB501-27B8-4A3B-9EE4-344D823F3515")!,
             name: "Back",
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.left]),
-            action: .keyboardShortcut(KeyboardShortcutAction(keyCode: 123, modifiers: [.command]))
+            shortcut: KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
         )
-        try store.save(AppConfiguration(gestures: [gesture]))
-        let viewModel = SettingsViewModel(
-            loadResult: ConfigurationLoadResult(
-                configuration: try store.load(),
-                didRecoverFromCorruption: false,
-                backupURL: nil
-            ),
-            isRunning: false,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { try store.save($0) },
-            requestAccessibilityPermission: {}
+        try gestureStore.save(GestureConfiguration(gestures: [gesture]))
+        let viewModel = makeViewModel(
+            gestureConfiguration: try gestureStore.load(),
+            saveGestureConfiguration: { try gestureStore.save($0) }
         )
 
         viewModel.updateGesture(id: gesture.id) { updatedGesture in
@@ -69,31 +50,71 @@ final class SettingsViewModelTests: XCTestCase {
             updatedGesture.isEnabled = false
             updatedGesture.trigger = .middleMouse
             updatedGesture.signature = GestureSignature(tokens: [.down, .right])
-            updatedGesture.action = .systemCommand(.lockScreen)
+            updatedGesture.shortcut = KeyboardShortcutAction(keyCode: 13, modifiers: [.shift, .command])
         }
 
-        let persistedGesture = try XCTUnwrap(try store.load().gestures.first)
+        let persistedGesture = try XCTUnwrap(try gestureStore.load().gestures.first)
         XCTAssertEqual(persistedGesture.name, "Lock")
         XCTAssertFalse(persistedGesture.isEnabled)
         XCTAssertEqual(persistedGesture.trigger, .middleMouse)
         XCTAssertEqual(persistedGesture.signature, GestureSignature(tokens: [.down, .right]))
-        XCTAssertEqual(persistedGesture.action, .systemCommand(.lockScreen))
+        XCTAssertEqual(
+            persistedGesture.shortcut,
+            KeyboardShortcutAction(keyCode: 13, modifiers: [.shift, .command])
+        )
+    }
+
+    func testCancellingAddApplicationPanelDoesNothing() {
+        let viewModel = makeViewModel(openApplicationPanel: { nil })
+
+        viewModel.addApplicationFromPanel()
+
+        XCTAssertTrue(viewModel.registeredApplicationBundleIdentifiers.isEmpty)
+        XCTAssertNil(viewModel.gestureSaveErrorMessage)
+    }
+
+    func testRemoveApplicationDeletesScopedGestures() throws {
+        let directory = try makeTemporaryDirectory()
+        let gestureStore = GestureConfigurationStore(
+            fileURL: directory.appendingPathComponent("gestures.json")
+        )
+        var configuration = GestureConfiguration.defaultTemplate
+        configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
+        configuration.gestures.append(
+            GestureDefinition(
+                targetBundleIdentifier: "com.apple.Safari",
+                name: "Safari Close",
+                trigger: .rightMouse,
+                signature: GestureSignature(tokens: [.left]),
+                shortcut: KeyboardShortcutAction(keyCode: 13, modifiers: [.command])
+            )
+        )
+        try gestureStore.save(configuration)
+
+        let viewModel = makeViewModel(
+            gestureConfiguration: try gestureStore.load(),
+            saveGestureConfiguration: { try gestureStore.save($0) }
+        )
+        viewModel.removeApplication(bundleIdentifier: "com.apple.Safari")
+
+        let loaded = try gestureStore.load()
+        XCTAssertTrue(loaded.applicationBundleIdentifiers.isEmpty)
+        XCTAssertEqual(loaded.gestures.count, 1)
+        XCTAssertNil(loaded.gestures[0].targetBundleIdentifier)
+        XCTAssertEqual(viewModel.selectedApplicationScope, .global)
     }
 
     func testUpdatingFeedbackPersistsConfiguration() throws {
         let fileURL = try makeTemporaryConfigURL()
         let store = ConfigurationStore(fileURL: fileURL)
         try store.save(AppConfiguration())
-        let viewModel = SettingsViewModel(
+        let viewModel = makeViewModel(
             loadResult: ConfigurationLoadResult(
                 configuration: try store.load(),
                 didRecoverFromCorruption: false,
                 backupURL: nil
             ),
-            isRunning: true,
-            isAccessibilityTrusted: false,
-            saveConfiguration: { try store.save($0) },
-            requestAccessibilityPermission: {}
+            saveConfiguration: { try store.save($0) }
         )
 
         viewModel.updateFeedback { feedback in
@@ -112,16 +133,13 @@ final class SettingsViewModelTests: XCTestCase {
         let fileURL = try makeTemporaryConfigURL()
         let store = ConfigurationStore(fileURL: fileURL)
         try store.save(AppConfiguration())
-        let viewModel = SettingsViewModel(
+        let viewModel = makeViewModel(
             loadResult: ConfigurationLoadResult(
                 configuration: try store.load(),
                 didRecoverFromCorruption: false,
                 backupURL: nil
             ),
-            isRunning: true,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { try store.save($0) },
-            requestAccessibilityPermission: {}
+            saveConfiguration: { try store.save($0) }
         )
 
         viewModel.updateTriggerConfiguration { trigger in
@@ -137,17 +155,7 @@ final class SettingsViewModelTests: XCTestCase {
     }
 
     func testUpdateRuntimeStatusRefreshesPermissionAndRunningState() {
-        let viewModel = SettingsViewModel(
-            loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(),
-                didRecoverFromCorruption: false,
-                backupURL: nil
-            ),
-            isRunning: false,
-            isAccessibilityTrusted: false,
-            saveConfiguration: { _ in },
-            requestAccessibilityPermission: {}
-        )
+        let viewModel = makeViewModel()
 
         let updatedConfiguration = AppConfiguration(isEnabled: true)
         viewModel.updateRuntimeStatus(
@@ -164,16 +172,7 @@ final class SettingsViewModelTests: XCTestCase {
     func testSetGestureRecognitionEnabledTrueInvokesStartAction() {
         var startCount = 0
         var stopCount = 0
-        let viewModel = SettingsViewModel(
-            loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(),
-                didRecoverFromCorruption: false,
-                backupURL: nil
-            ),
-            isRunning: false,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { _ in },
-            requestAccessibilityPermission: {},
+        let viewModel = makeViewModel(
             startGestureFlow: { startCount += 1 },
             stopGestureFlow: { stopCount += 1 }
         )
@@ -187,16 +186,8 @@ final class SettingsViewModelTests: XCTestCase {
     func testSetGestureRecognitionEnabledFalseInvokesStopAction() {
         var startCount = 0
         var stopCount = 0
-        let viewModel = SettingsViewModel(
-            loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(),
-                didRecoverFromCorruption: false,
-                backupURL: nil
-            ),
+        let viewModel = makeViewModel(
             isRunning: true,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { _ in },
-            requestAccessibilityPermission: {},
             startGestureFlow: { startCount += 1 },
             stopGestureFlow: { stopCount += 1 }
         )
@@ -209,18 +200,7 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testQuitApplicationInvokesInjectedAction() {
         var quitCount = 0
-        let viewModel = SettingsViewModel(
-            loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(),
-                didRecoverFromCorruption: false,
-                backupURL: nil
-            ),
-            isRunning: false,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { _ in },
-            requestAccessibilityPermission: {},
-            quitApplication: { quitCount += 1 }
-        )
+        let viewModel = makeViewModel(quitApplication: { quitCount += 1 })
 
         viewModel.quitApplication()
 
@@ -229,31 +209,58 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testShowLaunchAtLoginPlaceholderInvokesInjectedAction() {
         var placeholderCount = 0
-        let viewModel = SettingsViewModel(
-            loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(),
-                didRecoverFromCorruption: false,
-                backupURL: nil
-            ),
-            isRunning: false,
-            isAccessibilityTrusted: true,
-            saveConfiguration: { _ in },
-            requestAccessibilityPermission: {},
-            showLaunchAtLoginPlaceholder: { placeholderCount += 1 }
-        )
+        let viewModel = makeViewModel(showLaunchAtLoginPlaceholder: { placeholderCount += 1 })
 
         viewModel.showLaunchAtLoginPlaceholder()
 
         XCTAssertEqual(placeholderCount, 1)
     }
 
+    private func makeViewModel(
+        loadResult: ConfigurationLoadResult = ConfigurationLoadResult(
+            configuration: AppConfiguration(),
+            didRecoverFromCorruption: false,
+            backupURL: nil
+        ),
+        gestureConfiguration: GestureConfiguration = .defaultTemplate,
+        isRunning: Bool = false,
+        isAccessibilityTrusted: Bool = true,
+        saveConfiguration: @escaping (AppConfiguration) throws -> Void = { _ in },
+        saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void = { _ in },
+        startGestureFlow: @escaping () -> Void = {},
+        stopGestureFlow: @escaping () -> Void = {},
+        quitApplication: @escaping () -> Void = {},
+        showLaunchAtLoginPlaceholder: @escaping () -> Void = {},
+        openApplicationPanel: @escaping () -> URL? = { nil }
+    ) -> SettingsViewModel {
+        SettingsViewModel(
+            loadResult: loadResult,
+            gestureConfiguration: gestureConfiguration,
+            isRunning: isRunning,
+            isAccessibilityTrusted: isAccessibilityTrusted,
+            saveConfiguration: saveConfiguration,
+            saveGestureConfiguration: saveGestureConfiguration,
+            requestAccessibilityPermission: {},
+            startGestureFlow: startGestureFlow,
+            stopGestureFlow: stopGestureFlow,
+            quitApplication: quitApplication,
+            showLaunchAtLoginPlaceholder: showLaunchAtLoginPlaceholder,
+            openApplicationPanel: openApplicationPanel
+        )
+    }
+
     private func makeTemporaryConfigURL() throws -> URL {
+        let directory = try makeTemporaryDirectory()
+        return directory.appendingPathComponent("config.json")
+    }
+
+    private func makeTemporaryDirectory() throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         addTeardownBlock {
             try? FileManager.default.removeItem(at: directory)
         }
-        return directory.appendingPathComponent("config.json")
+        return directory
     }
 }

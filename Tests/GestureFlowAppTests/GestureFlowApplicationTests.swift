@@ -12,7 +12,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -21,7 +22,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             notificationCenter: notificationCenter,
             showSettings: { _, _ in showSettingsCount += 1 }
         )
@@ -40,14 +41,15 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in }
         )
         let initialStatusBarController = application.statusBarController
@@ -68,14 +70,15 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in },
             scheduleOnMain: { scheduledPrompt = $0 }
         )
@@ -101,14 +104,15 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in events.append("settings") },
             scheduleOnMain: { scheduledPrompt = $0 }
         )
@@ -130,7 +134,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -139,7 +144,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             notificationCenter: notificationCenter,
             activationNotificationName: .testApplicationDidBecomeActive,
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
@@ -170,7 +175,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -178,7 +184,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
         )
 
@@ -198,7 +204,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -206,7 +213,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
         )
 
@@ -227,7 +234,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -235,7 +243,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
         )
 
@@ -257,7 +265,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -266,7 +275,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             terminateApplication: { _ in terminateCallCount += 1 },
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
         )
@@ -289,7 +298,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -303,7 +313,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
                 coordinator.install(viewModel: viewModel)
                 _ = opener.openSettingsWindow()
@@ -326,14 +336,15 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine
+            injectedGestureEngine: gestureEngine
         )
 
         application.startGestureFlow()
@@ -357,14 +368,15 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine
+            injectedGestureEngine: gestureEngine
         )
 
         application.startGestureFlow()
@@ -387,14 +399,15 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController(startResult: false)
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine
+            injectedGestureEngine: gestureEngine
         )
 
         application.startGestureFlow()
@@ -418,7 +431,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController(startResult: false)
         let gestureEngine = GestureEngine(
-            configurationProvider: { store.loadRecovering().configuration },
+            appConfigurationProvider: { store.loadRecovering().configuration },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -426,7 +440,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine
+            injectedGestureEngine: gestureEngine
         )
 
         XCTAssertEqual(eventTap.startCount, 1)
@@ -447,7 +461,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -456,7 +471,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             terminateApplication: { _ in
                 terminateCallCount += 1
                 wasStoppedBeforeTerminate = !gestureEngine.isRunning
@@ -482,7 +497,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -490,7 +506,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             notificationCenter: notificationCenter,
             terminationNotificationName: .testApplicationWillTerminate,
             showSettings: { _, _ in }
@@ -514,7 +530,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -543,7 +560,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
                 presentationController.cancelPendingAccessoryFallbackIfNeeded()
                 presentationController.prepareToShowSettings()
@@ -571,7 +588,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -580,7 +598,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in showSettingsCount += 1 },
             scheduleOnMain: { scheduledOpenSettings.append($0) }
         )
@@ -604,7 +622,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration(isEnabled: true) },
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -634,7 +653,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             terminateApplication: { _ in
                 terminateCallCount += 1
                 wasStoppedBeforeTerminate = !gestureEngine.isRunning
@@ -667,7 +686,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -682,7 +702,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
                 coordinator.install(viewModel: viewModel)
                 scheduledOpenSettings.append {
@@ -713,7 +733,8 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let eventTap = ApplicationSpyMouseEventTapController()
         let gestureEngine = GestureEngine(
-            configurationProvider: { AppConfiguration() },
+            appConfigurationProvider: { AppConfiguration() },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
             permissionService: permissionService,
             eventTap: eventTap
         )
@@ -722,7 +743,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let application = GestureFlowApplication(
             configurationStore: store,
             permissionService: permissionService,
-            gestureEngine: gestureEngine,
+            injectedGestureEngine: gestureEngine,
             showSettings: { shownViewModels.append($0); _ = $1 },
             scheduleOnMain: { scheduledOpenSettings.append($0) }
         )

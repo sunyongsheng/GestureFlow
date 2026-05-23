@@ -2,25 +2,21 @@ import Foundation
 
 public struct AppConfiguration: Codable, Equatable {
     public var isEnabled: Bool
-    public var gestures: [GestureDefinition]
     public var feedback: FeedbackConfiguration
     public var trigger: GestureTriggerConfiguration
 
     private enum CodingKeys: String, CodingKey {
         case isEnabled
-        case gestures
         case feedback
         case trigger
     }
 
     public init(
         isEnabled: Bool = false,
-        gestures: [GestureDefinition] = GestureDefinition.defaults,
         feedback: FeedbackConfiguration = .default,
         trigger: GestureTriggerConfiguration = .default
     ) {
         self.isEnabled = isEnabled
-        self.gestures = gestures
         self.feedback = feedback
         self.trigger = trigger
     }
@@ -28,8 +24,6 @@ public struct AppConfiguration: Codable, Equatable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? false
-        gestures = try container.decodeIfPresent([GestureDefinition].self, forKey: .gestures)
-            ?? GestureDefinition.defaults
         feedback = try container.decodeIfPresent(FeedbackConfiguration.self, forKey: .feedback) ?? .default
         trigger = try container.decodeIfPresent(GestureTriggerConfiguration.self, forKey: .trigger) ?? .default
     }

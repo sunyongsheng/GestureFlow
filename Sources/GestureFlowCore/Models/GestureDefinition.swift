@@ -2,29 +2,29 @@ import Foundation
 
 public struct GestureDefinition: Codable, Equatable, Identifiable {
     public var id: UUID
+    public var targetBundleIdentifier: String?
     public var name: String
     public var isEnabled: Bool
     public var trigger: GestureTrigger
     public var signature: GestureSignature
-    public var action: GestureAction
-    public var scope: GestureScope
+    public var shortcut: KeyboardShortcutAction
 
     public init(
         id: UUID = UUID(),
+        targetBundleIdentifier: String? = nil,
         name: String,
         isEnabled: Bool = true,
         trigger: GestureTrigger,
         signature: GestureSignature,
-        action: GestureAction,
-        scope: GestureScope = .global
+        shortcut: KeyboardShortcutAction
     ) {
         self.id = id
+        self.targetBundleIdentifier = targetBundleIdentifier
         self.name = name
         self.isEnabled = isEnabled
         self.trigger = trigger
         self.signature = signature
-        self.action = action
-        self.scope = scope
+        self.shortcut = shortcut
     }
 }
 
@@ -46,17 +46,25 @@ public enum GestureDirection: String, Codable, Equatable, Hashable, CaseIterable
     case down = "D"
     case left = "L"
     case right = "R"
+
+    public var chineseDisplayName: String {
+        switch self {
+        case .up:
+            return "上"
+        case .down:
+            return "下"
+        case .left:
+            return "左"
+        case .right:
+            return "右"
+        }
+    }
 }
 
-public enum GestureScope: Codable, Equatable {
-    case global
-}
-
-public enum GestureAction: Codable, Equatable {
-    case keyboardShortcut(KeyboardShortcutAction)
-    case openApplication(OpenApplicationAction)
-    case openURL(OpenURLAction)
-    case systemCommand(SystemCommandAction)
+public extension GestureSignature {
+    var chineseDisplayName: String {
+        tokens.map(\.chineseDisplayName).joined(separator: "、")
+    }
 }
 
 public struct KeyboardShortcutAction: Codable, Equatable {
@@ -67,13 +75,24 @@ public struct KeyboardShortcutAction: Codable, Equatable {
         self.keyCode = keyCode
         self.modifiers = modifiers
     }
+
+    public var isRecorded: Bool {
+        keyCode != 0
+    }
 }
 
-public enum KeyboardModifier: String, Codable, Equatable {
+public enum KeyboardModifier: String, Codable, Equatable, CaseIterable {
     case command
     case option
     case control
     case shift
+}
+
+public enum GestureAction: Codable, Equatable {
+    case keyboardShortcut(KeyboardShortcutAction)
+    case openApplication(OpenApplicationAction)
+    case openURL(OpenURLAction)
+    case systemCommand(SystemCommandAction)
 }
 
 public struct OpenApplicationAction: Codable, Equatable {
@@ -98,18 +117,14 @@ public enum SystemCommandAction: String, Codable, Equatable {
 }
 
 public extension GestureDefinition {
-    static let defaults: [GestureDefinition] = [
+    static var builtInCloseWindow: GestureDefinition {
         GestureDefinition(
-            name: "Back",
+            id: GestureConfiguration.closeWindowGestureID,
+            targetBundleIdentifier: nil,
+            name: "关闭窗口",
             trigger: .rightMouse,
-            signature: GestureSignature(tokens: [.left]),
-            action: .keyboardShortcut(KeyboardShortcutAction(keyCode: 123, modifiers: [.command]))
-        ),
-        GestureDefinition(
-            name: "Forward",
-            trigger: .rightMouse,
-            signature: GestureSignature(tokens: [.right]),
-            action: .keyboardShortcut(KeyboardShortcutAction(keyCode: 124, modifiers: [.command]))
+            signature: GestureSignature(tokens: [.down, .right]),
+            shortcut: KeyboardShortcutAction(keyCode: 13, modifiers: [.command])
         )
-    ]
+    }
 }

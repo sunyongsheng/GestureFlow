@@ -102,9 +102,11 @@ private func makeSettingsViewModel(
             didRecoverFromCorruption: false,
             backupURL: nil
         ),
+        gestureConfiguration: .defaultTemplate,
         isRunning: isRunning,
         isAccessibilityTrusted: isAccessibilityTrusted,
         saveConfiguration: { _ in },
+        saveGestureConfiguration: { _ in },
         requestAccessibilityPermission: {}
     )
 }

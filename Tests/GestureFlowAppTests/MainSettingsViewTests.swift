@@ -43,9 +43,11 @@ final class MainSettingsViewTests: XCTestCase {
                 didRecoverFromCorruption: false,
                 backupURL: nil
             ),
+            gestureConfiguration: .defaultTemplate,
             isRunning: false,
             isAccessibilityTrusted: true,
             saveConfiguration: { _ in },
+            saveGestureConfiguration: { _ in },
             requestAccessibilityPermission: {}
         )
     }

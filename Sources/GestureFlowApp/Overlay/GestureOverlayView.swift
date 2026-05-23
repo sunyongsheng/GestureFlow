@@ -136,14 +136,14 @@ final class GestureOverlayView: NSView {
 private extension GestureOverlayCompletion {
     var message: String {
         switch self {
-        case .recognized:
-            return "Gesture recognized"
+        case let .recognized(name):
+            return name
         case .unmatched:
-            return "No matching gesture"
+            return "未找到匹配手势"
         case .rejected:
-            return "Gesture too short"
+            return "手势过短"
         case .actionFailed:
-            return "Action failed"
+            return "操作失败"
         }
     }
 }
