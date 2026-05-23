@@ -26,7 +26,10 @@ private struct SettingsHostedWindowScene: Scene {
         } defaultValue: {
             SettingsWindowSceneIDs.settingsInstance
         }
-        .defaultSize(width: 920, height: 620)
+        .defaultSize(
+            width: SettingsWindowMetrics.defaultContentSize.width,
+            height: SettingsWindowMetrics.defaultContentSize.height
+        )
     }
 }
 

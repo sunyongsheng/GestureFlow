@@ -67,6 +67,53 @@ final class SettingsWindowLifecycleObserverTests: XCTestCase {
         XCTAssertTrue(window.styleMask.contains(.fullSizeContentView))
         XCTAssertTrue(window.isMovableByWindowBackground)
         XCTAssertNil(window.toolbar)
+        XCTAssertEqual(
+            window.minSize.width,
+            SettingsWindowMetrics.minimumContentSize.width
+        )
+    }
+
+    func testClosingWindowPersistsFrame() {
+        let suiteName = "SettingsWindowLifecycleObserverTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let persistence = SettingsWindowFramePersistence(defaults: defaults)
+        let notificationCenter = NotificationCenter()
+        let coordinator = SettingsWindowLifecycleCoordinator(
+            notificationCenter: notificationCenter,
+            framePersistence: persistence,
+            onSettingsDidAppear: {},
+            onLastSettingsWindowDidClose: {}
+        )
+        let window = makeWindow()
+        window.setFrame(NSRect(x: 88, y: 120, width: 1100, height: 700), display: false)
+
+        coordinator.attach(to: window)
+        notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
+
+        XCTAssertEqual(persistence.load()?.frame, window.frame)
+    }
+
+    func testAttachingWindowRestoresPersistedFrame() {
+        let suiteName = "SettingsWindowLifecycleObserverTests.restore.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let persistence = SettingsWindowFramePersistence(defaults: defaults)
+        let savedFrame = NSRect(x: 140, y: 180, width: 1080, height: 680)
+        persistence.save(windowFrame: savedFrame)
+
+        let coordinator = SettingsWindowLifecycleCoordinator(
+            framePersistence: persistence,
+            onSettingsDidAppear: {},
+            onLastSettingsWindowDidClose: {}
+        )
+        let window = makeWindow()
+
+        coordinator.attach(to: window)
+
+        XCTAssertEqual(window.frame, savedFrame)
     }
 }
 

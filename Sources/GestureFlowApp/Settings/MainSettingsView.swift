@@ -15,7 +15,10 @@ struct MainSettingsView: View {
         .navigationSplitViewStyle(.balanced)
         .navigationTitle("")
         .toolbar(removing: .sidebarToggle)
-        .frame(minWidth: 920, minHeight: 620)
+        .frame(
+            minWidth: SettingsWindowMetrics.minimumContentSize.width,
+            minHeight: SettingsWindowMetrics.minimumContentSize.height
+        )
         .background(SettingsWindowChrome.detailBackground)
     }
 

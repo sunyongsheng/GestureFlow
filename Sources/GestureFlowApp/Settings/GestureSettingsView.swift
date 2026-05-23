@@ -120,7 +120,7 @@ struct GestureSettingsView: View {
                 TableColumn("名称") { gesture in
                     nameCell(for: gesture)
                 }
-                .width(min: 100, ideal: 140)
+                .width(min: 100, ideal: 120)
 
                 TableColumn("手势") { gesture in
                     signatureCell(for: gesture)
@@ -135,7 +135,7 @@ struct GestureSettingsView: View {
                 TableColumn("快捷键") { gesture in
                     shortcutCell(for: gesture)
                 }
-                .width(min: 100, ideal: 120)
+                .width(min: 80, ideal: 100)
 
                 TableColumn("启用") { gesture in
                     Toggle(

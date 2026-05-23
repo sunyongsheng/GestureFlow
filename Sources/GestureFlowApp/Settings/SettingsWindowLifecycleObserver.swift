@@ -3,19 +3,24 @@ import SwiftUI
 
 final class SettingsWindowLifecycleCoordinator {
     private let notificationCenter: NotificationCenter
+    private let framePersistence: SettingsWindowFramePersistence
     private var onSettingsDidAppear: () -> Void
     private var onLastSettingsWindowDidClose: () -> Void
 
     private weak var observedWindow: NSWindow?
     private var closeObserver: NSObjectProtocol?
+    private var frameObservers: [NSObjectProtocol] = []
     private var configuredWindowIDs: Set<ObjectIdentifier> = []
+    private var isApplyingPersistedFrame = false
 
     init(
         notificationCenter: NotificationCenter = .default,
+        framePersistence: SettingsWindowFramePersistence = SettingsWindowFramePersistence(),
         onSettingsDidAppear: @escaping () -> Void,
         onLastSettingsWindowDidClose: @escaping () -> Void
     ) {
         self.notificationCenter = notificationCenter
+        self.framePersistence = framePersistence
         self.onSettingsDidAppear = onSettingsDidAppear
         self.onLastSettingsWindowDidClose = onLastSettingsWindowDidClose
     }
@@ -66,7 +71,9 @@ final class SettingsWindowLifecycleCoordinator {
 
     private func handleObservedWindowWillClose(_ window: NSWindow) {
         guard observedWindow === window else { return }
+        persistWindowFrame(window)
         removeCloseObserver()
+        removeFrameObservers()
         configuredWindowIDs.remove(ObjectIdentifier(window))
         observedWindow = nil
         onLastSettingsWindowDidClose()
@@ -88,6 +95,65 @@ final class SettingsWindowLifecycleCoordinator {
         window.styleMask.insert(.fullSizeContentView)
         // Avoid assigning an empty NSToolbar — it has no delegate and can crash during layout.
         window.toolbar = nil
+        window.minSize = NSSize(
+            width: SettingsWindowMetrics.minimumContentSize.width,
+            height: SettingsWindowMetrics.minimumContentSize.height
+        )
+        installFrameObservers(for: window)
+        restoreWindowFrame(window)
+    }
+
+    private func restoreWindowFrame(_ window: NSWindow) {
+        isApplyingPersistedFrame = true
+        defer { isApplyingPersistedFrame = false }
+
+        if framePersistence.restoreFrame(for: window) == false {
+            window.setContentSize(
+                NSSize(
+                    width: SettingsWindowMetrics.defaultContentSize.width,
+                    height: SettingsWindowMetrics.defaultContentSize.height
+                )
+            )
+        }
+    }
+
+    private func installFrameObservers(for window: NSWindow) {
+        guard frameObservers.isEmpty else { return }
+
+        frameObservers = [
+            notificationCenter.addObserver(
+                forName: NSWindow.didResizeNotification,
+                object: window,
+                queue: .main
+            ) { [weak self, weak window] _ in
+                guard let self, let window else { return }
+                self.persistWindowFrameIfNeeded(window)
+            },
+            notificationCenter.addObserver(
+                forName: NSWindow.didMoveNotification,
+                object: window,
+                queue: .main
+            ) { [weak self, weak window] _ in
+                guard let self, let window else { return }
+                self.persistWindowFrameIfNeeded(window)
+            }
+        ]
+    }
+
+    private func removeFrameObservers() {
+        for observer in frameObservers {
+            notificationCenter.removeObserver(observer)
+        }
+        frameObservers = []
+    }
+
+    private func persistWindowFrameIfNeeded(_ window: NSWindow) {
+        guard isApplyingPersistedFrame == false else { return }
+        persistWindowFrame(window)
+    }
+
+    private func persistWindowFrame(_ window: NSWindow) {
+        framePersistence.save(windowFrame: window.frame)
     }
 }
 
