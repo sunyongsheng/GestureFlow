@@ -17,9 +17,10 @@ public struct GestureRecognizer {
         for pair in zip(cleaned, cleaned.dropFirst()) {
             let dx = pair.1.x - pair.0.x
             let dy = pair.1.y - pair.0.y
+            // Points use AppKit global screen coordinates (Y increases upward).
             let direction: GestureDirection = abs(dx) >= abs(dy)
                 ? (dx >= 0 ? .right : .left)
-                : (dy >= 0 ? .down : .up)
+                : (dy <= 0 ? .down : .up)
 
             if directions.last != direction {
                 directions.append(direction)

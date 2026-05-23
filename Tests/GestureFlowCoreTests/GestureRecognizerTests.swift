@@ -16,9 +16,9 @@ final class GestureRecognizerTests: XCTestCase {
 
     func testRecognizesDownThenRightGesture() {
         let points = [
-            GesturePoint(x: 0, y: 0),
             GesturePoint(x: 0, y: 60),
-            GesturePoint(x: 70, y: 62)
+            GesturePoint(x: 0, y: 0),
+            GesturePoint(x: 70, y: -2)
         ]
 
         let signature = GestureRecognizer().recognize(points: points)
