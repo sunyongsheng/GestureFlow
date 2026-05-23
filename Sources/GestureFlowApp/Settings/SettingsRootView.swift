@@ -8,13 +8,15 @@ struct SettingsRootView: View {
             if let viewModel = coordinator.viewModel {
                 MainSettingsView(viewModel: viewModel)
             } else {
-                ProgressView("Loading GestureFlow Settings…")
+                ProgressView("正在加载 GestureFlow 设置…")
                     .frame(minWidth: 700, minHeight: 480)
             }
         }
-        .background(
+        .background(SettingsWindowOpenActionInstaller())
+        .overlay {
             SettingsWindowLifecycleObserver(coordinator: coordinator)
                 .frame(width: 0, height: 0)
-        )
+                .allowsHitTesting(false)
+        }
     }
 }

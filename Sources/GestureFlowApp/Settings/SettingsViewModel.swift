@@ -32,10 +32,10 @@ final class SettingsViewModel: ObservableObject {
         if loadResult.didRecoverFromCorruption {
             if let backupPath = loadResult.backupURL?.path {
                 self.recoveryNoticeMessage =
-                    "Recovered from a corrupted configuration. Backup saved to \(backupPath)"
+                    "已从损坏的配置中恢复。备份已保存至 \(backupPath)"
             } else {
                 self.recoveryNoticeMessage =
-                    "Recovered from a corrupted configuration. The damaged file could not be backed up."
+                    "已从损坏的配置中恢复，但无法备份损坏的文件。"
             }
         } else {
             self.recoveryNoticeMessage = nil

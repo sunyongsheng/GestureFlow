@@ -6,37 +6,52 @@ struct FeedbackSettingsView: View {
 
     var body: some View {
         SettingsCard(
-            title: "Feedback",
+            title: "手势反馈",
             description: "控制手势轨迹的颜色、粗细与透明度，让反馈更自然。"
         ) {
             VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Trail color")
-                        .font(.body.weight(.medium))
-
-                    TextField("Trail color", text: feedbackBinding(\.trailColorHex))
-                        .textFieldStyle(.roundedBorder)
-
-                    Text("输入十六进制颜色值，例如 #4A90E2。")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                trailColorRow
 
                 sliderRow(
-                    title: "Trail width",
+                    title: "轨迹粗细",
                     valueText: formatted(viewModel.configuration.feedback.trailWidth, precision: 1),
                     rangeText: "1.0 - 12.0",
                     slider: Slider(value: feedbackBinding(\.trailWidth), in: 1...12, step: 0.5)
                 )
 
                 sliderRow(
-                    title: "Trail opacity",
+                    title: "轨迹透明度",
                     valueText: formatted(viewModel.configuration.feedback.trailOpacity, precision: 2),
                     rangeText: "0.10 - 1.00",
                     slider: Slider(value: feedbackBinding(\.trailOpacity), in: 0.1...1, step: 0.05)
                 )
             }
         }
+    }
+
+    private var trailColorRow: some View {
+        HStack(alignment: .center, spacing: 16) {
+            Text("轨迹颜色")
+                .font(.body.weight(.medium))
+
+            Spacer(minLength: 16)
+
+            ColorPicker("轨迹颜色", selection: trailColorBinding, supportsOpacity: false)
+                .labelsHidden()
+        }
+    }
+
+    private var trailColorBinding: Binding<Color> {
+        Binding(
+            get: {
+                ColorHexFormatting.color(fromHex: viewModel.configuration.feedback.trailColorHex)
+            },
+            set: { newColor in
+                viewModel.updateFeedback { feedback in
+                    feedback.trailColorHex = ColorHexFormatting.hexString(from: newColor)
+                }
+            }
+        )
     }
 
     private func feedbackBinding<Value>(_ keyPath: WritableKeyPath<FeedbackConfiguration, Value>) -> Binding<Value> {

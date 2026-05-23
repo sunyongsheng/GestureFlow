@@ -6,24 +6,24 @@ struct GestureEditorView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Toggle("Enabled", isOn: $gesture.isEnabled)
+            Toggle("启用", isOn: $gesture.isEnabled)
                 .toggleStyle(.switch)
 
-            TextField("Name", text: $gesture.name)
+            TextField("名称", text: $gesture.name)
                 .textFieldStyle(.roundedBorder)
 
-            Picker("Trigger", selection: $gesture.trigger) {
-                Text("Right Mouse").tag(GestureTrigger.rightMouse)
-                Text("Middle Mouse").tag(GestureTrigger.middleMouse)
+            Picker("触发键", selection: $gesture.trigger) {
+                Text("右键").tag(GestureTrigger.rightMouse)
+                Text("中键").tag(GestureTrigger.middleMouse)
             }
 
-            Picker("Signature", selection: $gesture.signature) {
+            Picker("手势方向", selection: $gesture.signature) {
                 ForEach(PresetSignature.all) { preset in
                     Text(preset.title).tag(preset.signature)
                 }
             }
 
-            Picker("Action", selection: actionChoiceBinding) {
+            Picker("执行动作", selection: actionChoiceBinding) {
                 ForEach(SimpleActionChoice.allCases) { choice in
                     Text(choice.title).tag(choice)
                 }
@@ -45,12 +45,12 @@ private struct PresetSignature: Identifiable {
     var signature: GestureSignature
 
     static let all: [PresetSignature] = [
-        PresetSignature(title: "Left", signature: GestureSignature(tokens: [.left])),
-        PresetSignature(title: "Right", signature: GestureSignature(tokens: [.right])),
-        PresetSignature(title: "Up", signature: GestureSignature(tokens: [.up])),
-        PresetSignature(title: "Down", signature: GestureSignature(tokens: [.down])),
-        PresetSignature(title: "Down, Right", signature: GestureSignature(tokens: [.down, .right])),
-        PresetSignature(title: "Up, Left", signature: GestureSignature(tokens: [.up, .left]))
+        PresetSignature(title: "左", signature: GestureSignature(tokens: [.left])),
+        PresetSignature(title: "右", signature: GestureSignature(tokens: [.right])),
+        PresetSignature(title: "上", signature: GestureSignature(tokens: [.up])),
+        PresetSignature(title: "下", signature: GestureSignature(tokens: [.down])),
+        PresetSignature(title: "下、右", signature: GestureSignature(tokens: [.down, .right])),
+        PresetSignature(title: "上、左", signature: GestureSignature(tokens: [.up, .left]))
     ]
 }
 
@@ -66,15 +66,15 @@ private enum SimpleActionChoice: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .browserBack:
-            return "Browser Back"
+            return "浏览器后退"
         case .browserForward:
-            return "Browser Forward"
+            return "浏览器前进"
         case .showDesktop:
-            return "Show Desktop"
+            return "显示桌面"
         case .lockScreen:
-            return "Lock Screen"
+            return "锁定屏幕"
         case .openApple:
-            return "Open apple.com"
+            return "打开 Apple 官网"
         }
     }
 

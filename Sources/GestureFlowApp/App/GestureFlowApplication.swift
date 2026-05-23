@@ -158,8 +158,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             },
             showLaunchAtLoginPlaceholder: { [weak self] in
                 self?.showPlaceholder(
-                    title: "Open at Login",
-                    message: "This setting is not implemented yet."
+                    title: "登录时打开",
+                    message: "此功能尚未实现。"
                 )
             }
         )

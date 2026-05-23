@@ -12,9 +12,29 @@ final class SettingsWindowOpenerTests: XCTestCase {
         XCTAssertEqual(openCount, 1)
     }
 
+    func testOpenerPrefersActivatingExistingWindowBeforeRegisteredAction() {
+        var registeredCount = 0
+        var activateExistingCount = 0
+        let opener = SettingsWindowOpener(
+            activateExistingSettingsWindow: {
+                activateExistingCount += 1
+                return true
+            }
+        )
+        opener.registerOpenWindowAction { registeredCount += 1 }
+
+        let didOpen = opener.openSettingsWindow()
+
+        XCTAssertTrue(didOpen)
+        XCTAssertEqual(activateExistingCount, 1)
+        XCTAssertEqual(registeredCount, 0)
+    }
+
     func testOpenerPrefersRegisteredActionOverMenuFallback() {
         var registeredCount = 0
-        let opener = SettingsWindowOpener()
+        let opener = SettingsWindowOpener(
+            activateExistingSettingsWindow: { false }
+        )
         opener.registerOpenWindowAction { registeredCount += 1 }
 
         let didOpen = opener.openSettingsWindow()

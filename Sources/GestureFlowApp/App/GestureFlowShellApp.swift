@@ -5,8 +5,8 @@ struct GestureFlowShellApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        // Settings UI is hosted by a dedicated WindowGroup (not SwiftUI's Settings scene).
-        // First-open and menu-bar reopen go through SettingsWindowDependencies / SettingsWindowOpener.
+        // Settings UI is hosted by a value-bound WindowGroup (not SwiftUI's Settings scene).
+        // Reopen with the same `value` brings the existing window forward instead of spawning another.
         SettingsHostedWindowScene(coordinator: SettingsWindowDependencies.shared.coordinator)
             .commands {
                 SettingsWindowCommands()
@@ -18,9 +18,13 @@ private struct SettingsHostedWindowScene: Scene {
     let coordinator: SettingsWindowCoordinator
 
     var body: some Scene {
-        WindowGroup(id: SettingsWindowSceneIDs.settings) {
+        WindowGroup(
+            id: SettingsWindowSceneIDs.settings,
+            for: String.self
+        ) { _ in
             SettingsRootView(coordinator: coordinator)
-                .background(SettingsWindowOpenActionInstaller())
+        } defaultValue: {
+            SettingsWindowSceneIDs.settingsInstance
         }
         .defaultSize(width: 920, height: 620)
     }
@@ -31,8 +35,13 @@ private struct SettingsWindowCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appSettings) {
-            Button("Settings…") {
-                openWindow(id: SettingsWindowSceneIDs.settings)
+            Button("设置…") {
+                SettingsWindowFrontmostPresenter.activateExistingOrOpen {
+                    openWindow(
+                        id: SettingsWindowSceneIDs.settings,
+                        value: SettingsWindowSceneIDs.settingsInstance
+                    )
+                }
             }
             .keyboardShortcut(",", modifiers: .command)
         }

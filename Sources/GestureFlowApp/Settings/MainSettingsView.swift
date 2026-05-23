@@ -13,8 +13,10 @@ struct MainSettingsView: View {
             detailContent
         }
         .navigationSplitViewStyle(.balanced)
+        .navigationTitle("")
+        .toolbar(removing: .sidebarToggle)
         .frame(minWidth: 920, minHeight: 620)
-        .background(backgroundGradient)
+        .background(SettingsWindowChrome.detailBackground)
     }
 
     private var sidebarContent: some View {
@@ -25,8 +27,9 @@ struct MainSettingsView: View {
             }
         }
         .listStyle(.sidebar)
-        .toolbar(removing: .sidebarToggle)
         .scrollContentBackground(.hidden)
+        .background(SettingsWindowChrome.sidebarBackground)
+        .safeAreaPadding(.top)
         .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 280)
     }
 
@@ -47,7 +50,7 @@ struct MainSettingsView: View {
             currentSectionView
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Color.clear)
+        .background(SettingsWindowChrome.detailBackground)
     }
 
     @ViewBuilder
@@ -71,21 +74,9 @@ struct MainSettingsView: View {
         viewModel.recoveryNoticeMessage == nil ? 20 : 12
     }
 
-    private var backgroundGradient: some View {
-        LinearGradient(
-            colors: [
-                Color(nsColor: .windowBackgroundColor),
-                Color(nsColor: .controlBackgroundColor).opacity(0.92),
-                Color(nsColor: .windowBackgroundColor)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
     private func recoveryBanner(message: String, backupPath: String?) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Configuration Recovery")
+            Text("配置恢复")
                 .font(.headline)
             Text(message)
                 .font(.caption)
@@ -107,7 +98,7 @@ struct MainSettingsView: View {
     }
 
     private func saveErrorBanner(message: String) -> some View {
-        Text("Failed to save settings: \(message)")
+        Text("保存设置失败：\(message)")
             .foregroundColor(.red)
             .font(.caption)
             .padding(12)

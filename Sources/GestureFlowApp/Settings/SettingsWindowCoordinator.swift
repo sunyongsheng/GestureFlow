@@ -8,7 +8,12 @@ final class SettingsWindowCoordinator: ObservableObject {
     var onLastSettingsWindowDidClose: () -> Void
 
     @Published private(set) var viewModel: SettingsViewModel?
+    private let attachedSettingsWindowTable = NSHashTable<NSWindow>.weakObjects()
     private let lifecycleCoordinator: SettingsWindowLifecycleCoordinator
+
+    var attachedSettingsWindows: [NSWindow] {
+        attachedSettingsWindowTable.allObjects
+    }
 
     init(
         notificationCenter: NotificationCenter = .default,
@@ -35,9 +40,10 @@ final class SettingsWindowCoordinator: ObservableObject {
     }
 
     func attachSettingsWindow(_ window: NSWindow?) {
-        if let window {
-            window.identifier = NSUserInterfaceItemIdentifier(SettingsWindowSceneIDs.settings)
-        }
+        guard let window else { return }
+
+        window.identifier = NSUserInterfaceItemIdentifier(SettingsWindowSceneIDs.settings)
+        attachedSettingsWindowTable.add(window)
         lifecycleCoordinator.attach(to: window)
     }
 }

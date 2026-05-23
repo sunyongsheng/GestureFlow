@@ -41,6 +41,11 @@
 		96FEC5E96E804F2F84017F2D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 417098F3262B735C581E1651 /* Cocoa.framework */; };
 		9C7C002ACABA0A147FF7D1AB /* SettingsWindowLifecycleObserverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */; };
 		A8F1E2D30B4C5A69708192A3 /* SettingsWindowSceneIDs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C6D5E40A39281746505162 /* SettingsWindowSceneIDs.swift */; };
+		C3D4E5F60718293A4B5C6D7E /* SettingsWindowChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B5C6D7E8F /* SettingsWindowChrome.swift */; };
+		E1F2A3B4C5D60718293A4B5C /* ColorHexFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A3B4C5D60718293A4B5C6D /* ColorHexFormatting.swift */; };
+		F4A5B6C7D8091A2B3C4D5E6F /* SettingsWindowFrontmostPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B6C7D8091A2B3C4D5E6F70 /* SettingsWindowFrontmostPresenter.swift */; };
+		F5A6B7C8D9012B3C4D5E6F71 /* SettingsWindowFrontmostPresenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C7D8091A2B3C4D5E6F7081 /* SettingsWindowFrontmostPresenterTests.swift */; };
+		E2F3A4B5C6D70819293A4B5 /* ColorHexFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A4B5C6D70819293A4B5C6 /* ColorHexFormattingTests.swift */; };
 		9CB56860EA8B584DD7B884FD /* SettingsWindowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B51A39120A47537F3CA19E /* SettingsWindowCoordinator.swift */; };
 		9CE9A72563FDFB4D9FD4A6A5 /* GestureFlowApplicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */; };
 		ABEF9DC1F7560BA6B3BCF4CD /* GestureFlowCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */; };
@@ -130,6 +135,11 @@
 		2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
 		31B51A39120A47537F3CA19E /* SettingsWindowCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowCoordinator.swift; sourceTree = "<group>"; };
 		B7C6D5E40A39281746505162 /* SettingsWindowSceneIDs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowSceneIDs.swift; sourceTree = "<group>"; };
+		D4E5F60718293A4B5C6D7E8F /* SettingsWindowChrome.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowChrome.swift; sourceTree = "<group>"; };
+		F2A3B4C5D60718293A4B5C6D /* ColorHexFormatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ColorHexFormatting.swift; sourceTree = "<group>"; };
+		A5B6C7D8091A2B3C4D5E6F70 /* SettingsWindowFrontmostPresenter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowFrontmostPresenter.swift; sourceTree = "<group>"; };
+		B6C7D8091A2B3C4D5E6F7081 /* SettingsWindowFrontmostPresenterTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowFrontmostPresenterTests.swift; sourceTree = "<group>"; };
+		F3A4B5C6D70819293A4B5C6 /* ColorHexFormattingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ColorHexFormattingTests.swift; sourceTree = "<group>"; };
 		35FB763932E2D29FBA279B6E /* GestureFlowApplication.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowApplication.swift; sourceTree = "<group>"; };
 		37AEA743DB6743F3087CAC78 /* SettingsWindowOpenerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowOpenerTests.swift; sourceTree = "<group>"; };
 		37E1E7F9FB8C454268C61A43 /* GestureFlowCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GestureFlowCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -274,6 +284,9 @@
 				DCD24BDA9E2E22EF408EDA57 /* SettingsViewModel.swift */,
 				C71602D50CD5375F63932F7A /* SettingsWindowLifecycleObserver.swift */,
 				B7C6D5E40A39281746505162 /* SettingsWindowSceneIDs.swift */,
+				D4E5F60718293A4B5C6D7E8F /* SettingsWindowChrome.swift */,
+				F2A3B4C5D60718293A4B5C6D /* ColorHexFormatting.swift */,
+				A5B6C7D8091A2B3C4D5E6F70 /* SettingsWindowFrontmostPresenter.swift */,
 			);
 			name = Settings;
 			path = Settings;
@@ -322,6 +335,8 @@
 			children = (
 				EDD6A92421A4EC2763AAB1D0 /* ActionExecutorTests.swift */,
 				1766889B544862BA0E04BF40 /* AppDelegateTests.swift */,
+				F3A4B5C6D70819293A4B5C6 /* ColorHexFormattingTests.swift */,
+				B6C7D8091A2B3C4D5E6F7081 /* SettingsWindowFrontmostPresenterTests.swift */,
 				C0727874AE8B2F5CFFA1956F /* AppPresentationControllerTests.swift */,
 				5D8F2E209E88A880F6D8497B /* GestureEngineTests.swift */,
 				A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */,
@@ -672,6 +687,8 @@
 			files = (
 				07C4F0D93B4001D810FECD08 /* ActionExecutorTests.swift in Sources */,
 				11CCADD5B4C2D2C1226B0CAF /* AppDelegateTests.swift in Sources */,
+				E2F3A4B5C6D70819293A4B5 /* ColorHexFormattingTests.swift in Sources */,
+				F5A6B7C8D9012B3C4D5E6F71 /* SettingsWindowFrontmostPresenterTests.swift in Sources */,
 				CF857DED13C113DA6789BBD6 /* AppPresentationControllerTests.swift in Sources */,
 				821C412ADFD094D46D9B7AEC /* GestureEngineTests.swift in Sources */,
 				9CE9A72563FDFB4D9FD4A6A5 /* GestureFlowApplicationTests.swift in Sources */,
@@ -718,6 +735,9 @@
 				452CFEF6F00A30E99D33150D /* SettingsViewModel.swift in Sources */,
 				4BC9307F636CA8802D5891BF /* SettingsWindowLifecycleObserver.swift in Sources */,
 				A8F1E2D30B4C5A69708192A3 /* SettingsWindowSceneIDs.swift in Sources */,
+				C3D4E5F60718293A4B5C6D7E /* SettingsWindowChrome.swift in Sources */,
+				E1F2A3B4C5D60718293A4B5C /* ColorHexFormatting.swift in Sources */,
+				F4A5B6C7D8091A2B3C4D5E6F /* SettingsWindowFrontmostPresenter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

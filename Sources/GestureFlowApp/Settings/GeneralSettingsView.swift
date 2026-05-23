@@ -48,7 +48,7 @@ struct GeneralSettingsView: View {
                     Divider()
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Accessibility")
+                        Text("辅助功能")
                             .font(.body.weight(.medium))
 
                         Text(
@@ -63,7 +63,7 @@ struct GeneralSettingsView: View {
                             viewModel.requestAccessibilityPermission()
                         }) {
                             HStack {
-                                Text(viewModel.isAccessibilityTrusted ? "Accessibility 已启用" : "开启 Accessibility 权限")
+                                Text(viewModel.isAccessibilityTrusted ? "辅助功能已启用" : "开启辅助功能权限")
                                     .fontWeight(.semibold)
                                     .foregroundColor(
                                         viewModel.isAccessibilityTrusted

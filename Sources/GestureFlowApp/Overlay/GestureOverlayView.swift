@@ -76,7 +76,7 @@ final class GestureOverlayView: NSView {
     private func drawTrail() {
         guard !points.isEmpty else { return }
 
-        let color = NSColor(hex: trailAppearance.colorHex)?
+        let color = ColorHexFormatting.nsColor(fromHex: trailAppearance.colorHex)?
             .withAlphaComponent(trailAppearance.opacity)
             ?? NSColor.systemBlue.withAlphaComponent(trailAppearance.opacity)
         color.setStroke()
@@ -151,20 +151,6 @@ private extension GestureOverlayCompletion {
 private extension GesturePoint {
     var nsPoint: NSPoint {
         NSPoint(x: x, y: y)
-    }
-}
-
-private extension NSColor {
-    convenience init?(hex: String) {
-        let trimmed = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
-        guard trimmed.count == 6, let value = Int(trimmed, radix: 16) else {
-            return nil
-        }
-
-        let red = CGFloat((value >> 16) & 0xFF) / 255
-        let green = CGFloat((value >> 8) & 0xFF) / 255
-        let blue = CGFloat(value & 0xFF) / 255
-        self.init(calibratedRed: red, green: green, blue: blue, alpha: 1)
     }
 }
 

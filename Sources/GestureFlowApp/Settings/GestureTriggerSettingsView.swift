@@ -6,26 +6,26 @@ struct GestureTriggerSettingsView: View {
 
     var body: some View {
         SettingsCard(
-            title: "Trigger",
+            title: "触发",
             description: "调整识别触发时机与采样容错范围，平衡灵敏度和稳定性。"
         ) {
             VStack(alignment: .leading, spacing: 18) {
                 sliderRow(
-                    title: "Movement threshold",
+                    title: "移动阈值",
                     valueText: "\(formatted(viewModel.configuration.trigger.movementThreshold, precision: 0)) pt",
                     rangeText: "4 - 80 pt",
                     slider: Slider(value: movementThresholdBinding, in: 4...80, step: 1)
                 )
 
                 sliderRow(
-                    title: "Hold timeout",
+                    title: "按住超时",
                     valueText: "\(viewModel.configuration.trigger.holdTimeoutMilliseconds) ms",
                     rangeText: "50 - 1000 ms",
                     slider: Slider(value: holdTimeoutBinding, in: 50...1000, step: 25)
                 )
 
                 sliderRow(
-                    title: "Sample jump threshold",
+                    title: "采样跳变阈值",
                     valueText: "\(formatted(viewModel.configuration.trigger.maximumSampleDistance, precision: 0)) pt",
                     rangeText: "40 - 240 pt",
                     slider: Slider(value: maximumSampleDistanceBinding, in: 40...240, step: 5)

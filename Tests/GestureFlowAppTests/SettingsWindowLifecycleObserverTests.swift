@@ -63,8 +63,10 @@ final class SettingsWindowLifecycleObserverTests: XCTestCase {
 
         XCTAssertTrue(window.titlebarAppearsTransparent)
         XCTAssertEqual(window.titleVisibility, .hidden)
+        XCTAssertEqual(window.titlebarSeparatorStyle, .none)
         XCTAssertTrue(window.styleMask.contains(.fullSizeContentView))
         XCTAssertTrue(window.isMovableByWindowBackground)
+        XCTAssertNil(window.toolbar)
     }
 }
 

@@ -51,6 +51,7 @@ final class SettingsWindowCoordinatorTests: XCTestCase {
             window.identifier?.rawValue,
             SettingsWindowSceneIDs.settings
         )
+        XCTAssertTrue(coordinator.attachedSettingsWindows.contains(window))
     }
 
     @MainActor

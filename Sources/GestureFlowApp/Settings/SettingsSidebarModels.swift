@@ -44,7 +44,7 @@ struct SettingsPage<Content: View>: View {
                 content
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(28)
+            .padding(.horizontal, 28)
         }
     }
 }

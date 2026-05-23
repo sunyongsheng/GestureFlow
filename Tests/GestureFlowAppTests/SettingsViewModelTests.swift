@@ -19,7 +19,7 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertEqual(
             viewModel.recoveryNoticeMessage,
-            "Recovered from a corrupted configuration. Backup saved to /tmp/config.json.corrupt-123"
+            "已从损坏的配置中恢复。备份已保存至 /tmp/config.json.corrupt-123"
         )
         XCTAssertEqual(viewModel.recoveryBackupPath, "/tmp/config.json.corrupt-123")
     }

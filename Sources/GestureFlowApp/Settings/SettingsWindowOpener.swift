@@ -11,19 +11,35 @@ final class SettingsWindowOpener {
 
     private var registeredOpenWindowAction: OpenAction?
     private let menuFallback: () -> Bool
+    private let activateExistingSettingsWindow: () -> Bool
 
-    init() {
+    init(
+        activateExistingSettingsWindow: @escaping () -> Bool = {
+            SettingsWindowFrontmostPresenter.activateExistingSettingsWindow(
+                coordinator: SettingsWindowDependencies.shared.coordinator
+            )
+        }
+    ) {
+        self.activateExistingSettingsWindow = activateExistingSettingsWindow
         self.menuFallback = Self.openViaMainMenu
     }
 
     /// Uses only the supplied action (tests and explicit injection).
-    init(openWindowAction: @escaping OpenAction) {
+    init(
+        openWindowAction: @escaping OpenAction,
+        activateExistingSettingsWindow: @escaping () -> Bool = { false }
+    ) {
         self.registeredOpenWindowAction = openWindowAction
         self.menuFallback = { false }
+        self.activateExistingSettingsWindow = activateExistingSettingsWindow
     }
 
     /// Resolves an action on each open attempt (legacy test hook).
-    init(resolveOpenAction: @escaping ResolveOpenAction) {
+    init(
+        resolveOpenAction: @escaping ResolveOpenAction,
+        activateExistingSettingsWindow: @escaping () -> Bool = { false }
+    ) {
+        self.activateExistingSettingsWindow = activateExistingSettingsWindow
         self.menuFallback = {
             guard let action = resolveOpenAction() else { return false }
             action()
@@ -37,6 +53,10 @@ final class SettingsWindowOpener {
 
     @discardableResult
     func openSettingsWindow() -> Bool {
+        if activateExistingSettingsWindow() {
+            return true
+        }
+
         if let registeredOpenWindowAction {
             registeredOpenWindowAction()
             return true
@@ -54,7 +74,14 @@ struct SettingsWindowOpenActionInstaller: View {
             .frame(width: 0, height: 0)
             .onAppear {
                 SettingsWindowDependencies.shared.opener.registerOpenWindowAction {
-                    openWindow(id: SettingsWindowSceneIDs.settings)
+                    SettingsWindowFrontmostPresenter.activateExistingOrOpen(
+                        coordinator: SettingsWindowDependencies.shared.coordinator
+                    ) {
+                        openWindow(
+                            id: SettingsWindowSceneIDs.settings,
+                            value: SettingsWindowSceneIDs.settingsInstance
+                        )
+                    }
                 }
             }
     }

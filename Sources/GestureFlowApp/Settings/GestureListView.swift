@@ -6,11 +6,11 @@ struct GestureListView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Gestures")
+            Text("手势")
                 .font(.headline)
 
             if viewModel.configuration.gestures.isEmpty {
-                Text("No gestures configured.")
+                Text("暂无已配置的手势。")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
