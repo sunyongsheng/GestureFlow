@@ -19,7 +19,6 @@ struct MainSettingsView: View {
             minWidth: SettingsWindowMetrics.minimumContentSize.width,
             minHeight: SettingsWindowMetrics.minimumContentSize.height
         )
-        .background(SettingsWindowChrome.detailBackground)
     }
 
     private var sidebarContent: some View {
@@ -31,7 +30,6 @@ struct MainSettingsView: View {
         }
         .listStyle(.sidebar)
         .scrollContentBackground(.hidden)
-        .background(SettingsWindowChrome.sidebarBackground)
         .safeAreaPadding(.top)
         .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 280)
     }
