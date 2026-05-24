@@ -76,8 +76,9 @@ public struct KeyboardShortcutAction: Codable, Equatable {
         self.modifiers = modifiers
     }
 
+    /// Recorded shortcuts always include at least one modifier (e.g. ⌘A uses keyCode 0).
     public var isRecorded: Bool {
-        keyCode != 0
+        !modifiers.isEmpty
     }
 }
 

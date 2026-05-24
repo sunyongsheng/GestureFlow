@@ -6,6 +6,8 @@ struct GestureSettingsView: View {
     @State private var recordingGestureID: UUID?
     @State private var selectedGestureIDs = Set<GestureDefinition.ID>()
     @State private var nameEditDrafts: [UUID: String] = [:]
+    @State private var editingGestureID: UUID?
+    @State private var isRestoreDefaultsConfirmationPresented = false
     @FocusState private var focusedNameGestureID: UUID?
 
     var body: some View {
@@ -91,8 +93,16 @@ struct GestureSettingsView: View {
 
                 Spacer()
 
+                Button("恢复默认") {
+                    commitEditingGestureIfNeeded(leaving: nil)
+                    isRestoreDefaultsConfirmationPresented = true
+                }
+
                 Button {
-                    viewModel.addGesture()
+                    commitEditingGestureIfNeeded(leaving: nil)
+                    let newGestureID = viewModel.addGesture()
+                    activateGestureEditing(newGestureID)
+                    focusedNameGestureID = newGestureID
                 } label: {
                     Image(systemName: "plus")
                         .frame(height: 12)
@@ -133,7 +143,11 @@ struct GestureSettingsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .layoutPriority(1)
         }
+        .onChange(of: selectedGestureIDs) { _, _ in
+            commitEditingGestureIfNeeded(leaving: selectedGestureIDs.first)
+        }
         .onChange(of: viewModel.selectedApplicationScope) { _, _ in
+            commitEditingGestureIfNeeded(leaving: nil)
             selectedGestureIDs.removeAll()
         }
         .onChange(of: focusedNameGestureID) { previousFocus, newFocus in
@@ -141,12 +155,39 @@ struct GestureSettingsView: View {
                 commitNameDraft(for: previousFocus)
             }
             if let newFocus {
+                activateGestureEditing(newFocus)
                 nameEditDrafts[newFocus] = gestureName(forGestureID: newFocus)
             }
         }
         .frame(minWidth: 460, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background {
+            GestureEditingCommitMonitor {
+                commitEditingGestureIfNeeded(leaving: nil)
+            }
+        }
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .confirmationDialog(
+            "恢复默认手势配置？",
+            isPresented: $isRestoreDefaultsConfirmationPresented,
+            titleVisibility: .visible
+        ) {
+            Button("恢复", role: .destructive) {
+                resetGestureEditingState()
+                viewModel.restoreDefaultGestureConfiguration()
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("将清除所有自定义应用与手势，仅保留内置的「关闭窗口」手势。")
+        }
+    }
+
+    private func resetGestureEditingState() {
+        editingGestureID = nil
+        focusedNameGestureID = nil
+        selectedGestureIDs.removeAll()
+        nameEditDrafts.removeAll()
+        recordingGestureID = nil
     }
 
     private var gestureListHeader: some View {
@@ -191,6 +232,10 @@ struct GestureSettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            activateGestureEditing(gesture.id)
+        }
         .tag(gesture.id)
     }
 
@@ -215,10 +260,15 @@ struct GestureSettingsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .onSubmit {
                 commitNameDraft(for: gesture.id)
+                viewModel.commitGesture(id: gesture.id)
                 focusedNameGestureID = nil
+                if editingGestureID == gesture.id {
+                    editingGestureID = nil
+                }
             }
             .simultaneousGesture(
                 TapGesture(count: 2).onEnded {
+                    activateGestureEditing(gesture.id)
                     nameEditDrafts[gesture.id] = gestureName(for: gesture)
                     focusedNameGestureID = gesture.id
                 }
@@ -272,6 +322,7 @@ struct GestureSettingsView: View {
     private func shortcutCell(for gesture: GestureDefinition) -> some View {
         ZStack {
             Button {
+                activateGestureEditing(gesture.id)
                 recordingGestureID = gesture.id
             } label: {
                 Text(shortcutLabel(for: gesture))
@@ -283,8 +334,9 @@ struct GestureSettingsView: View {
             GestureShortcutRecorder(
                 isRecording: recordingGestureID == gesture.id,
                 onCapture: { shortcut in
-                    viewModel.updateGesture(id: gesture.id) { $0.shortcut = shortcut }
+                    viewModel.stageGestureUpdate(id: gesture.id) { $0.shortcut = shortcut }
                     recordingGestureID = nil
+                    viewModel.commitGesture(id: gesture.id)
                 },
                 onCancel: {
                     recordingGestureID = nil
@@ -312,14 +364,35 @@ struct GestureSettingsView: View {
         let resolvedName = trimmed.isEmpty ? gestureName(for: gesture) : trimmed
 
         if resolvedName != gestureName(for: gesture) {
-            viewModel.updateGesture(id: gesture.id) { $0.name = resolvedName }
+            viewModel.stageGestureUpdate(id: gesture.id) { $0.name = resolvedName }
         }
 
         nameEditDrafts.removeValue(forKey: gestureID)
     }
 
+    private func activateGestureEditing(_ gestureID: UUID) {
+        commitEditingGestureIfNeeded(leaving: gestureID)
+        editingGestureID = gestureID
+        selectedGestureIDs = [gestureID]
+    }
+
+    private func commitEditingGestureIfNeeded(leaving nextGestureID: UUID?) {
+        guard let editingGestureID, editingGestureID != nextGestureID else { return }
+
+        commitNameDraft(for: editingGestureID)
+        viewModel.commitGesture(id: editingGestureID)
+        self.editingGestureID = nextGestureID
+    }
+
     private func deleteSelectedGestures() {
         guard !selectedGestureIDs.isEmpty else { return }
+
+        if let editingGestureID, selectedGestureIDs.contains(editingGestureID) {
+            commitNameDraft(for: editingGestureID)
+            self.editingGestureID = nil
+        } else {
+            commitEditingGestureIfNeeded(leaving: nil)
+        }
 
         viewModel.deleteGestures(withIDs: selectedGestureIDs)
         selectedGestureIDs.removeAll()
@@ -332,7 +405,8 @@ struct GestureSettingsView: View {
                     ?? gesture.signature
             },
             set: { newValue in
-                viewModel.updateGesture(id: gesture.id) { $0.signature = newValue }
+                activateGestureEditing(gesture.id)
+                viewModel.stageGestureUpdate(id: gesture.id) { $0.signature = newValue }
             }
         )
     }
@@ -344,7 +418,8 @@ struct GestureSettingsView: View {
                     ?? gesture.trigger
             },
             set: { newValue in
-                viewModel.updateGesture(id: gesture.id) { $0.trigger = newValue }
+                activateGestureEditing(gesture.id)
+                viewModel.stageGestureUpdate(id: gesture.id) { $0.trigger = newValue }
             }
         )
     }
@@ -356,7 +431,8 @@ struct GestureSettingsView: View {
                     ?? gesture.isEnabled
             },
             set: { newValue in
-                viewModel.updateGesture(id: gesture.id) { $0.isEnabled = newValue }
+                activateGestureEditing(gesture.id)
+                viewModel.stageGestureUpdate(id: gesture.id) { $0.isEnabled = newValue }
             }
         )
     }

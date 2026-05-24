@@ -192,10 +192,10 @@ private final class GestureFeedbackCardView: NSView {
 
     private func configureView() {
         wantsLayer = true
-        layer?.shadowColor = NSColor.black.withAlphaComponent(0.18).cgColor
+        layer?.shadowColor = NSColor.black.withAlphaComponent(0.10).cgColor
         layer?.shadowOpacity = 1
-        layer?.shadowRadius = 18
-        layer?.shadowOffset = CGSize(width: 0, height: 10)
+        layer?.shadowRadius = 10
+        layer?.shadowOffset = CGSize(width: 0, height: 4)
 
         visualEffectView.material = .hudWindow
         visualEffectView.blendingMode = .withinWindow

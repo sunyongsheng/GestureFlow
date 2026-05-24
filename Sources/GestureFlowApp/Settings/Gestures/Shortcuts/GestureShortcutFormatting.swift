@@ -13,31 +13,38 @@ enum GestureShortcutFormatting {
     }
 
     static func captureShortcut(from event: NSEvent) -> KeyboardShortcutAction? {
-        guard let characters = event.charactersIgnoringModifiers?.uppercased(),
-              let firstCharacter = characters.first,
-              !firstCharacter.isWhitespace else {
+        guard event.type == .keyDown else { return nil }
+
+        let keyCode = event.keyCode
+        if keyCode == 53 || Self.modifierKeyCodes.contains(keyCode) {
             return nil
         }
 
-        guard let keyCode = keyCode(for: firstCharacter) else {
+        let modifiers = modifiers(from: event.modifierFlags)
+        guard !modifiers.isEmpty else {
             return nil
-        }
-
-        var modifiers: [KeyboardModifier] = []
-        if event.modifierFlags.contains(.command) {
-            modifiers.append(.command)
-        }
-        if event.modifierFlags.contains(.option) {
-            modifiers.append(.option)
-        }
-        if event.modifierFlags.contains(.control) {
-            modifiers.append(.control)
-        }
-        if event.modifierFlags.contains(.shift) {
-            modifiers.append(.shift)
         }
 
         return KeyboardShortcutAction(keyCode: keyCode, modifiers: modifiers)
+    }
+
+    private static let modifierKeyCodes: Set<UInt16> = [54, 55, 56, 57, 58, 59, 60, 61]
+
+    private static func modifiers(from flags: NSEvent.ModifierFlags) -> [KeyboardModifier] {
+        var modifiers: [KeyboardModifier] = []
+        if flags.contains(.command) {
+            modifiers.append(.command)
+        }
+        if flags.contains(.option) {
+            modifiers.append(.option)
+        }
+        if flags.contains(.control) {
+            modifiers.append(.control)
+        }
+        if flags.contains(.shift) {
+            modifiers.append(.shift)
+        }
+        return modifiers
     }
 
     private static func symbol(for modifier: KeyboardModifier) -> String {
@@ -83,39 +90,6 @@ enum GestureShortcutFormatting {
         case 46: return "M"
         default:
             return "Key\(keyCode)"
-        }
-    }
-
-    private static func keyCode(for character: Character) -> UInt16? {
-        switch character {
-        case "A": return 0
-        case "S": return 1
-        case "D": return 2
-        case "F": return 3
-        case "H": return 4
-        case "G": return 5
-        case "Z": return 6
-        case "X": return 7
-        case "C": return 8
-        case "V": return 9
-        case "B": return 11
-        case "Q": return 12
-        case "W": return 13
-        case "E": return 14
-        case "R": return 15
-        case "Y": return 16
-        case "T": return 17
-        case "O": return 31
-        case "U": return 32
-        case "I": return 34
-        case "P": return 35
-        case "L": return 37
-        case "J": return 38
-        case "K": return 40
-        case "N": return 45
-        case "M": return 46
-        default:
-            return nil
         }
     }
 }

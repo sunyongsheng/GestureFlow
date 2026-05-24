@@ -8,9 +8,9 @@ struct GestureShortcutRecorder: NSViewRepresentable {
     var onCancel: () -> Void
 
     func makeNSView(context: Context) -> NSView {
-        let view = NSView(frame: .zero)
-        view.addSubview(context.coordinator.captureView)
-        return view
+        let container = NSView(frame: .zero)
+        container.addSubview(context.coordinator.captureView)
+        return container
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
@@ -27,7 +27,7 @@ struct GestureShortcutRecorder: NSViewRepresentable {
     }
 
     final class Coordinator {
-        let captureView = NSView(frame: .zero)
+        fileprivate let captureView = ShortcutCaptureView()
         var isRecording = false
         private var monitor: Any?
 
@@ -45,7 +45,9 @@ struct GestureShortcutRecorder: NSViewRepresentable {
         func startRecording() {
             guard monitor == nil else { return }
 
-            monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { [weak self] event in
+            captureView.window?.makeFirstResponder(captureView)
+
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
                 guard let self, self.isRecording else { return event }
 
                 if event.keyCode == 53 {
@@ -53,13 +55,12 @@ struct GestureShortcutRecorder: NSViewRepresentable {
                     return nil
                 }
 
-                if event.type == .keyDown,
-                   let shortcut = GestureShortcutFormatting.captureShortcut(from: event) {
+                if let shortcut = GestureShortcutFormatting.captureShortcut(from: event) {
                     self.onCapture(shortcut)
                     return nil
                 }
 
-                return event
+                return nil
             }
         }
 
@@ -74,4 +75,8 @@ struct GestureShortcutRecorder: NSViewRepresentable {
             stopRecording()
         }
     }
+}
+
+private final class ShortcutCaptureView: NSView {
+    override var acceptsFirstResponder: Bool { true }
 }

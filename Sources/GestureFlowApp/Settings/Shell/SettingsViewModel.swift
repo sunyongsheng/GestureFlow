@@ -14,6 +14,8 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var isAccessibilityTrusted: Bool
     @Published var selectedApplicationScope: GestureApplicationScope = .global
 
+    private var unsavedGestureIDs: Set<UUID> = []
+
     private let saveConfiguration: (AppConfiguration) throws -> Void
     private let saveGestureConfiguration: (GestureConfiguration) throws -> Void
     private let permissionPrompt: () -> Void
@@ -106,7 +108,8 @@ final class SettingsViewModel: ObservableObject {
         persistGestureConfiguration()
     }
 
-    func addGesture() {
+    @discardableResult
+    func addGesture() -> UUID {
         let gesture = GestureDefinition(
             targetBundleIdentifier: selectedApplicationScope.targetBundleIdentifier,
             name: "新手势",
@@ -117,7 +120,12 @@ final class SettingsViewModel: ObservableObject {
         var updatedConfiguration = gestureConfiguration
         updatedConfiguration.gestures.append(gesture)
         gestureConfiguration = updatedConfiguration
-        persistGestureConfiguration()
+        unsavedGestureIDs.insert(gesture.id)
+        return gesture.id
+    }
+
+    func isGesturePendingSave(id: UUID) -> Bool {
+        unsavedGestureIDs.contains(id)
     }
 
     func deleteGestures(at offsets: IndexSet, in scopeBundleIdentifier: String?) {
@@ -129,13 +137,20 @@ final class SettingsViewModel: ObservableObject {
     func deleteGestures(withIDs ids: Set<UUID>) {
         guard !ids.isEmpty else { return }
 
+        let shouldPersist = ids.contains { !unsavedGestureIDs.contains($0) }
         var updatedConfiguration = gestureConfiguration
         updatedConfiguration.gestures.removeAll { ids.contains($0.id) }
         gestureConfiguration = updatedConfiguration
-        persistGestureConfiguration()
+        unsavedGestureIDs.subtract(ids)
+
+        if shouldPersist {
+            persistGestureConfiguration()
+        } else {
+            gestureSaveErrorMessage = nil
+        }
     }
 
-    func updateGesture(id: UUID, _ update: (inout GestureDefinition) -> Void) {
+    func stageGestureUpdate(id: UUID, _ update: (inout GestureDefinition) -> Void) {
         guard let index = gestureConfiguration.gestures.firstIndex(where: { $0.id == id }) else {
             return
         }
@@ -143,7 +158,24 @@ final class SettingsViewModel: ObservableObject {
         var updatedConfiguration = gestureConfiguration
         update(&updatedConfiguration.gestures[index])
         gestureConfiguration = updatedConfiguration
+        unsavedGestureIDs.insert(id)
+    }
+
+    func commitGesture(id: UUID) {
+        guard unsavedGestureIDs.contains(id) else { return }
+        guard let gesture = gestureConfiguration.gestures.first(where: { $0.id == id }) else {
+            return
+        }
+
+        guard gesture.shortcut.isRecorded else {
+            gestureSaveErrorMessage = "请录制快捷键。"
+            return
+        }
+
         persistGestureConfiguration()
+        if gestureSaveErrorMessage == nil {
+            unsavedGestureIDs.remove(id)
+        }
     }
 
     func updateFeedback(_ update: (inout FeedbackConfiguration) -> Void) {
@@ -194,6 +226,14 @@ final class SettingsViewModel: ObservableObject {
 
     func syncGestureConfiguration(_ configuration: GestureConfiguration) {
         gestureConfiguration = configuration
+        unsavedGestureIDs.removeAll()
+    }
+
+    func restoreDefaultGestureConfiguration() {
+        gestureConfiguration = GestureConfiguration.defaultTemplate
+        selectedApplicationScope = .global
+        unsavedGestureIDs.removeAll()
+        persistGestureConfiguration()
     }
 
     private func persistGestureConfiguration() {
