@@ -11,7 +11,7 @@ struct GestureSettingsView: View {
     var body: some View {
         HSplitView {
             applicationList
-            gestureTable
+            gestureList
         }
         .frame(
             minWidth: 720,
@@ -83,14 +83,14 @@ struct GestureSettingsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var gestureTable: some View {
+    private var gestureList: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(scopeTitle)
                     .font(.headline)
-                
+
                 Spacer()
-                
+
                 Button {
                     viewModel.addGesture()
                 } label: {
@@ -114,40 +114,27 @@ struct GestureSettingsView: View {
                 Text(gestureSaveErrorMessage)
                     .font(.caption)
                     .foregroundColor(.red)
+                    .padding(.horizontal, 12)
             }
 
-            Table(scopedGestures, selection: $selectedGestureIDs) {
-                TableColumn("名称") { gesture in
-                    nameCell(for: gesture)
-                }
-                .width(min: 100, ideal: 120)
+            VStack(spacing: 0) {
+                gestureListHeader
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
 
-                TableColumn("手势") { gesture in
-                    signatureCell(for: gesture)
-                }
-                .width(min: 88, ideal: 100)
+                Divider()
 
-                TableColumn("触发") { gesture in
-                    triggerCell(for: gesture)
+                List(scopedGestures, selection: $selectedGestureIDs) { gesture in
+                    gestureListRow(for: gesture)
                 }
-                .width(min: 72, ideal: 80)
-
-                TableColumn("快捷键") { gesture in
-                    shortcutCell(for: gesture)
-                }
-                .width(min: 80, ideal: 100)
-
-                TableColumn("启用") { gesture in
-                    Toggle(
-                        "",
-                        isOn: enabledBinding(for: gesture)
-                    )
-                    .labelsHidden()
-                }
-                .width(52)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .layoutPriority(1)
+        }
+        .onChange(of: viewModel.selectedApplicationScope) { _, _ in
+            selectedGestureIDs.removeAll()
         }
         .onChange(of: focusedNameGestureID) { previousFocus, newFocus in
             if let previousFocus, previousFocus != newFocus {
@@ -160,6 +147,51 @@ struct GestureSettingsView: View {
         .frame(minWidth: 460, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private var gestureListHeader: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text("名称")
+                .frame(minWidth: 100, maxWidth: 140, alignment: .leading)
+            Text("手势")
+                .frame(width: 100, alignment: .leading)
+            Text("触发")
+                .frame(width: 80, alignment: .leading)
+            Text("快捷键")
+                .frame(minWidth: 80, maxWidth: 120, alignment: .leading)
+            Text("启用")
+                .frame(width: 44, alignment: .leading)
+            Spacer(minLength: 0)
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+
+    private func gestureListRow(for gesture: GestureDefinition) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            nameCell(for: gesture)
+                .frame(minWidth: 100, maxWidth: 140, alignment: .leading)
+
+            signatureCell(for: gesture)
+                .frame(width: 100, alignment: .leading)
+
+            triggerCell(for: gesture)
+                .frame(width: 80, alignment: .leading)
+
+            shortcutCell(for: gesture)
+                .frame(minWidth: 80, maxWidth: 120, alignment: .leading)
+
+            Toggle(
+                "",
+                isOn: enabledBinding(for: gesture)
+            )
+            .labelsHidden()
+            .frame(width: 44, alignment: .leading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 6)
+        .tag(gesture.id)
     }
 
     private var scopeTitle: String {
