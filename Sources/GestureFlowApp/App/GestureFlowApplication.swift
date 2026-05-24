@@ -25,7 +25,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     }
 
     private let application: NSApplication
-    private let configurationStore: ConfigurationStore
+    private var configurationDirectoryResolver: ConfigurationDirectoryResolver
+    private var configurationStore: ConfigurationStore
+    private let configurationDirectoryRelocator: ConfigurationDirectoryRelocator
     private let runtimeState: RuntimeState
     private let permissionService: PermissionService
     private let gestureEngine: GestureEngine
@@ -48,8 +50,10 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
     init(
         application: NSApplication = .shared,
-        configurationStore: ConfigurationStore = ConfigurationStore(),
-        gestureConfigurationService: GestureConfigurationService = GestureConfigurationService(),
+        configurationDirectoryResolver: ConfigurationDirectoryResolver? = nil,
+        configurationStore: ConfigurationStore? = nil,
+        gestureConfigurationService: GestureConfigurationService? = nil,
+        configurationDirectoryRelocator: ConfigurationDirectoryRelocator? = nil,
         permissionService: PermissionService = PermissionService(),
         injectedGestureEngine: GestureEngine? = nil,
         notificationCenter: NotificationCenter = .default,
@@ -60,7 +64,14 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }
     ) {
         self.application = application
-        self.configurationStore = configurationStore
+        let resolvedResolver = configurationDirectoryResolver ?? ConfigurationDirectoryResolver.bootstrap()
+        let resolvedConfigurationStore = configurationStore ?? resolvedResolver.makeConfigurationStore()
+        let resolvedGestureService = gestureConfigurationService
+            ?? GestureConfigurationService(store: resolvedResolver.makeGestureConfigurationStore())
+        self.configurationDirectoryResolver = resolvedResolver
+        self.configurationStore = resolvedConfigurationStore
+        self.configurationDirectoryRelocator = configurationDirectoryRelocator
+            ?? ConfigurationDirectoryRelocator(standaloneStore: resolvedResolver.standaloneStore)
         self.permissionService = permissionService
         self.notificationCenter = notificationCenter
         self.activationNotificationName = activationNotificationName
@@ -68,10 +79,10 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.terminateApplication = terminateApplication
         self.showSettingsHandler = showSettings
         self.scheduleOnMain = scheduleOnMain
-        self.initialLoadResult = configurationStore.loadRecovering()
+        self.initialLoadResult = resolvedConfigurationStore.loadRecovering()
         self.runtimeState = RuntimeState(
             appConfiguration: initialLoadResult.configuration,
-            gestureConfigurationService: gestureConfigurationService
+            gestureConfigurationService: resolvedGestureService
         )
         self.configuration = runtimeState.appConfiguration
         runtimeState.gestureConfigurationService.load()
@@ -166,6 +177,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
                 backupURL: initialLoadResult.backupURL
             ),
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
+            configurationDirectoryPath: configurationDirectoryResolver.displayPath(),
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
             saveConfiguration: { [weak self] newConfiguration in
@@ -173,6 +185,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             },
             saveGestureConfiguration: { [weak self] newGestureConfiguration in
                 try self?.applyGestureConfiguration(newGestureConfiguration)
+            },
+            relocateConfigurationDirectory: { [weak self] newPath in
+                try self?.relocateConfigurationDirectory(to: newPath)
             },
             requestAccessibilityPermission: { [weak self] in
                 self?.permissionService.promptForAccessibilityPermission()
@@ -192,6 +207,41 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
                     message: "此功能尚未实现。"
                 )
             }
+        )
+    }
+
+    func relocateConfigurationDirectory(to newPath: String) throws {
+        try configurationStore.save(configuration)
+        try runtimeState.gestureConfigurationService.save()
+
+        let oldDirectory = configurationDirectoryResolver.configurationDirectoryURL
+        let newDirectory = try configurationDirectoryRelocator.relocate(
+            from: oldDirectory,
+            to: newPath
+        )
+
+        configurationDirectoryResolver.apply(configurationDirectory: newDirectory)
+        configurationStore = configurationDirectoryResolver.makeConfigurationStore()
+        runtimeState.gestureConfigurationService.replaceStore(
+            with: configurationDirectoryResolver.makeGestureConfigurationStore()
+        )
+
+        let loadResult = configurationStore.loadRecovering()
+        configuration = loadResult.configuration
+        runtimeState.appConfiguration = configuration
+        runtimeState.gestureConfigurationService.load()
+
+        if gestureEngine.isRunning {
+            gestureEngine.stop()
+            _ = gestureEngine.start()
+        }
+
+        syncRuntimePresentation()
+        settingsViewModel?.updateRuntimeStatus(
+            configuration: configuration,
+            gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
+            isRunning: gestureEngine.isRunning,
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
         )
     }
 

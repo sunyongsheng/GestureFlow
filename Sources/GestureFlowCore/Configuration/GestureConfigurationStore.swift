@@ -30,8 +30,6 @@ public struct GestureConfigurationStore {
     }
 
     public static func defaultFileURL() -> URL {
-        ConfigurationStore.defaultFileURL()
-            .deletingLastPathComponent()
-            .appendingPathComponent("gestures.json")
+        ConfigurationDirectoryResolver.bootstrap().gesturesFileURL
     }
 }

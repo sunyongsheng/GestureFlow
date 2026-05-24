@@ -1,12 +1,12 @@
 import Foundation
 
-public struct ConfigurationLoadResult: Equatable {
-    public var configuration: AppConfiguration
+public struct StandaloneConfigurationLoadResult: Equatable {
+    public var configuration: StandaloneConfiguration?
     public var didRecoverFromCorruption: Bool
     public var backupURL: URL?
 
     public init(
-        configuration: AppConfiguration,
+        configuration: StandaloneConfiguration?,
         didRecoverFromCorruption: Bool,
         backupURL: URL? = nil
     ) {
@@ -16,39 +16,39 @@ public struct ConfigurationLoadResult: Equatable {
     }
 }
 
-public struct ConfigurationStore {
+public struct StandaloneConfigurationStore {
     public var fileURL: URL
 
-    public init(fileURL: URL = ConfigurationStore.defaultFileURL()) {
+    public init(fileURL: URL = StandaloneConfigurationStore.defaultFileURL()) {
         self.fileURL = fileURL
     }
 
-    public func load() throws -> AppConfiguration {
+    public func load() throws -> StandaloneConfiguration? {
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            return AppConfiguration()
+            return nil
         }
 
         let data = try Data(contentsOf: fileURL)
-        return try JSONDecoder().decode(AppConfiguration.self, from: data)
+        return try JSONDecoder().decode(StandaloneConfiguration.self, from: data)
     }
 
-    public func loadRecovering() -> ConfigurationLoadResult {
+    public func loadRecovering() -> StandaloneConfigurationLoadResult {
         do {
-            return ConfigurationLoadResult(
+            return StandaloneConfigurationLoadResult(
                 configuration: try load(),
                 didRecoverFromCorruption: false
             )
         } catch {
             let backupURL = backupCorruptConfiguration()
-            return ConfigurationLoadResult(
-                configuration: AppConfiguration(),
+            return StandaloneConfigurationLoadResult(
+                configuration: nil,
                 didRecoverFromCorruption: true,
                 backupURL: backupURL
             )
         }
     }
 
-    public func save(_ configuration: AppConfiguration) throws {
+    public func save(_ configuration: StandaloneConfiguration) throws {
         let directoryURL = fileURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(
             at: directoryURL,
@@ -79,6 +79,7 @@ public struct ConfigurationStore {
     }
 
     public static func defaultFileURL() -> URL {
-        ConfigurationDirectoryResolver.bootstrap().configFileURL
+        ConfigurationDirectoryResolver.bootstrapBaseDirectoryURL
+            .appendingPathComponent("config_standalone.json")
     }
 }

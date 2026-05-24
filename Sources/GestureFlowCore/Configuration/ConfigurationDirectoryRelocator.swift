@@ -1,0 +1,126 @@
+import Foundation
+
+public enum ConfigurationDirectoryRelocationError: Error, Equatable {
+    case invalidPath
+    case notADirectory
+    case directoryNotWritable
+    case targetContainsConfigurationFiles
+    case sameAsCurrentDirectory
+    case copyFailed
+    case standaloneWriteFailed
+}
+
+extension ConfigurationDirectoryRelocationError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .invalidPath:
+            return "请输入有效路径。"
+        case .notADirectory:
+            return "请选择文件夹路径。"
+        case .directoryNotWritable:
+            return "目录不可写。"
+        case .targetContainsConfigurationFiles:
+            return "目标目录已存在配置文件，请选择空目录。"
+        case .sameAsCurrentDirectory:
+            return "配置目录未更改。"
+        case .copyFailed:
+            return "复制配置文件失败。"
+        case .standaloneWriteFailed:
+            return "保存配置目录设置失败。"
+        }
+    }
+}
+
+public struct ConfigurationDirectoryRelocator {
+    private let fileManager: FileManager
+    private let standaloneStore: StandaloneConfigurationStore
+    private let homeDirectory: URL
+
+    public init(
+        standaloneStore: StandaloneConfigurationStore = StandaloneConfigurationStore(),
+        fileManager: FileManager = .default,
+        homeDirectory: URL? = nil
+    ) {
+        self.standaloneStore = standaloneStore
+        self.fileManager = fileManager
+        self.homeDirectory = homeDirectory ?? ConfigurationPathFormatting.homeDirectoryURL(fileManager: fileManager)
+    }
+
+    public func relocate(
+        from oldDirectory: URL,
+        to newDirectoryPath: String
+    ) throws -> URL {
+        guard let newDirectory = ConfigurationPathFormatting.normalizedDirectoryURL(
+            from: newDirectoryPath,
+            homeDirectory: homeDirectory
+        ) else {
+            throw ConfigurationDirectoryRelocationError.invalidPath
+        }
+
+        let oldNormalized = oldDirectory.standardizedFileURL
+        if newDirectory == oldNormalized {
+            throw ConfigurationDirectoryRelocationError.sameAsCurrentDirectory
+        }
+
+        try validateTargetDirectory(newDirectory)
+
+        if !fileManager.fileExists(atPath: newDirectory.path) {
+            try fileManager.createDirectory(at: newDirectory, withIntermediateDirectories: true)
+        }
+
+        try copyConfigurationFiles(from: oldNormalized, to: newDirectory)
+
+        do {
+            try standaloneStore.save(
+                StandaloneConfiguration(configurationDirectory: newDirectory.path)
+            )
+        } catch {
+            throw ConfigurationDirectoryRelocationError.standaloneWriteFailed
+        }
+
+        deleteBusinessConfigurationFiles(in: oldNormalized)
+
+        return newDirectory
+    }
+
+    private func validateTargetDirectory(_ directory: URL) throws {
+        var isDirectory: ObjCBool = false
+        if fileManager.fileExists(atPath: directory.path, isDirectory: &isDirectory) {
+            guard isDirectory.boolValue else {
+                throw ConfigurationDirectoryRelocationError.notADirectory
+            }
+            guard fileManager.isWritableFile(atPath: directory.path) else {
+                throw ConfigurationDirectoryRelocationError.directoryNotWritable
+            }
+        }
+
+        let configURL = directory.appendingPathComponent("config.json")
+        let gesturesURL = directory.appendingPathComponent("gestures.json")
+        if fileManager.fileExists(atPath: configURL.path) || fileManager.fileExists(atPath: gesturesURL.path) {
+            throw ConfigurationDirectoryRelocationError.targetContainsConfigurationFiles
+        }
+    }
+
+    private func copyConfigurationFiles(from oldDirectory: URL, to newDirectory: URL) throws {
+        let files = ["config.json", "gestures.json"]
+        for fileName in files {
+            let source = oldDirectory.appendingPathComponent(fileName)
+            guard fileManager.fileExists(atPath: source.path) else {
+                continue
+            }
+            let destination = newDirectory.appendingPathComponent(fileName)
+            do {
+                try fileManager.copyItem(at: source, to: destination)
+            } catch {
+                throw ConfigurationDirectoryRelocationError.copyFailed
+            }
+        }
+    }
+
+    private func deleteBusinessConfigurationFiles(in directory: URL) {
+        for fileName in ["config.json", "gestures.json"] {
+            let fileURL = directory.appendingPathComponent(fileName)
+            try? fileManager.removeItem(at: fileURL)
+        }
+    }
+}

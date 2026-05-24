@@ -2,12 +2,17 @@ import Foundation
 import GestureFlowCore
 
 final class GestureConfigurationService {
-    private let store: GestureConfigurationStore
+    private(set) var store: GestureConfigurationStore
     var configuration: GestureConfiguration
 
     init(store: GestureConfigurationStore = GestureConfigurationStore()) {
         self.store = store
         self.configuration = GestureConfiguration.defaultTemplate
+    }
+
+    func replaceStore(with store: GestureConfigurationStore) {
+        self.store = store
+        load()
     }
 
     func load() {

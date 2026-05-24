@@ -48,6 +48,56 @@ struct GeneralSettingsView: View {
                     Divider()
 
                     VStack(alignment: .leading, spacing: 10) {
+                        Text("配置目录")
+                            .font(.body.weight(.medium))
+
+                        Text("自定义配置目录以实现配置同步")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        HStack(spacing: 12) {
+                            TextField("配置目录路径", text: $viewModel.draftConfigurationDirectoryPath)
+                                .textFieldStyle(.roundedBorder)
+                                .disabled(viewModel.isRelocatingConfigurationDirectory)
+
+                            configurationDirectoryIconButton(
+                                systemImage: "arrow.counterclockwise",
+                                help: "恢复默认"
+                            ) {
+                                viewModel.prefillDefaultConfigurationDirectory()
+                            }
+                            .disabled(viewModel.isRelocatingConfigurationDirectory)
+
+                            configurationDirectoryIconButton(
+                                systemImage: "folder.badge.gearshape",
+                                help: "XDG（~/.config/gestureflow）"
+                            ) {
+                                viewModel.prefillXDGConfigurationDirectory()
+                            }
+                            .disabled(viewModel.isRelocatingConfigurationDirectory)
+
+                            configurationDirectoryIconButton(
+                                systemImage: "checkmark.circle.fill",
+                                help: "确认"
+                            ) {
+                                viewModel.confirmConfigurationDirectoryChange()
+                            }
+                            .disabled(
+                                !viewModel.canConfirmConfigurationDirectoryChange
+                                    || viewModel.isRelocatingConfigurationDirectory
+                            )
+                        }
+
+                        if let errorMessage = viewModel.configurationDirectoryErrorMessage {
+                            Text(errorMessage)
+                                .font(.subheadline)
+                                .foregroundColor(.red)
+                        }
+                    }
+
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 10) {
                         Text("辅助功能")
                             .font(.body.weight(.medium))
 
@@ -139,6 +189,22 @@ struct GeneralSettingsView: View {
                 viewModel.showLaunchAtLoginPlaceholder()
             }
         )
+    }
+
+    private func configurationDirectoryIconButton(
+        systemImage: String,
+        help: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 14, weight: .medium))
+                .frame(width: 24, height: 24)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.regular)
+        .help(help)
+        .accessibilityLabel(help)
     }
 
     private var gestureRecognitionBinding: Binding<Bool> {

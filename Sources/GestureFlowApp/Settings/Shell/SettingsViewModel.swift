@@ -13,11 +13,16 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var isRunning: Bool
     @Published private(set) var isAccessibilityTrusted: Bool
     @Published var selectedApplicationScope: GestureApplicationScope = .global
+    @Published var draftConfigurationDirectoryPath: String
+    @Published private(set) var persistedConfigurationDirectoryPath: String
+    @Published private(set) var isRelocatingConfigurationDirectory = false
+    @Published private(set) var configurationDirectoryErrorMessage: String?
 
     private var unsavedGestureIDs: Set<UUID> = []
 
     private let saveConfiguration: (AppConfiguration) throws -> Void
     private let saveGestureConfiguration: (GestureConfiguration) throws -> Void
+    private let relocateConfigurationDirectoryAction: (String) throws -> Void
     private let permissionPrompt: () -> Void
     private let startGestureFlowAction: () -> Void
     private let stopGestureFlowAction: () -> Void
@@ -28,10 +33,12 @@ final class SettingsViewModel: ObservableObject {
     init(
         loadResult: ConfigurationLoadResult,
         gestureConfiguration: GestureConfiguration,
+        configurationDirectoryPath: String = "~",
         isRunning: Bool,
         isAccessibilityTrusted: Bool,
         saveConfiguration: @escaping (AppConfiguration) throws -> Void,
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void,
+        relocateConfigurationDirectory: @escaping (String) throws -> Void = { _ in },
         requestAccessibilityPermission: @escaping () -> Void,
         startGestureFlow: @escaping () -> Void = {},
         stopGestureFlow: @escaping () -> Void = {},
@@ -46,10 +53,13 @@ final class SettingsViewModel: ObservableObject {
                 ?? "已从损坏的配置中恢复，但无法备份损坏的文件。"
             : nil
         self.recoveryBackupPath = loadResult.backupURL?.path
+        self.persistedConfigurationDirectoryPath = configurationDirectoryPath
+        self.draftConfigurationDirectoryPath = configurationDirectoryPath
         self.isRunning = isRunning
         self.isAccessibilityTrusted = isAccessibilityTrusted
         self.saveConfiguration = saveConfiguration
         self.saveGestureConfiguration = saveGestureConfiguration
+        self.relocateConfigurationDirectoryAction = relocateConfigurationDirectory
         self.permissionPrompt = requestAccessibilityPermission
         self.startGestureFlowAction = startGestureFlow
         self.stopGestureFlowAction = stopGestureFlow
@@ -206,6 +216,41 @@ final class SettingsViewModel: ObservableObject {
 
     func showLaunchAtLoginPlaceholder() {
         launchAtLoginPlaceholderAction()
+    }
+
+    var canConfirmConfigurationDirectoryChange: Bool {
+        !ConfigurationPathFormatting.normalizedPathsEqual(
+            draftConfigurationDirectoryPath,
+            persistedConfigurationDirectoryPath
+        )
+    }
+
+    func prefillDefaultConfigurationDirectory() {
+        draftConfigurationDirectoryPath = ConfigurationDirectoryResolver.defaultConfigurationDirectoryDisplayPath
+        configurationDirectoryErrorMessage = nil
+    }
+
+    func prefillXDGConfigurationDirectory() {
+        draftConfigurationDirectoryPath = ConfigurationDirectoryResolver.xdgConfigurationDirectoryDisplayPath
+        configurationDirectoryErrorMessage = nil
+    }
+
+    func confirmConfigurationDirectoryChange() {
+        guard canConfirmConfigurationDirectoryChange else {
+            return
+        }
+
+        configurationDirectoryErrorMessage = nil
+        isRelocatingConfigurationDirectory = true
+        defer { isRelocatingConfigurationDirectory = false }
+
+        do {
+            try relocateConfigurationDirectoryAction(draftConfigurationDirectoryPath)
+            persistedConfigurationDirectoryPath = draftConfigurationDirectoryPath
+            configurationDirectoryErrorMessage = nil
+        } catch {
+            configurationDirectoryErrorMessage = error.localizedDescription
+        }
     }
 
     func updateRuntimeStatus(
