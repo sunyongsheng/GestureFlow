@@ -199,7 +199,7 @@ struct GestureSettingsView: View {
             Text("触发")
                 .frame(width: 80, alignment: .leading)
             Text("快捷键")
-                .frame(minWidth: 80, maxWidth: 120, alignment: .leading)
+                .frame(minWidth: 96, maxWidth: 160, alignment: .leading)
             Text("启用")
                 .frame(width: 44, alignment: .leading)
             Spacer(minLength: 0)
@@ -220,7 +220,7 @@ struct GestureSettingsView: View {
                 .frame(width: 80, alignment: .leading)
 
             shortcutCell(for: gesture)
-                .frame(minWidth: 80, maxWidth: 120, alignment: .leading)
+                .frame(minWidth: 96, maxWidth: 160, alignment: .leading)
 
             Toggle(
                 "",
@@ -325,9 +325,11 @@ struct GestureSettingsView: View {
                 activateGestureEditing(gesture.id)
                 recordingGestureID = gesture.id
             } label: {
-                Text(shortcutLabel(for: gesture))
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                GestureShortcutTagsView(
+                    shortcut: gestureShortcut(for: gesture),
+                    isRecording: recordingGestureID == gesture.id
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
 
@@ -346,11 +348,9 @@ struct GestureSettingsView: View {
         }
     }
 
-    private func shortcutLabel(for gesture: GestureDefinition) -> String {
-        if recordingGestureID == gesture.id {
-            return "正在录制…"
-        }
-        return GestureShortcutFormatting.displayString(for: gesture.shortcut)
+    private func gestureShortcut(for gesture: GestureDefinition) -> KeyboardShortcutAction {
+        viewModel.gestureConfiguration.gestures.first(where: { $0.id == gesture.id })?.shortcut
+            ?? gesture.shortcut
     }
 
     private func commitNameDraft(for gestureID: UUID) {

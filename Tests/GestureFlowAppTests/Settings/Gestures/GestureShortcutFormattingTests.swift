@@ -8,7 +8,7 @@ final class GestureShortcutFormattingTests: XCTestCase {
         let shortcut = KeyboardShortcutAction(keyCode: 0, modifiers: [.command])
 
         XCTAssertTrue(shortcut.isRecorded)
-        XCTAssertEqual(GestureShortcutFormatting.displayString(for: shortcut), "⌘A")
+        XCTAssertEqual(GestureShortcutFormatting.displayString(for: shortcut), "⌘ A")
     }
 
     func testUnrecordedShortcutUsesEmptyModifiers() {

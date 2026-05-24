@@ -7,9 +7,9 @@ enum GestureShortcutFormatting {
             return "点击录制"
         }
 
-        let modifierSymbols = shortcut.modifiers.map(symbol(for:)).joined()
+        let modifierSymbols = shortcut.modifiers.map(symbol(for:)).joined(separator: " ")
         let keySymbol = keySymbol(for: shortcut.keyCode)
-        return modifierSymbols + keySymbol
+        return modifierSymbols + " " + keySymbol
     }
 
     static func captureShortcut(from event: NSEvent) -> KeyboardShortcutAction? {
