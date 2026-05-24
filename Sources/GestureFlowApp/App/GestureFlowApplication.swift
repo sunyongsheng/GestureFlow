@@ -125,8 +125,17 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     }
 
     func stopGestureFlow() {
+        stopGestureEngine(persistUserPreference: true)
+    }
+
+    /// Stops listening without changing the persisted enabled preference (e.g. app quit).
+    private func stopGestureEngine(persistUserPreference: Bool) {
         gestureEngine.stop()
-        setGestureFlowEnabled(false)
+        if persistUserPreference {
+            setGestureFlowEnabled(false)
+        } else {
+            syncRuntimePresentation()
+        }
     }
 
     private func makeStatusBarActions() -> StatusBarActions {
@@ -139,7 +148,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     }
 
     private func quitApplication() {
-        stopGestureFlow()
+        stopGestureEngine(persistUserPreference: false)
         terminateApplication(application)
     }
 
@@ -216,16 +225,20 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         runtimeState.appConfiguration.isEnabled = isEnabled
         do {
             try configurationStore.save(configuration)
-            statusBarController?.update(state: currentStatusBarState())
-            settingsViewModel?.updateRuntimeStatus(
-                configuration: configuration,
-                gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
-                isRunning: gestureEngine.isRunning,
-                isAccessibilityTrusted: permissionService.isAccessibilityTrusted
-            )
+            syncRuntimePresentation()
         } catch {
             showPlaceholder(title: "GestureFlow", message: "Failed to save configuration: \(error)")
         }
+    }
+
+    private func syncRuntimePresentation() {
+        statusBarController?.update(state: currentStatusBarState())
+        settingsViewModel?.updateRuntimeStatus(
+            configuration: configuration,
+            gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
+            isRunning: gestureEngine.isRunning,
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+        )
     }
 
     private func reconcilePersistedRunningState() {
@@ -257,7 +270,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             object: nil,
             queue: nil
         ) { [weak self] _ in
-            self?.stopGestureFlow()
+            self?.stopGestureEngine(persistUserPreference: false)
         }
     }
 

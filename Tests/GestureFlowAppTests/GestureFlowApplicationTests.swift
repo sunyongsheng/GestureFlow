@@ -286,7 +286,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
         XCTAssertEqual(eventTap.stopCount, 1)
         XCTAssertEqual(terminateCallCount, 1)
-        XCTAssertFalse(try store.load().isEnabled)
+        XCTAssertTrue(try store.load().isEnabled)
     }
 
     func testLaunchCanInstallSettingsViewModelIntoBridgeAndOpenSettingsWindow() throws {
@@ -484,8 +484,9 @@ final class GestureFlowApplicationTests: XCTestCase {
         XCTAssertEqual(eventTap.stopCount, 1)
         XCTAssertEqual(terminateCallCount, 1)
         XCTAssertTrue(wasStoppedBeforeTerminate)
-        XCTAssertFalse(try store.load().isEnabled)
-        XCTAssertFalse(application.isGestureFlowRunning)
+        XCTAssertTrue(try store.load().isEnabled)
+        XCTAssertTrue(application.isGestureFlowRunning)
+        XCTAssertFalse(gestureEngine.isRunning)
     }
 
     func testTerminationNotificationStopsGestureFlow() throws {
@@ -517,8 +518,40 @@ final class GestureFlowApplicationTests: XCTestCase {
         notificationCenter.post(name: .testApplicationWillTerminate, object: nil)
 
         XCTAssertEqual(eventTap.stopCount, 1)
+        XCTAssertTrue(try store.load().isEnabled)
+        XCTAssertTrue(application.isGestureFlowRunning)
+        XCTAssertFalse(gestureEngine.isRunning)
+    }
+
+    func testQuitAfterManualStopKeepsDisabledPreference() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let store = ConfigurationStore(fileURL: fileURL)
+        let permissionService = PermissionService(
+            trustCheck: { true },
+            permissionPrompt: {}
+        )
+        let eventTap = ApplicationSpyMouseEventTapController()
+        let gestureEngine = GestureEngine(
+            appConfigurationProvider: { AppConfiguration(isEnabled: true) },
+            gestureConfigurationProvider: { GestureConfiguration.defaultTemplate },
+            permissionService: permissionService,
+            eventTap: eventTap
+        )
+        var capturedSettingsViewModel: SettingsViewModel?
+        let application = GestureFlowApplication(
+            configurationStore: store,
+            permissionService: permissionService,
+            injectedGestureEngine: gestureEngine,
+            terminateApplication: { _ in },
+            showSettings: { capturedSettingsViewModel = $0; _ = $1 }
+        )
+
+        application.launch()
+        application.startGestureFlow()
+        capturedSettingsViewModel?.setGestureRecognitionEnabled(false)
+        capturedSettingsViewModel?.quitApplication()
+
         XCTAssertFalse(try store.load().isEnabled)
-        XCTAssertFalse(application.isGestureFlowRunning)
     }
 
     func testClosingSettingsDoesNotStopGestureRecognition() throws {
@@ -673,8 +706,9 @@ final class GestureFlowApplicationTests: XCTestCase {
         XCTAssertEqual(eventTap.stopCount, 1)
         XCTAssertEqual(terminateCallCount, 1)
         XCTAssertTrue(wasStoppedBeforeTerminate)
-        XCTAssertFalse(try store.load().isEnabled)
-        XCTAssertFalse(application.isGestureFlowRunning)
+        XCTAssertTrue(try store.load().isEnabled)
+        XCTAssertTrue(application.isGestureFlowRunning)
+        XCTAssertFalse(gestureEngine.isRunning)
     }
 
     func testPreferencesMenuItemRoutesThroughSettingsWindowOpenDriver() throws {
