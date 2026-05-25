@@ -84,7 +84,7 @@ public struct FeedbackConfiguration: Codable, Equatable {
 
     public static let `default` = FeedbackConfiguration(
         trailColorHex: "#4A90E2",
-        trailWidth: 2.5,
+        trailWidth: 3,
         trailOpacity: 0.85
     )
 }

@@ -303,6 +303,13 @@ final class SettingsViewModel: ObservableObject {
         persistGestureConfiguration()
     }
 
+    func restoreDefaultAdvancedSettings() {
+        configuration.feedback = .default
+        configuration.trigger = .default
+        configuration.gestureTargetApplication = .defaultValue
+        persistAppConfiguration()
+    }
+
     private func persistGestureConfiguration() {
         let conflicts = ConflictDetector().detect(in: gestureConfiguration.gestures)
         guard conflicts.isEmpty else {

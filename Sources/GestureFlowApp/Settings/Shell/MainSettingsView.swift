@@ -59,8 +59,8 @@ struct MainSettingsView: View {
         switch selectedSection {
         case .general:
             GeneralSettingsView(viewModel: viewModel)
-        case .appearance:
-            AppearanceSettingsView(viewModel: viewModel)
+        case .advanced:
+            AdvancedSettingsView(viewModel: viewModel)
         case .gestures:
             GestureSettingsView(viewModel: viewModel)
                 .padding(.horizontal, 12)

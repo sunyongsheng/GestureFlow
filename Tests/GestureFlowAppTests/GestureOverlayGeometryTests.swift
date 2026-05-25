@@ -65,6 +65,6 @@ final class GestureOverlayGeometryTests: XCTestCase {
     }
 
     func testDefaultFeedbackUsesThinnerTrailWidth() {
-        XCTAssertEqual(FeedbackConfiguration.default.trailWidth, 2.5, accuracy: 0.001)
+        XCTAssertEqual(FeedbackConfiguration.default.trailWidth, 3, accuracy: 0.001)
     }
 }

@@ -22,7 +22,7 @@
 | `Sources/GestureFlowCore/Matching/ScopedGestureMatcher.swift` | Rename param to `targetBundleIdentifier` |
 | `Sources/GestureFlowApp/Engine/GestureEngine.swift` | Resolve at start point; wire matcher + executor |
 | `Sources/GestureFlowApp/Actions/ActionExecutor.swift` | `postToPid` keyboard path |
-| `Sources/GestureFlowApp/Settings/Appearance/GestureTriggerSettingsView.swift` | Picker UI |
+| `Sources/GestureFlowApp/Settings/Advanced/GestureTriggerSettingsView.swift` | Picker UI |
 | `Sources/GestureFlowApp/Settings/Shell/SettingsViewModel.swift` | Update + persist `gestureTargetApplication` |
 | `Tests/GestureFlowCoreTests/GestureTargetApplicationResolverTests.swift` | Hit test + foreground |
 | `Tests/GestureFlowAppTests/GestureEngineTests.swift` | End-to-end policy behavior |
@@ -177,7 +177,7 @@ func execute(_ action: GestureAction, targetProcessIdentifier: pid_t? = nil) thr
 ### Task 6: Settings UI
 
 **Files:**
-- Modify: `Sources/GestureFlowApp/Settings/Appearance/GestureTriggerSettingsView.swift`
+- Modify: `Sources/GestureFlowApp/Settings/Advanced/GestureTriggerSettingsView.swift`
 - Modify: `Sources/GestureFlowApp/Settings/Shell/SettingsViewModel.swift`
 - Modify: `Tests/GestureFlowAppTests/Settings/Shell/SettingsViewModelTests.swift`
 
@@ -193,7 +193,7 @@ func execute(_ action: GestureAction, targetProcessIdentifier: pid_t? = nil) thr
 
 - [ ] **Step 3: Test view model persistence**
 
-- [ ] **Step 4: Manual check:** open Settings → 界面 → 触发, toggle options, restart app, value retained
+- [ ] **Step 4: Manual check:** open Settings → 高级 → 触发, toggle options, restart app, value retained
 
 - [ ] **Step 5: Commit**
 

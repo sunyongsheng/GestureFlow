@@ -2,7 +2,7 @@
 
 **Goal**
 
-Add a setting under **Settings → 界面 → 触发** titled **手势目标应用** that controls which application is used for **both** gesture rule matching and keyboard shortcut delivery. Default is **鼠标下方应用**.
+Add a setting under **Settings → 高级 → 触发** titled **手势目标应用** that controls which application is used for **both** gesture rule matching and keyboard shortcut delivery. Default is **鼠标下方应用**.
 
 **Approved decisions**
 
@@ -137,5 +137,5 @@ Foreground mode with no frontmost app: treat as unresolved target for matching (
 - `Sources/GestureFlowCore/Matching/ScopedGestureMatcher.swift`
 - `Sources/GestureFlowApp/Engine/GestureEngine.swift`
 - `Sources/GestureFlowApp/Actions/ActionExecutor.swift`
-- `Sources/GestureFlowApp/Settings/Appearance/GestureTriggerSettingsView.swift`
+- `Sources/GestureFlowApp/Settings/Advanced/GestureTriggerSettingsView.swift`
 - `Sources/GestureFlowApp/Settings/Shell/SettingsViewModel.swift`

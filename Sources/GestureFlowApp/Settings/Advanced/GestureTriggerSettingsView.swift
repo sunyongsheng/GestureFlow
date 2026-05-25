@@ -9,7 +9,7 @@ struct GestureTriggerSettingsView: View {
             title: "触发",
             description: "调整识别触发时机与采样容错范围，平衡灵敏度和稳定性。"
         ) {
-            VStack(alignment: .leading, spacing: 18) {
+            SettingsGroupedRows {
                 SettingsValueRow(
                     title: "手势目标应用",
                     description: "决定按哪个应用匹配手势规则，以及手势快捷键发往哪个应用。",
@@ -25,28 +25,44 @@ struct GestureTriggerSettingsView: View {
                     .frame(width: 180)
                 }
 
-                Divider()
+                SettingsRowDivider()
 
-                sliderRow(
+                SettingsSliderRow(
                     title: "移动阈值",
                     valueText: "\(formatted(viewModel.configuration.trigger.movementThreshold, precision: 0)) pt",
-                    rangeText: "4 - 80 pt",
-                    slider: Slider(value: movementThresholdBinding, in: 4...80, step: 1)
-                )
+                    rangeText: "4 - 80 pt"
+                ) {
+                    Slider(
+                        value: movementThresholdBinding.snapping(to: 1, in: 4...80),
+                        in: 4...80
+                    )
+                }
 
-                sliderRow(
+                SettingsRowDivider()
+
+                SettingsSliderRow(
                     title: "按住超时",
                     valueText: "\(viewModel.configuration.trigger.holdTimeoutMilliseconds) ms",
-                    rangeText: "50 - 1000 ms",
-                    slider: Slider(value: holdTimeoutBinding, in: 50...1000, step: 25)
-                )
+                    rangeText: "50 - 1000 ms"
+                ) {
+                    Slider(
+                        value: holdTimeoutBinding.snapping(to: 25, in: 50...1000),
+                        in: 50...1000
+                    )
+                }
 
-                sliderRow(
+                SettingsRowDivider()
+
+                SettingsSliderRow(
                     title: "采样跳变阈值",
                     valueText: "\(formatted(viewModel.configuration.trigger.maximumSampleDistance, precision: 0)) pt",
-                    rangeText: "40 - 240 pt",
-                    slider: Slider(value: maximumSampleDistanceBinding, in: 40...240, step: 5)
-                )
+                    rangeText: "40 - 240 pt"
+                ) {
+                    Slider(
+                        value: maximumSampleDistanceBinding.snapping(to: 5, in: 40...240),
+                        in: 40...240
+                    )
+                }
             }
         }
     }
@@ -89,32 +105,6 @@ struct GestureTriggerSettingsView: View {
                 }
             }
         )
-    }
-
-    private func sliderRow<SliderView: View>(
-        title: String,
-        valueText: String,
-        rangeText: String,
-        slider: SliderView
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(title)
-                    .font(.body.weight(.medium))
-
-                Spacer()
-
-                Text(valueText)
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundColor(.secondary)
-            }
-
-            slider
-
-            Text(rangeText)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
     }
 
     private func formatted(_ value: Double, precision: Int) -> String {

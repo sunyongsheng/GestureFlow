@@ -10,42 +10,46 @@ struct FeedbackSettingsView: View {
             title: "手势反馈",
             description: "控制手势轨迹的颜色、粗细与透明度，让反馈更自然。"
         ) {
-            VStack(alignment: .leading, spacing: 18) {
-                trailColorRow
+            SettingsGroupedRows {
+                GestureTrailPreview(feedback: viewModel.configuration.feedback)
 
-                sliderRow(
+                SettingsRowDivider()
+
+                SettingsValueRow(
+                    title: "轨迹颜色",
+                    description: "绘制手势路径时使用的主色调。",
+                    statusText: nil
+                ) {
+                    TrailColorPickerControl(color: trailColorBinding)
+                }
+
+                SettingsRowDivider()
+
+                SettingsSliderRow(
                     title: "轨迹粗细",
                     valueText: formatted(viewModel.configuration.feedback.trailWidth, precision: 1),
-                    rangeText: "1.0 - 12.0",
-                    slider: Slider(value: feedbackBinding(\.trailWidth), in: 1...12, step: 0.5)
-                )
+                    rangeText: "1.0 - 12.0"
+                ) {
+                    Slider(
+                        value: feedbackBinding(\.trailWidth).snapping(to: 0.5, in: 1...12),
+                        in: 1...12
+                    )
+                }
 
-                sliderRow(
+                SettingsRowDivider()
+
+                SettingsSliderRow(
                     title: "轨迹透明度",
                     valueText: formatted(viewModel.configuration.feedback.trailOpacity, precision: 2),
-                    rangeText: "0.10 - 1.00",
-                    slider: Slider(value: feedbackBinding(\.trailOpacity), in: 0.1...1, step: 0.05)
-                )
+                    rangeText: "0.10 - 1.00"
+                ) {
+                    Slider(
+                        value: feedbackBinding(\.trailOpacity).snapping(to: 0.05, in: 0.1...1),
+                        in: 0.1...1
+                    )
+                }
             }
         }
-    }
-
-    private var trailColorRow: some View {
-        HStack(alignment: .center, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("轨迹颜色")
-                    .font(.body.weight(.medium))
-
-                Text("绘制手势路径时使用的主色调。")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer(minLength: 16)
-
-            TrailColorPickerControl(color: trailColorBinding)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var trailColorBinding: Binding<Color> {
@@ -72,32 +76,6 @@ struct FeedbackSettingsView: View {
                 }
             }
         )
-    }
-
-    private func sliderRow<SliderView: View>(
-        title: String,
-        valueText: String,
-        rangeText: String,
-        slider: SliderView
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(title)
-                    .font(.body.weight(.medium))
-
-                Spacer()
-
-                Text(valueText)
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundColor(.secondary)
-            }
-
-            slider
-
-            Text(rangeText)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
     }
 
     private func formatted(_ value: Double, precision: Int) -> String {

@@ -258,6 +258,62 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(persistedTrigger.maximumSampleDistance, 160)
     }
 
+    func testRestoreDefaultAdvancedSettingsResetsAndPersists() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let store = ConfigurationStore(fileURL: fileURL)
+        var configuration = AppConfiguration()
+        configuration.feedback.trailColorHex = "#FFAA00"
+        configuration.feedback.trailWidth = 7
+        configuration.feedback.trailOpacity = 0.45
+        configuration.trigger.movementThreshold = 40
+        configuration.trigger.holdTimeoutMilliseconds = 500
+        configuration.trigger.maximumSampleDistance = 160
+        configuration.gestureTargetApplication = .foreground
+        try store.save(configuration)
+
+        let viewModel = makeViewModel(
+            loadResult: ConfigurationLoadResult(
+                configuration: try store.load(),
+                didRecoverFromCorruption: false,
+                backupURL: nil
+            ),
+            saveConfiguration: { try store.save($0) }
+        )
+
+        viewModel.restoreDefaultAdvancedSettings()
+
+        XCTAssertEqual(viewModel.configuration.feedback, .default)
+        XCTAssertEqual(viewModel.configuration.trigger, .default)
+        XCTAssertEqual(viewModel.configuration.gestureTargetApplication, .defaultValue)
+
+        let persisted = try store.load()
+        XCTAssertEqual(persisted.feedback, .default)
+        XCTAssertEqual(persisted.trigger, .default)
+        XCTAssertEqual(persisted.gestureTargetApplication, .defaultValue)
+        XCTAssertNil(viewModel.saveErrorMessage)
+    }
+
+    func testRestoreDefaultAdvancedSettingsPreservesIsEnabled() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let store = ConfigurationStore(fileURL: fileURL)
+        try store.save(AppConfiguration(isEnabled: true))
+
+        let viewModel = makeViewModel(
+            loadResult: ConfigurationLoadResult(
+                configuration: try store.load(),
+                didRecoverFromCorruption: false,
+                backupURL: nil
+            ),
+            saveConfiguration: { try store.save($0) }
+        )
+        viewModel.updateFeedback { $0.trailWidth = 9 }
+
+        viewModel.restoreDefaultAdvancedSettings()
+
+        XCTAssertTrue(viewModel.configuration.isEnabled)
+        XCTAssertTrue(try store.load().isEnabled)
+    }
+
     func testUpdatingGestureTargetApplicationPersistsConfiguration() throws {
         let fileURL = try makeTemporaryConfigURL()
         let store = ConfigurationStore(fileURL: fileURL)
