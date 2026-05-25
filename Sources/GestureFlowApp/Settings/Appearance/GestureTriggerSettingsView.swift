@@ -10,6 +10,23 @@ struct GestureTriggerSettingsView: View {
             description: "调整识别触发时机与采样容错范围，平衡灵敏度和稳定性。"
         ) {
             VStack(alignment: .leading, spacing: 18) {
+                SettingsValueRow(
+                    title: "手势目标应用",
+                    description: "决定按哪个应用匹配手势规则，以及手势快捷键发往哪个应用。",
+                    statusText: nil
+                ) {
+                    Picker("", selection: gestureTargetApplicationBinding) {
+                        ForEach(GestureTargetApplication.allCases, id: \.self) { target in
+                            Text(target.displayName).tag(target)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .frame(width: 180)
+                }
+
+                Divider()
+
                 sliderRow(
                     title: "移动阈值",
                     valueText: "\(formatted(viewModel.configuration.trigger.movementThreshold, precision: 0)) pt",
@@ -32,6 +49,13 @@ struct GestureTriggerSettingsView: View {
                 )
             }
         }
+    }
+
+    private var gestureTargetApplicationBinding: Binding<GestureTargetApplication> {
+        Binding(
+            get: { viewModel.configuration.gestureTargetApplication },
+            set: { viewModel.updateGestureTargetApplication($0) }
+        )
     }
 
     private var movementThresholdBinding: Binding<Double> {

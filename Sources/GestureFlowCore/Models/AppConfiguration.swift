@@ -4,21 +4,25 @@ public struct AppConfiguration: Codable, Equatable {
     public var isEnabled: Bool
     public var feedback: FeedbackConfiguration
     public var trigger: GestureTriggerConfiguration
+    public var gestureTargetApplication: GestureTargetApplication
 
     private enum CodingKeys: String, CodingKey {
         case isEnabled
         case feedback
         case trigger
+        case gestureTargetApplication
     }
 
     public init(
         isEnabled: Bool = false,
         feedback: FeedbackConfiguration = .default,
-        trigger: GestureTriggerConfiguration = .default
+        trigger: GestureTriggerConfiguration = .default,
+        gestureTargetApplication: GestureTargetApplication = .defaultValue
     ) {
         self.isEnabled = isEnabled
         self.feedback = feedback
         self.trigger = trigger
+        self.gestureTargetApplication = gestureTargetApplication
     }
 
     public init(from decoder: Decoder) throws {
@@ -26,6 +30,10 @@ public struct AppConfiguration: Codable, Equatable {
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? false
         feedback = try container.decodeIfPresent(FeedbackConfiguration.self, forKey: .feedback) ?? .default
         trigger = try container.decodeIfPresent(GestureTriggerConfiguration.self, forKey: .trigger) ?? .default
+        gestureTargetApplication = try container.decodeIfPresent(
+            GestureTargetApplication.self,
+            forKey: .gestureTargetApplication
+        ) ?? .defaultValue
     }
 }
 

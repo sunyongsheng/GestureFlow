@@ -15,7 +15,8 @@ final class ActionExecutorTests: XCTestCase {
                     keyCode: 12,
                     modifiers: [.command, .shift, .option, .control]
                 )
-            )
+            ),
+            targetProcessIdentifier: nil
         )
 
         let expectedFlags: CGEventFlags = [
@@ -42,7 +43,8 @@ final class ActionExecutorTests: XCTestCase {
         try executor.execute(
             .openApplication(
                 OpenApplicationAction(bundleIdentifier: "com.apple.finder")
-            )
+            ),
+            targetProcessIdentifier: nil
         )
 
         XCTAssertEqual(workspace.openedApplicationURLs, [appURL])
@@ -56,7 +58,8 @@ final class ActionExecutorTests: XCTestCase {
             try executor.execute(
                 .openApplication(
                     OpenApplicationAction(bundleIdentifier: "missing.bundle")
-                )
+                ),
+                targetProcessIdentifier: nil
             )
         ) { error in
             XCTAssertEqual(
@@ -71,16 +74,82 @@ final class ActionExecutorTests: XCTestCase {
         let url = URL(string: "https://example.com")!
         let executor = ActionExecutor(workspaceOpener: workspace)
 
-        try executor.execute(.openURL(OpenURLAction(url: url)))
+        try executor.execute(.openURL(OpenURLAction(url: url)), targetProcessIdentifier: nil)
 
         XCTAssertEqual(workspace.openedURLs, [url])
+    }
+
+    func testKeyboardShortcutPostsToCurrentProcessWhenTargetIsSelf() throws {
+        let keyEventPoster = SpyKeyboardEventPoster()
+        let applicationActivator = SpyApplicationActivator()
+        let currentPID: pid_t = 42
+        let executor = ActionExecutor(
+            keyEventPoster: keyEventPoster,
+            applicationActivator: applicationActivator,
+            currentProcessIdentifier: currentPID
+        )
+
+        try executor.execute(
+            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
+            targetProcessIdentifier: currentPID
+        )
+
+        XCTAssertEqual(applicationActivator.activateCount, 1)
+        XCTAssertEqual(
+            keyEventPoster.postedEvents.map(\.targetProcessIdentifier),
+            [currentPID, currentPID]
+        )
+    }
+
+    func testKeyboardShortcutDoesNotRestoreWhenTargetWasAlreadyFrontmost() throws {
+        let keyEventPoster = SpyKeyboardEventPoster()
+        let processActivator = SpyProcessActivator(frontmostPID: 432)
+        let executor = ActionExecutor(
+            keyEventPoster: keyEventPoster,
+            processActivator: processActivator
+        )
+        let targetPID: pid_t = 432
+
+        try executor.execute(
+            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
+            targetProcessIdentifier: targetPID
+        )
+
+        XCTAssertEqual(processActivator.activatedProcessIdentifiers, [targetPID])
+        XCTAssertEqual(processActivator.scheduledRestoreProcessIdentifiers, [])
+        XCTAssertEqual(
+            keyEventPoster.postedEvents.map(\.targetProcessIdentifier),
+            [targetPID, targetPID]
+        )
+    }
+
+    func testKeyboardShortcutUsesTransientActivationAndRestoresFrontmost() throws {
+        let keyEventPoster = SpyKeyboardEventPoster()
+        let processActivator = SpyProcessActivator(frontmostPID: 100)
+        let executor = ActionExecutor(
+            keyEventPoster: keyEventPoster,
+            processActivator: processActivator
+        )
+        let targetPID: pid_t = 432
+
+        try executor.execute(
+            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
+            targetProcessIdentifier: targetPID
+        )
+
+        XCTAssertEqual(processActivator.activatedProcessIdentifiers, [targetPID])
+        XCTAssertEqual(processActivator.scheduledRestoreProcessIdentifiers, [100])
+        XCTAssertEqual(
+            keyEventPoster.postedEvents.map(\.targetProcessIdentifier),
+            [targetPID, targetPID]
+        )
     }
 
     func testShowDesktopUsesCommandF3Shortcut() throws {
         let keyEventPoster = SpyKeyboardEventPoster()
         let executor = ActionExecutor(keyEventPoster: keyEventPoster)
 
-        try executor.execute(.systemCommand(.showDesktop))
+        try executor.execute(.systemCommand(.showDesktop), targetProcessIdentifier: nil)
 
         XCTAssertEqual(
             keyEventPoster.events,
@@ -95,7 +164,7 @@ final class ActionExecutorTests: XCTestCase {
         let commandRunner = SpySystemCommandRunner()
         let executor = ActionExecutor(systemCommandRunner: commandRunner)
 
-        try executor.execute(.systemCommand(.lockScreen))
+        try executor.execute(.systemCommand(.lockScreen), targetProcessIdentifier: nil)
 
         XCTAssertEqual(
             commandRunner.commands,
@@ -111,11 +180,57 @@ final class ActionExecutorTests: XCTestCase {
     }
 }
 
+private struct PostedKeyboardEvent: Equatable {
+    var event: KeyboardEventPost
+    var targetProcessIdentifier: pid_t?
+}
+
+private final class SpyApplicationActivator: ApplicationActivating {
+    private(set) var activateCount = 0
+
+    func activateCurrentApplication() {
+        activateCount += 1
+    }
+}
+
+private final class SpyProcessActivator: ProcessActivating {
+    var frontmostPID: pid_t?
+    private(set) var activatedProcessIdentifiers: [pid_t] = []
+    private(set) var scheduledRestoreProcessIdentifiers: [pid_t] = []
+
+    init(frontmostPID: pid_t? = nil) {
+        self.frontmostPID = frontmostPID
+    }
+
+    func frontmostProcessIdentifier() -> pid_t? {
+        frontmostPID
+    }
+
+    @discardableResult
+    func activate(processIdentifier: pid_t) -> Bool {
+        activatedProcessIdentifiers.append(processIdentifier)
+        frontmostPID = processIdentifier
+        return true
+    }
+
+    func scheduleRestoreFrontmost(processIdentifier: pid_t) {
+        scheduledRestoreProcessIdentifiers.append(processIdentifier)
+        frontmostPID = processIdentifier
+    }
+}
+
 private final class SpyKeyboardEventPoster: KeyboardEventPosting {
     private(set) var events: [KeyboardEventPost] = []
+    private(set) var postedEvents: [PostedKeyboardEvent] = []
 
-    func post(_ event: KeyboardEventPost) throws {
+    func post(_ event: KeyboardEventPost, targetProcessIdentifier: pid_t?) throws {
         events.append(event)
+        postedEvents.append(
+            PostedKeyboardEvent(
+                event: event,
+                targetProcessIdentifier: targetProcessIdentifier
+            )
+        )
     }
 }
 

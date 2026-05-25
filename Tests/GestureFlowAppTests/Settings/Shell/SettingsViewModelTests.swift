@@ -258,6 +258,24 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(persistedTrigger.maximumSampleDistance, 160)
     }
 
+    func testUpdatingGestureTargetApplicationPersistsConfiguration() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let store = ConfigurationStore(fileURL: fileURL)
+        try store.save(AppConfiguration())
+        let viewModel = makeViewModel(
+            loadResult: ConfigurationLoadResult(
+                configuration: try store.load(),
+                didRecoverFromCorruption: false,
+                backupURL: nil
+            ),
+            saveConfiguration: { try store.save($0) }
+        )
+
+        viewModel.updateGestureTargetApplication(.foreground)
+
+        XCTAssertEqual(try store.load().gestureTargetApplication, .foreground)
+    }
+
     func testUpdateRuntimeStatusRefreshesPermissionAndRunningState() {
         let viewModel = makeViewModel()
 

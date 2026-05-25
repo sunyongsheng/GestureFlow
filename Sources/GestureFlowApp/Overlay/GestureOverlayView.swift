@@ -143,7 +143,7 @@ private extension GestureOverlayCompletion {
         case .rejected:
             return "手势过短"
         case .actionFailed:
-            return "操作失败"
+            return "分发失败"
         }
     }
 }

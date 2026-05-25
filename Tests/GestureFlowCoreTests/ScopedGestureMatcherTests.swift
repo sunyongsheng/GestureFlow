@@ -17,7 +17,7 @@ final class ScopedGestureMatcherTests: XCTestCase {
         let match = ScopedGestureMatcher().match(
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.down, .right]),
-            foregroundBundleIdentifier: "com.apple.Safari",
+            targetBundleIdentifier: "com.apple.Safari",
             in: [global, safari]
         )
 
@@ -34,7 +34,7 @@ final class ScopedGestureMatcherTests: XCTestCase {
         let match = ScopedGestureMatcher().match(
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.down, .right]),
-            foregroundBundleIdentifier: "com.apple.Safari",
+            targetBundleIdentifier: "com.apple.Safari",
             in: [global]
         )
 
@@ -52,7 +52,7 @@ final class ScopedGestureMatcherTests: XCTestCase {
         let match = ScopedGestureMatcher().match(
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.down, .right]),
-            foregroundBundleIdentifier: nil,
+            targetBundleIdentifier: nil,
             in: [global]
         )
 
@@ -70,7 +70,7 @@ final class ScopedGestureMatcherTests: XCTestCase {
         let match = ScopedGestureMatcher().match(
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.down, .right]),
-            foregroundBundleIdentifier: nil,
+            targetBundleIdentifier: nil,
             in: [global]
         )
 

@@ -59,6 +59,27 @@ final class ConfigurationStoreTests: XCTestCase {
 
         XCTAssertEqual(configuration.isEnabled, true)
         XCTAssertEqual(configuration.trigger, .default)
+        XCTAssertEqual(configuration.gestureTargetApplication, .underMouse)
+    }
+
+    func testMissingGestureTargetApplicationBackfillsUnderMouse() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let legacyConfiguration = """
+        {
+          "isEnabled" : true,
+          "trigger" : {
+            "movementThreshold" : 24,
+            "holdTimeoutMilliseconds" : 250,
+            "maximumSampleDistance" : 120
+          }
+        }
+        """
+        try legacyConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
+        let store = ConfigurationStore(fileURL: fileURL)
+
+        let configuration = try store.load()
+
+        XCTAssertEqual(configuration.gestureTargetApplication, .underMouse)
     }
 
     private func makeTemporaryConfigURL() throws -> URL {

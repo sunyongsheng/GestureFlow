@@ -205,6 +205,11 @@ final class SettingsViewModel: ObservableObject {
         persistAppConfiguration()
     }
 
+    func updateGestureTargetApplication(_ target: GestureTargetApplication) {
+        configuration.gestureTargetApplication = target
+        persistAppConfiguration()
+    }
+
     func requestAccessibilityPermission() {
         permissionPrompt()
     }

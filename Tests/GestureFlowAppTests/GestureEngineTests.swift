@@ -67,7 +67,12 @@ final class GestureEngineTests: XCTestCase {
 
         XCTAssertEqual(
             actionExecutor.executedActions,
-            [.keyboardShortcut(expectedShortcut)]
+            [
+                ExecutedActionCall(
+                    action: .keyboardShortcut(expectedShortcut),
+                    targetProcessIdentifier: 1
+                )
+            ]
         )
         XCTAssertEqual(feedback, [.recognized(trigger: .rightMouse, name: "Back")])
     }
@@ -95,9 +100,15 @@ final class GestureEngineTests: XCTestCase {
         let tap = SpyMouseEventTapController()
         let actionExecutor = SpyActionExecutor()
         var feedback: [GestureEngineFeedback] = []
+        let targetResolver = SpyGestureTargetResolver(
+            resolvedTarget: ResolvedGestureTarget(
+                bundleIdentifier: "com.apple.Safari",
+                processIdentifier: 42
+            )
+        )
         let engine = makeEngine(
             gestureConfiguration: gestureConfiguration,
-            foregroundBundleIdentifier: { "com.apple.Safari" },
+            targetResolver: targetResolver,
             eventTap: tap,
             actionExecutor: actionExecutor,
             feedbackHandler: { feedback.append($0) }
@@ -115,7 +126,184 @@ final class GestureEngineTests: XCTestCase {
 
         XCTAssertEqual(
             actionExecutor.executedActions,
-            [.keyboardShortcut(safariShortcut)]
+            [
+                ExecutedActionCall(
+                    action: .keyboardShortcut(safariShortcut),
+                    targetProcessIdentifier: 42
+                )
+            ]
+        )
+        XCTAssertEqual(feedback, [.recognized(trigger: .rightMouse, name: "Safari Back")])
+    }
+
+    func testUnderMousePolicyActionFailedWhenNoTarget() {
+        let shortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Back",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: shortcut
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let actionExecutor = SpyActionExecutor()
+        var feedback: [GestureEngineFeedback] = []
+        let engine = makeEngine(
+            appConfiguration: AppConfiguration(
+                isEnabled: true,
+                gestureTargetApplication: .underMouse
+            ),
+            gestureConfiguration: gestureConfiguration,
+            targetResolver: SpyGestureTargetResolver(resolvedTarget: .invalid),
+            eventTap: tap,
+            actionExecutor: actionExecutor,
+            feedbackHandler: { feedback.append($0) }
+        )
+
+        engine.start()
+        tap.onGestureEnded?(
+            .rightMouse,
+            [
+                GesturePoint(x: 100, y: 0),
+                GesturePoint(x: 60, y: 0),
+                GesturePoint(x: 20, y: 0)
+            ]
+        )
+
+        XCTAssertTrue(actionExecutor.executedActions.isEmpty)
+        XCTAssertEqual(
+            feedback,
+            [
+                .actionFailed(
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    message: "未找到鼠标下方的应用"
+                )
+            ]
+        )
+    }
+
+    func testUnderMousePolicyUsesTargetResolvedAtGestureStartNotGestureEnd() {
+        let shortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Global",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: shortcut
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let actionExecutor = SpyActionExecutor()
+        let targetResolver = SpyGestureTargetResolver(
+            targetsByCallIndex: [
+                ResolvedGestureTarget(
+                    bundleIdentifier: "com.gestureflow.app",
+                    processIdentifier: 999
+                ),
+                ResolvedGestureTarget(
+                    bundleIdentifier: "com.apple.Safari",
+                    processIdentifier: 42
+                )
+            ]
+        )
+        let engine = makeEngine(
+            appConfiguration: AppConfiguration(
+                isEnabled: true,
+                gestureTargetApplication: .underMouse
+            ),
+            gestureConfiguration: gestureConfiguration,
+            targetResolver: targetResolver,
+            eventTap: tap,
+            actionExecutor: actionExecutor
+        )
+
+        engine.start()
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100))
+        tap.onGestureEnded?(
+            .rightMouse,
+            [
+                GesturePoint(x: 100, y: 100),
+                GesturePoint(x: 60, y: 100),
+                GesturePoint(x: 20, y: 100)
+            ]
+        )
+
+        XCTAssertEqual(targetResolver.resolveCallCount, 1)
+        XCTAssertEqual(
+            actionExecutor.executedActions,
+            [
+                ExecutedActionCall(
+                    action: .keyboardShortcut(shortcut),
+                    targetProcessIdentifier: 999
+                )
+            ]
+        )
+    }
+
+    func testUnderMousePolicyMatchesAppUnderStartPoint() {
+        let globalShortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let safariShortcut = KeyboardShortcutAction(keyCode: 124, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Global",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: globalShortcut
+                ),
+                GestureDefinition(
+                    targetBundleIdentifier: "com.apple.Safari",
+                    name: "Safari Back",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: safariShortcut
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let actionExecutor = SpyActionExecutor()
+        var feedback: [GestureEngineFeedback] = []
+        let engine = makeEngine(
+            appConfiguration: AppConfiguration(
+                isEnabled: true,
+                gestureTargetApplication: .underMouse
+            ),
+            gestureConfiguration: gestureConfiguration,
+            targetResolver: SpyGestureTargetResolver(
+                resolvedTarget: ResolvedGestureTarget(
+                    bundleIdentifier: "com.apple.Safari",
+                    processIdentifier: 77
+                )
+            ),
+            eventTap: tap,
+            actionExecutor: actionExecutor,
+            feedbackHandler: { feedback.append($0) }
+        )
+
+        engine.start()
+        tap.onGestureEnded?(
+            .rightMouse,
+            [
+                GesturePoint(x: 100, y: 0),
+                GesturePoint(x: 60, y: 0),
+                GesturePoint(x: 20, y: 0)
+            ]
+        )
+
+        XCTAssertEqual(
+            actionExecutor.executedActions,
+            [
+                ExecutedActionCall(
+                    action: .keyboardShortcut(safariShortcut),
+                    targetProcessIdentifier: 77
+                )
+            ]
         )
         XCTAssertEqual(feedback, [.recognized(trigger: .rightMouse, name: "Safari Back")])
     }
@@ -179,7 +367,15 @@ final class GestureEngineTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(actionExecutor.executedActions, [.keyboardShortcut(shortcut)])
+        XCTAssertEqual(
+            actionExecutor.executedActions,
+            [
+                ExecutedActionCall(
+                    action: .keyboardShortcut(shortcut),
+                    targetProcessIdentifier: 1
+                )
+            ]
+        )
         XCTAssertEqual(overlay.events, [.completed(.actionFailed, GesturePoint(x: 50, y: 0))])
         XCTAssertEqual(
             feedback,
@@ -214,7 +410,11 @@ final class GestureEngineTests: XCTestCase {
         let overlay = SpyGestureOverlay()
         let actionExecutor = SpyActionExecutor()
         let engine = makeEngine(
-            appConfiguration: AppConfiguration(isEnabled: true, feedback: feedbackConfiguration),
+            appConfiguration: AppConfiguration(
+                isEnabled: true,
+                feedback: feedbackConfiguration,
+                gestureTargetApplication: .foreground
+            ),
             gestureConfiguration: gestureConfiguration,
             eventTap: tap,
             overlay: overlay,
@@ -245,7 +445,15 @@ final class GestureEngineTests: XCTestCase {
                 .completed(.recognized(name: "Back"), GesturePoint(x: 20, y: 100))
             ]
         )
-        XCTAssertEqual(actionExecutor.executedActions, [.keyboardShortcut(shortcut)])
+        XCTAssertEqual(
+            actionExecutor.executedActions,
+            [
+                ExecutedActionCall(
+                    action: .keyboardShortcut(shortcut),
+                    targetProcessIdentifier: 1
+                )
+            ]
+        )
     }
 
     func testCompletionFeedbackUsesRawReleasePointNearScreenBoundary() {
@@ -287,7 +495,15 @@ final class GestureEngineTests: XCTestCase {
                 .completed(.recognized(name: "Back"), GesturePoint(x: 1442, y: 80))
             ]
         )
-        XCTAssertEqual(actionExecutor.executedActions, [.keyboardShortcut(shortcut)])
+        XCTAssertEqual(
+            actionExecutor.executedActions,
+            [
+                ExecutedActionCall(
+                    action: .keyboardShortcut(shortcut),
+                    targetProcessIdentifier: 1
+                )
+            ]
+        )
     }
 
     func testCancelledGestureHidesOverlayWithoutFeedback() {
@@ -326,7 +542,11 @@ final class GestureEngineTests: XCTestCase {
             trailOpacity: 0.5
         )
         let engine = makeEngine(
-            appConfiguration: AppConfiguration(isEnabled: true, feedback: feedbackConfiguration),
+            appConfiguration: AppConfiguration(
+                isEnabled: true,
+                feedback: feedbackConfiguration,
+                gestureTargetApplication: .foreground
+            ),
             eventTap: tap,
             overlay: overlay,
             feedbackHandler: { _ in }
@@ -372,9 +592,12 @@ final class GestureEngineTests: XCTestCase {
     }
 
     private func makeEngine(
-        appConfiguration: AppConfiguration = AppConfiguration(isEnabled: true),
+        appConfiguration: AppConfiguration = AppConfiguration(
+            isEnabled: true,
+            gestureTargetApplication: .foreground
+        ),
         gestureConfiguration: GestureConfiguration = GestureConfiguration.defaultTemplate,
-        foregroundBundleIdentifier: @escaping () -> String? = { nil },
+        targetResolver: GestureTargetResolving = SpyGestureTargetResolver(),
         permissionService: PermissionService = PermissionService(trustCheck: { true }, permissionPrompt: {}),
         eventTap: SpyMouseEventTapController = SpyMouseEventTapController(),
         overlay: GestureOverlayDisplaying = NoopGestureOverlay(),
@@ -384,13 +607,52 @@ final class GestureEngineTests: XCTestCase {
         GestureEngine(
             appConfigurationProvider: { appConfiguration },
             gestureConfigurationProvider: { gestureConfiguration },
-            foregroundApplicationBundleIdentifierProvider: foregroundBundleIdentifier,
+            targetResolver: targetResolver,
             permissionService: permissionService,
             eventTap: eventTap,
             overlay: overlay,
             actionExecutor: actionExecutor,
             feedbackHandler: feedbackHandler
         )
+    }
+}
+
+private struct ExecutedActionCall: Equatable {
+    var action: GestureAction
+    var targetProcessIdentifier: pid_t?
+}
+
+private final class SpyGestureTargetResolver: GestureTargetResolving {
+    private(set) var resolveCallCount = 0
+    private let targetsByCallIndex: [ResolvedGestureTarget]
+    private let fallbackTarget: ResolvedGestureTarget
+
+    init(
+        resolvedTarget: ResolvedGestureTarget = ResolvedGestureTarget(
+            bundleIdentifier: nil,
+            processIdentifier: 1
+        )
+    ) {
+        self.targetsByCallIndex = []
+        self.fallbackTarget = resolvedTarget
+    }
+
+    init(targetsByCallIndex: [ResolvedGestureTarget]) {
+        self.targetsByCallIndex = targetsByCallIndex
+        self.fallbackTarget = targetsByCallIndex.last
+            ?? ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1)
+    }
+
+    func resolve(
+        policy: GestureTargetApplication,
+        at startPoint: GesturePoint
+    ) -> ResolvedGestureTarget {
+        resolveCallCount += 1
+        let index = resolveCallCount - 1
+        if index < targetsByCallIndex.count {
+            return targetsByCallIndex[index]
+        }
+        return fallbackTarget
     }
 }
 
@@ -454,14 +716,19 @@ private final class SpyGestureOverlay: GestureOverlayDisplaying {
 
 private final class SpyActionExecutor: ActionExecuting {
     private let error: Error?
-    private(set) var executedActions: [GestureAction] = []
+    private(set) var executedActions: [ExecutedActionCall] = []
 
     init(error: Error? = nil) {
         self.error = error
     }
 
-    func execute(_ action: GestureAction) throws {
-        executedActions.append(action)
+    func execute(_ action: GestureAction, targetProcessIdentifier: pid_t?) throws {
+        executedActions.append(
+            ExecutedActionCall(
+                action: action,
+                targetProcessIdentifier: targetProcessIdentifier
+            )
+        )
         if let error {
             throw error
         }

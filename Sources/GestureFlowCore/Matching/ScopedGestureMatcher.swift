@@ -6,7 +6,7 @@ public struct ScopedGestureMatcher {
     public func match(
         trigger: GestureTrigger,
         signature: GestureSignature,
-        foregroundBundleIdentifier: String?,
+        targetBundleIdentifier: String?,
         in gestures: [GestureDefinition]
     ) -> GestureDefinition? {
         let candidates = gestures.filter {
@@ -15,9 +15,9 @@ public struct ScopedGestureMatcher {
                 $0.signature == signature
         }
 
-        if let foregroundBundleIdentifier,
+        if let targetBundleIdentifier,
            let appSpecific = candidates.first(where: {
-               $0.targetBundleIdentifier == foregroundBundleIdentifier
+               $0.targetBundleIdentifier == targetBundleIdentifier
            }) {
             return appSpecific
         }
