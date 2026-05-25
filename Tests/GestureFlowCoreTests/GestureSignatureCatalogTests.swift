@@ -24,4 +24,11 @@ final class GestureSignatureCatalogTests: XCTestCase {
         }
         XCTAssertEqual(option?.displayName, "下、右")
     }
+
+    func testStableIDForDownRight() {
+        let signature = GestureSignature(tokens: [.down, .right])
+        let option = GestureSignatureCatalog.all.first { $0.signature == signature }
+        XCTAssertEqual(option?.id, "D,R")
+        XCTAssertEqual(option?.displayName, "下、右")
+    }
 }

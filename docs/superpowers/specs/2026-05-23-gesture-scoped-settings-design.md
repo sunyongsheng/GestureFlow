@@ -178,7 +178,7 @@ Two columns inside the Gestures settings section:
 | Column | Behavior |
 | --- | --- |
 | 名称 | Inline edit; save on focus loss / Enter |
-| 手势 | Picker from `GestureSignatureCatalog` (Chinese labels) |
+| 手势 | Picker from `GestureSignatureCatalog` (schematic previews; see `2026-05-25-gesture-signature-preview-design.md`) |
 | 触发 | Picker: 右键 / 中键 |
 | 快捷键 | Click to record; single key + modifiers; Esc cancels |
 | 启用 | Checkbox |

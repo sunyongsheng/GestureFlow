@@ -4,7 +4,9 @@ public struct GestureSignatureOption: Equatable, Identifiable {
     public var signature: GestureSignature
     public var displayName: String
 
-    public var id: String { displayName }
+    public var id: String {
+        signature.tokens.map(\.rawValue).joined(separator: ",")
+    }
 
     public init(signature: GestureSignature, displayName: String) {
         self.signature = signature

@@ -195,7 +195,7 @@ struct GestureSettingsView: View {
             Text("名称")
                 .frame(minWidth: 100, maxWidth: 140, alignment: .leading)
             Text("手势")
-                .frame(width: 100, alignment: .leading)
+                .frame(width: 72, alignment: .leading)
             Text("触发")
                 .frame(width: 80, alignment: .leading)
             Text("快捷键")
@@ -214,7 +214,7 @@ struct GestureSettingsView: View {
                 .frame(minWidth: 100, maxWidth: 140, alignment: .leading)
 
             signatureCell(for: gesture)
-                .frame(width: 100, alignment: .leading)
+                .frame(width: 72, alignment: .leading)
 
             triggerCell(for: gesture)
                 .frame(width: 80, alignment: .leading)
@@ -298,16 +298,8 @@ struct GestureSettingsView: View {
     }
 
     private func signatureCell(for gesture: GestureDefinition) -> some View {
-        Picker(
-            "",
-            selection: signatureBinding(for: gesture)
-        ) {
-            ForEach(GestureSignatureCatalog.all) { option in
-                Text(option.displayName).tag(option.signature)
-            }
-        }
-        .labelsHidden()
-        .frame(maxWidth: .infinity)
+        GestureSignaturePicker(selection: signatureBinding(for: gesture))
+            .frame(width: 72, alignment: .leading)
     }
 
     private func triggerCell(for gesture: GestureDefinition) -> some View {
