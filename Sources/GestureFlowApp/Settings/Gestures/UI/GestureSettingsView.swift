@@ -15,13 +15,6 @@ struct GestureSettingsView: View {
             applicationList
             gestureList
         }
-        .frame(
-            minWidth: 720,
-            maxWidth: .infinity,
-            minHeight: 200,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        )
     }
 
     private var applicationList: some View {
@@ -49,18 +42,15 @@ struct GestureSettingsView: View {
                 }
             }
             .listStyle(.inset)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Button {
                 viewModel.addApplicationFromPanel()
             } label: {
                 Label("添加应用", systemImage: "plus")
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minWidth: 180, idealWidth: 180, maxWidth: 260, maxHeight: .infinity, alignment: .topLeading)
+        .frame(minWidth: 120, idealWidth: 150, maxWidth: 260, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private func applicationScopeRow(
@@ -140,7 +130,6 @@ struct GestureSettingsView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .layoutPriority(1)
         }
         .onChange(of: selectedGestureIDs) { _, _ in
@@ -159,7 +148,6 @@ struct GestureSettingsView: View {
                 nameEditDrafts[newFocus] = gestureName(forGestureID: newFocus)
             }
         }
-        .frame(minWidth: 460, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background {
             GestureEditingCommitMonitor {
                 commitEditingGestureIfNeeded(leaving: nil)

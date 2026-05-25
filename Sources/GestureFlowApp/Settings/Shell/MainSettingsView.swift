@@ -31,7 +31,7 @@ struct MainSettingsView: View {
         .listStyle(.sidebar)
         .scrollContentBackground(.hidden)
         .safeAreaPadding(.top)
-        .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 280)
+        .navigationSplitViewColumnWidth(min: 140, ideal: 180, max: 240)
     }
 
     private var detailContent: some View {
@@ -63,9 +63,8 @@ struct MainSettingsView: View {
             AppearanceSettingsView(viewModel: viewModel)
         case .gestures:
             GestureSettingsView(viewModel: viewModel)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(.horizontal, 28)
-                .padding(.vertical, 20)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
         case .about:
             AboutSettingsView()
         }
