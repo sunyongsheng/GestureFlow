@@ -35,7 +35,41 @@ public struct ConfigurationDirectoryResolver {
         ConfigurationPathFormatting.shortenHomePath(defaultConfigurationDirectoryURL.path)
     }
 
-    public static let xdgConfigurationDirectoryDisplayPath = "~/.config/gestureflow"
+    public static func xdgConfigurationDirectoryURL(
+        environment: [String: String] = ProcessInfo.processInfo.environment,
+        homeDirectory: URL? = nil,
+        fileManager: FileManager = .default
+    ) -> URL {
+        let home = homeDirectory ?? ConfigurationPathFormatting.homeDirectoryURL(fileManager: fileManager)
+        let configHome: URL
+
+        if let xdgConfigHome = environment["XDG_CONFIG_HOME"]?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !xdgConfigHome.isEmpty {
+            let expanded = ConfigurationPathFormatting.expandPath(xdgConfigHome, homeDirectory: home)
+            configHome = URL(fileURLWithPath: expanded, isDirectory: true)
+        } else {
+            configHome = home.appendingPathComponent(".config", isDirectory: true)
+        }
+
+        return configHome.appendingPathComponent("gestureflow", isDirectory: true)
+    }
+
+    public static func xdgConfigurationDirectoryDisplayPath(
+        environment: [String: String] = ProcessInfo.processInfo.environment,
+        homeDirectory: URL? = nil,
+        fileManager: FileManager = .default
+    ) -> String {
+        let home = homeDirectory ?? ConfigurationPathFormatting.homeDirectoryURL(fileManager: fileManager)
+        return ConfigurationPathFormatting.shortenHomePath(
+            xdgConfigurationDirectoryURL(
+                environment: environment,
+                homeDirectory: home,
+                fileManager: fileManager
+            ).path,
+            homeDirectory: home
+        )
+    }
 
     public var configFileURL: URL {
         configurationDirectoryURL.appendingPathComponent("config.json")

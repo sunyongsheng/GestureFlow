@@ -29,7 +29,7 @@ final class ConfigurationDirectorySettingsTests: XCTestCase {
 
         XCTAssertEqual(
             viewModel.draftConfigurationDirectoryPath,
-            ConfigurationDirectoryResolver.xdgConfigurationDirectoryDisplayPath
+            ConfigurationDirectoryResolver.xdgConfigurationDirectoryDisplayPath(environment: [:])
         )
         XCTAssertEqual(viewModel.persistedConfigurationDirectoryPath, "~/other/GestureFlow")
         XCTAssertTrue(viewModel.canConfirmConfigurationDirectoryChange)

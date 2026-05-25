@@ -40,6 +40,42 @@ final class ConfigurationDirectoryResolverTests: XCTestCase {
         )
     }
 
+    func testXDGConfigurationDirectoryUsesDefaultConfigHomeWhenEnvUnset() throws {
+        let homeDirectory = try makeTemporaryBootstrapDirectory()
+
+        let url = ConfigurationDirectoryResolver.xdgConfigurationDirectoryURL(
+            environment: [:],
+            homeDirectory: homeDirectory
+        )
+
+        XCTAssertEqual(
+            url.standardizedFileURL,
+            homeDirectory.appendingPathComponent(".config/gestureflow", isDirectory: true).standardizedFileURL
+        )
+        XCTAssertEqual(
+            ConfigurationDirectoryResolver.xdgConfigurationDirectoryDisplayPath(
+                environment: [:],
+                homeDirectory: homeDirectory
+            ),
+            "~/.config/gestureflow"
+        )
+    }
+
+    func testXDGConfigurationDirectoryUsesXDGConfigHomeWhenEnvSet() throws {
+        let homeDirectory = try makeTemporaryBootstrapDirectory()
+        let customConfigHome = homeDirectory.appendingPathComponent("xdg-config", isDirectory: true)
+
+        let url = ConfigurationDirectoryResolver.xdgConfigurationDirectoryURL(
+            environment: ["XDG_CONFIG_HOME": customConfigHome.path],
+            homeDirectory: homeDirectory
+        )
+
+        XCTAssertEqual(
+            url.standardizedFileURL,
+            customConfigHome.appendingPathComponent("gestureflow", isDirectory: true).standardizedFileURL
+        )
+    }
+
     func testBootstrapFallsBackWhenStandaloneDirectoryInvalid() throws {
         let bootstrapDirectory = try makeTemporaryBootstrapDirectory()
         let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.json")
