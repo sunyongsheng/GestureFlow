@@ -30,6 +30,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private let configurationDirectoryRelocator: ConfigurationDirectoryRelocator
     private let runtimeState: RuntimeState
     private let permissionService: PermissionService
+    private let launchAtLoginService: LaunchAtLoginControlling
     private let gestureEngine: GestureEngine
     private let notificationCenter: NotificationCenter
     private let activationNotificationName: Notification.Name
@@ -55,6 +56,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         gestureConfigurationService: GestureConfigurationService? = nil,
         configurationDirectoryRelocator: ConfigurationDirectoryRelocator? = nil,
         permissionService: PermissionService = PermissionService(),
+        launchAtLoginService: LaunchAtLoginControlling = LaunchAtLoginService(),
         injectedGestureEngine: GestureEngine? = nil,
         notificationCenter: NotificationCenter = .default,
         activationNotificationName: Notification.Name = NSApplication.didBecomeActiveNotification,
@@ -73,6 +75,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.configurationDirectoryRelocator = configurationDirectoryRelocator
             ?? ConfigurationDirectoryRelocator(standaloneStore: resolvedResolver.standaloneStore)
         self.permissionService = permissionService
+        self.launchAtLoginService = launchAtLoginService
         self.notificationCenter = notificationCenter
         self.activationNotificationName = activationNotificationName
         self.terminationNotificationName = terminationNotificationName
@@ -180,6 +183,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             configurationDirectoryPath: configurationDirectoryResolver.displayPath(),
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: launchAtLoginService.isEnabled,
             saveConfiguration: { [weak self] newConfiguration in
                 try self?.applySettingsConfiguration(newConfiguration)
             },
@@ -201,11 +205,11 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             quitApplication: { [weak self] in
                 self?.quitApplication()
             },
-            showLaunchAtLoginPlaceholder: { [weak self] in
-                self?.showPlaceholder(
-                    title: "登录时打开",
-                    message: "此功能尚未实现。"
-                )
+            setLaunchAtLoginEnabled: { [weak self] isEnabled in
+                try self?.launchAtLoginService.setEnabled(isEnabled)
+            },
+            launchAtLoginStatus: { [weak self] in
+                self?.launchAtLoginService.isEnabled ?? false
             }
         )
     }
@@ -241,7 +245,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
-            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: launchAtLoginService.isEnabled
         )
     }
 
@@ -254,7 +259,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
-            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: launchAtLoginService.isEnabled
         )
     }
 
@@ -266,7 +272,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
-            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: launchAtLoginService.isEnabled
         )
     }
 
@@ -287,7 +294,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
-            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: launchAtLoginService.isEnabled
         )
     }
 
@@ -342,7 +350,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
-            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: launchAtLoginService.isEnabled
         )
     }
 
@@ -368,7 +377,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
             isRunning: gestureEngine.isRunning,
-            isAccessibilityTrusted: permissionService.isAccessibilityTrusted
+            isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: launchAtLoginService.isEnabled
         )
         showSettingsHandler(viewModel, source)
     }

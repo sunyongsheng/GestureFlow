@@ -12,6 +12,8 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var gestureSaveErrorMessage: String?
     @Published private(set) var isRunning: Bool
     @Published private(set) var isAccessibilityTrusted: Bool
+    @Published private(set) var isLaunchAtLoginEnabled: Bool
+    @Published private(set) var launchAtLoginErrorMessage: String?
     @Published var selectedApplicationScope: GestureApplicationScope = .global
     @Published var draftConfigurationDirectoryPath: String
     @Published private(set) var persistedConfigurationDirectoryPath: String
@@ -27,7 +29,8 @@ final class SettingsViewModel: ObservableObject {
     private let startGestureFlowAction: () -> Void
     private let stopGestureFlowAction: () -> Void
     private let quitApplicationAction: () -> Void
-    private let launchAtLoginPlaceholderAction: () -> Void
+    private let setLaunchAtLoginEnabledAction: (Bool) throws -> Void
+    private let launchAtLoginStatusProvider: () -> Bool
     private let openApplicationPanel: () -> URL?
 
     init(
@@ -36,6 +39,7 @@ final class SettingsViewModel: ObservableObject {
         configurationDirectoryPath: String = "~",
         isRunning: Bool,
         isAccessibilityTrusted: Bool,
+        isLaunchAtLoginEnabled: Bool = false,
         saveConfiguration: @escaping (AppConfiguration) throws -> Void,
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void,
         relocateConfigurationDirectory: @escaping (String) throws -> Void = { _ in },
@@ -43,7 +47,8 @@ final class SettingsViewModel: ObservableObject {
         startGestureFlow: @escaping () -> Void = {},
         stopGestureFlow: @escaping () -> Void = {},
         quitApplication: @escaping () -> Void = {},
-        showLaunchAtLoginPlaceholder: @escaping () -> Void = {},
+        setLaunchAtLoginEnabled: @escaping (Bool) throws -> Void = { _ in },
+        launchAtLoginStatus: @escaping () -> Bool = { false },
         openApplicationPanel: @escaping () -> URL? = SettingsViewModel.defaultOpenApplicationPanel
     ) {
         self.configuration = loadResult.configuration
@@ -57,6 +62,7 @@ final class SettingsViewModel: ObservableObject {
         self.draftConfigurationDirectoryPath = configurationDirectoryPath
         self.isRunning = isRunning
         self.isAccessibilityTrusted = isAccessibilityTrusted
+        self.isLaunchAtLoginEnabled = isLaunchAtLoginEnabled
         self.saveConfiguration = saveConfiguration
         self.saveGestureConfiguration = saveGestureConfiguration
         self.relocateConfigurationDirectoryAction = relocateConfigurationDirectory
@@ -64,7 +70,8 @@ final class SettingsViewModel: ObservableObject {
         self.startGestureFlowAction = startGestureFlow
         self.stopGestureFlowAction = stopGestureFlow
         self.quitApplicationAction = quitApplication
-        self.launchAtLoginPlaceholderAction = showLaunchAtLoginPlaceholder
+        self.setLaunchAtLoginEnabledAction = setLaunchAtLoginEnabled
+        self.launchAtLoginStatusProvider = launchAtLoginStatus
         self.openApplicationPanel = openApplicationPanel
     }
 
@@ -210,12 +217,18 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
-    func quitApplication() {
-        quitApplicationAction()
+    func setLaunchAtLoginEnabled(_ isEnabled: Bool) {
+        do {
+            try setLaunchAtLoginEnabledAction(isEnabled)
+            launchAtLoginErrorMessage = nil
+        } catch {
+            launchAtLoginErrorMessage = error.localizedDescription
+        }
+        isLaunchAtLoginEnabled = launchAtLoginStatusProvider()
     }
 
-    func showLaunchAtLoginPlaceholder() {
-        launchAtLoginPlaceholderAction()
+    func quitApplication() {
+        quitApplicationAction()
     }
 
     var canConfirmConfigurationDirectoryChange: Bool {
@@ -231,7 +244,7 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func prefillXDGConfigurationDirectory() {
-        draftConfigurationDirectoryPath = ConfigurationDirectoryResolver.xdgConfigurationDirectoryDisplayPath
+        draftConfigurationDirectoryPath = ConfigurationDirectoryResolver.xdgConfigurationDirectoryDisplayPath()
         configurationDirectoryErrorMessage = nil
     }
 
@@ -257,7 +270,8 @@ final class SettingsViewModel: ObservableObject {
         configuration: AppConfiguration? = nil,
         gestureConfiguration: GestureConfiguration? = nil,
         isRunning: Bool,
-        isAccessibilityTrusted: Bool
+        isAccessibilityTrusted: Bool,
+        isLaunchAtLoginEnabled: Bool? = nil
     ) {
         if let configuration {
             self.configuration = configuration
@@ -267,6 +281,9 @@ final class SettingsViewModel: ObservableObject {
         }
         self.isRunning = isRunning
         self.isAccessibilityTrusted = isAccessibilityTrusted
+        if let isLaunchAtLoginEnabled {
+            self.isLaunchAtLoginEnabled = isLaunchAtLoginEnabled
+        }
     }
 
     func syncGestureConfiguration(_ configuration: GestureConfiguration) {

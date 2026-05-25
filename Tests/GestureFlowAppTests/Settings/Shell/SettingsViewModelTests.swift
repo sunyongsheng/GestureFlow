@@ -311,13 +311,42 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(quitCount, 1)
     }
 
-    func testShowLaunchAtLoginPlaceholderInvokesInjectedAction() {
-        var placeholderCount = 0
-        let viewModel = makeViewModel(showLaunchAtLoginPlaceholder: { placeholderCount += 1 })
+    func testSetLaunchAtLoginEnabledInvokesInjectedAction() throws {
+        var requestedValue: Bool?
+        var status = false
+        let viewModel = makeViewModel(
+            isLaunchAtLoginEnabled: false,
+            setLaunchAtLoginEnabled: { requestedValue = $0; status = $0 },
+            launchAtLoginStatus: { status }
+        )
 
-        viewModel.showLaunchAtLoginPlaceholder()
+        viewModel.setLaunchAtLoginEnabled(true)
 
-        XCTAssertEqual(placeholderCount, 1)
+        XCTAssertEqual(requestedValue, true)
+        XCTAssertTrue(viewModel.isLaunchAtLoginEnabled)
+        XCTAssertNil(viewModel.launchAtLoginErrorMessage)
+    }
+
+    func testSetLaunchAtLoginEnabledShowsErrorAndRefreshesStatusOnFailure() {
+        var status = false
+        let viewModel = makeViewModel(
+            isLaunchAtLoginEnabled: false,
+            setLaunchAtLoginEnabled: { _ in throw NSError(domain: "test", code: 1) },
+            launchAtLoginStatus: { status }
+        )
+
+        viewModel.setLaunchAtLoginEnabled(true)
+
+        XCTAssertNotNil(viewModel.launchAtLoginErrorMessage)
+        XCTAssertFalse(viewModel.isLaunchAtLoginEnabled)
+    }
+
+    func testUpdateRuntimeStatusRefreshesLaunchAtLoginState() {
+        let viewModel = makeViewModel(isLaunchAtLoginEnabled: false)
+
+        viewModel.updateRuntimeStatus(isRunning: false, isAccessibilityTrusted: true, isLaunchAtLoginEnabled: true)
+
+        XCTAssertTrue(viewModel.isLaunchAtLoginEnabled)
     }
 
     private func makeViewModel(
@@ -329,12 +358,14 @@ final class SettingsViewModelTests: XCTestCase {
         gestureConfiguration: GestureConfiguration = .defaultTemplate,
         isRunning: Bool = false,
         isAccessibilityTrusted: Bool = true,
+        isLaunchAtLoginEnabled: Bool = false,
         saveConfiguration: @escaping (AppConfiguration) throws -> Void = { _ in },
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void = { _ in },
         startGestureFlow: @escaping () -> Void = {},
         stopGestureFlow: @escaping () -> Void = {},
         quitApplication: @escaping () -> Void = {},
-        showLaunchAtLoginPlaceholder: @escaping () -> Void = {},
+        setLaunchAtLoginEnabled: @escaping (Bool) throws -> Void = { _ in },
+        launchAtLoginStatus: @escaping () -> Bool = { false },
         openApplicationPanel: @escaping () -> URL? = { nil }
     ) -> SettingsViewModel {
         SettingsViewModel(
@@ -342,13 +373,15 @@ final class SettingsViewModelTests: XCTestCase {
             gestureConfiguration: gestureConfiguration,
             isRunning: isRunning,
             isAccessibilityTrusted: isAccessibilityTrusted,
+            isLaunchAtLoginEnabled: isLaunchAtLoginEnabled,
             saveConfiguration: saveConfiguration,
             saveGestureConfiguration: saveGestureConfiguration,
             requestAccessibilityPermission: {},
             startGestureFlow: startGestureFlow,
             stopGestureFlow: stopGestureFlow,
             quitApplication: quitApplication,
-            showLaunchAtLoginPlaceholder: showLaunchAtLoginPlaceholder,
+            setLaunchAtLoginEnabled: setLaunchAtLoginEnabled,
+            launchAtLoginStatus: launchAtLoginStatus,
             openApplicationPanel: openApplicationPanel
         )
     }

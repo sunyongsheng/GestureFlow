@@ -24,11 +24,17 @@ struct GeneralSettingsView: View {
                     SettingsValueRow(
                         title: "登录时打开",
                         description: "系统登录后自动启动 GestureFlow。",
-                        statusText: "暂未实现"
+                        statusText: nil
                     ) {
                         Toggle("", isOn: launchAtLoginBinding)
                             .labelsHidden()
                             .toggleStyle(.switch)
+                    }
+
+                    if let errorMessage = viewModel.launchAtLoginErrorMessage {
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundColor(.red)
                     }
 
                     Divider()
@@ -183,11 +189,8 @@ struct GeneralSettingsView: View {
 
     private var launchAtLoginBinding: Binding<Bool> {
         Binding(
-            get: { false },
-            set: { newValue in
-                guard newValue else { return }
-                viewModel.showLaunchAtLoginPlaceholder()
-            }
+            get: { viewModel.isLaunchAtLoginEnabled },
+            set: { viewModel.setLaunchAtLoginEnabled($0) }
         )
     }
 
