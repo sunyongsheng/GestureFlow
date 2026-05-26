@@ -6,6 +6,19 @@ final class GestureSignatureCatalogTests: XCTestCase {
         XCTAssertEqual(GestureSignatureCatalog.all.count, 56)
     }
 
+    func testDisplayOrderStartsWithCardinalsThenCommonTwoStrokeGestures() {
+        let firstIDs = GestureSignatureCatalog.all.prefix(8).map(\.id)
+        XCTAssertEqual(
+            firstIDs,
+            ["U", "R", "D", "L", "D,R", "D,L", "U,R", "U,L"]
+        )
+    }
+
+    func testFourTokenDiagonalPresetsAreLastRowInDisplayOrder() {
+        let lastIDs = GestureSignatureCatalog.all.suffix(4).map(\.id)
+        XCTAssertEqual(lastIDs, ["R,U,L,D", "R,D,L,U", "L,U,R,D", "L,D,R,U"])
+    }
+
     func testFourTokenDiagonalPresetsAreIncluded() {
         let expected: [(tokens: [GestureDirection], displayName: String)] = [
             ([.right, .down, .left, .up], "右、下、左、上"),

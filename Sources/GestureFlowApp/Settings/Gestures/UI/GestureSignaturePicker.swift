@@ -6,7 +6,7 @@ struct GestureSignaturePicker: View {
     @Binding var selection: GestureSignature
     @State private var isPopoverPresented = false
 
-    private let columnCount = 5
+    private let columnCount = 4
     private let columnWidth: CGFloat = 34
     private let columnSpacing: CGFloat = 6
 
