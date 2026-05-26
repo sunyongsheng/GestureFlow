@@ -286,8 +286,23 @@ struct GestureSettingsView: View {
     }
 
     private func signatureCell(for gesture: GestureDefinition) -> some View {
-        GestureSignaturePicker(selection: signatureBinding(for: gesture))
-            .frame(width: 72, alignment: .leading)
+        GestureSignaturePicker(
+            selection: signatureBinding(for: gesture),
+            customGestureSignatures: customGestureSignaturesBinding,
+            onPersistCustomSignatures: {
+                viewModel.commitGestureConfigurationToDisk()
+            },
+            onPauseGestureRecognition: viewModel.pauseGestureRecognition,
+            onResumeGestureRecognition: viewModel.resumeGestureRecognition
+        )
+        .frame(width: 72, alignment: .leading)
+    }
+
+    private var customGestureSignaturesBinding: Binding<[GestureSignature]> {
+        Binding(
+            get: { viewModel.gestureConfiguration.customGestureSignatures },
+            set: { viewModel.gestureConfiguration.customGestureSignatures = $0 }
+        )
     }
 
     private func triggerCell(for gesture: GestureDefinition) -> some View {

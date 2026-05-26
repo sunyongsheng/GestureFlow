@@ -44,6 +44,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private var terminationObserver: NSObjectProtocol?
     private var settingsViewModel: SettingsViewModel?
     private(set) var statusBarController: StatusBarController?
+    private var gestureRecognitionWasRunningBeforeRecordingPause = false
 
     var isGestureFlowRunning: Bool {
         configuration.isEnabled
@@ -144,6 +145,20 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         stopGestureEngine(persistUserPreference: true)
     }
 
+    func pauseGestureRecognitionForCustomSignatureRecording() {
+        gestureRecognitionWasRunningBeforeRecordingPause = gestureEngine.isRunning
+        if gestureRecognitionWasRunningBeforeRecordingPause {
+            gestureEngine.stop()
+        }
+    }
+
+    func resumeGestureRecognitionAfterCustomSignatureRecording() {
+        if gestureRecognitionWasRunningBeforeRecordingPause {
+            _ = gestureEngine.start()
+        }
+        gestureRecognitionWasRunningBeforeRecordingPause = false
+    }
+
     /// Stops listening without changing the persisted enabled preference (e.g. app quit).
     private func stopGestureEngine(persistUserPreference: Bool) {
         gestureEngine.stop()
@@ -215,6 +230,12 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             },
             launchAtLoginStatus: { [weak self] in
                 self?.launchAtLoginService.isEnabled ?? false
+            },
+            pauseGestureRecognition: { [weak self] in
+                self?.pauseGestureRecognitionForCustomSignatureRecording()
+            },
+            resumeGestureRecognition: { [weak self] in
+                self?.resumeGestureRecognitionAfterCustomSignatureRecording()
             }
         )
     }

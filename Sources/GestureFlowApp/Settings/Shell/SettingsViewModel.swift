@@ -35,6 +35,8 @@ final class SettingsViewModel: ObservableObject {
     private let setLaunchAtLoginEnabledAction: (Bool) throws -> Void
     private let launchAtLoginStatusProvider: () -> Bool
     private let openApplicationPanel: () -> URL?
+    let pauseGestureRecognition: () -> Void
+    let resumeGestureRecognition: () -> Void
 
     init(
         loadResult: ConfigurationLoadResult,
@@ -53,7 +55,9 @@ final class SettingsViewModel: ObservableObject {
         quitApplication: @escaping () -> Void = {},
         setLaunchAtLoginEnabled: @escaping (Bool) throws -> Void = { _ in },
         launchAtLoginStatus: @escaping () -> Bool = { false },
-        openApplicationPanel: @escaping () -> URL? = SettingsViewModel.defaultOpenApplicationPanel
+        openApplicationPanel: @escaping () -> URL? = SettingsViewModel.defaultOpenApplicationPanel,
+        pauseGestureRecognition: @escaping () -> Void = {},
+        resumeGestureRecognition: @escaping () -> Void = {}
     ) {
         self.configuration = loadResult.configuration
         self.gestureConfiguration = gestureConfiguration
@@ -78,6 +82,8 @@ final class SettingsViewModel: ObservableObject {
         self.setLaunchAtLoginEnabledAction = setLaunchAtLoginEnabled
         self.launchAtLoginStatusProvider = launchAtLoginStatus
         self.openApplicationPanel = openApplicationPanel
+        self.pauseGestureRecognition = pauseGestureRecognition
+        self.resumeGestureRecognition = resumeGestureRecognition
     }
 
     var registeredApplicationBundleIdentifiers: [String] {
@@ -340,6 +346,10 @@ final class SettingsViewModel: ObservableObject {
         gestureConfiguration = GestureConfiguration.defaultTemplate
         selectedApplicationScope = .global
         unsavedGestureIDs.removeAll()
+        persistGestureConfiguration()
+    }
+
+    func commitGestureConfigurationToDisk() {
         persistGestureConfiguration()
     }
 

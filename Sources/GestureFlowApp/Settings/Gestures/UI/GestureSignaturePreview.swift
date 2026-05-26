@@ -13,13 +13,22 @@ enum GestureSignatureGlyphRenderer {
             .opacity(defaultFeedback.trailOpacity)
     }
 
-    static func image(for signature: GestureSignature, size: CGSize = listSize) -> Image {
+    static func image(
+        for signature: GestureSignature,
+        size: CGSize = listSize,
+        lineWidth: CGFloat? = nil
+    ) -> Image {
         Image(size: size) { context in
-            draw(signature: signature, in: context, size: size)
+            draw(signature: signature, in: context, size: size, lineWidth: lineWidth)
         }
     }
 
-    static func draw(signature: GestureSignature, in context: GraphicsContext, size: CGSize) {
+    static func draw(
+        signature: GestureSignature,
+        in context: GraphicsContext,
+        size: CGSize,
+        lineWidth: CGFloat? = nil
+    ) {
         let fitted = GestureSignaturePathGeometry.fittedPolyline(for: signature)
         guard fitted.count >= 2 else { return }
 
@@ -30,7 +39,7 @@ enum GestureSignatureGlyphRenderer {
             )
         }
 
-        let lineWidth = max(1.25, size.width * 0.07)
+        let lineWidth = lineWidth ?? max(1.25, size.width * 0.07)
         let cornerRadius = min(size.width * 0.14, 4)
 
         guard let tip = points.last,

@@ -4,7 +4,15 @@ import GestureFlowCore
 
 struct GestureSignaturePicker: View {
     @Binding var selection: GestureSignature
+    @Binding var customGestureSignatures: [GestureSignature]
+    let onPersistCustomSignatures: () -> Void
+    let onPauseGestureRecognition: () -> Void
+    let onResumeGestureRecognition: () -> Void
+
     @State private var isPopoverPresented = false
+    @State private var isRecordingSheetPresented = false
+    @State private var scrollTargetID: String?
+    @State private var isAddCustomSignatureButtonHovered = false
 
     private let columnCount = 4
     private let columnWidth: CGFloat = 34
@@ -35,30 +43,131 @@ struct GestureSignaturePicker: View {
         .popover(isPresented: $isPopoverPresented, arrowEdge: .bottom) {
             signatureSelectionGrid
         }
+        .sheet(isPresented: $isRecordingSheetPresented) {
+            GestureSignatureRecordingSheet(
+                onConfirm: { signature in
+                    handleRecordingConfirm(signature)
+                },
+                onCancel: {
+                    isRecordingSheetPresented = false
+                }
+            )
+        }
+        .onChange(of: isRecordingSheetPresented) { isPresented in
+            if isPresented {
+                onPauseGestureRecognition()
+            } else {
+                onResumeGestureRecognition()
+            }
+        }
     }
 
     private var signatureSelectionGrid: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: columnSpacing) {
-                ForEach(GestureSignatureCatalog.all) { option in
-                    GestureSignaturePopoverCell(
-                        option: option,
-                        isSelected: selection == option.signature,
-                        onSelect: {
-                            selection = option.signature
-                            isPopoverPresented = false
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    LazyVGrid(columns: columns, spacing: columnSpacing) {
+                        ForEach(GestureSignatureCatalog.all) { option in
+                            builtInCell(option: option)
+                                .id(option.id)
                         }
-                    )
+                    }
+
+                    Divider()
+
+                    LazyVGrid(columns: columns, spacing: columnSpacing) {
+                        ForEach(customGestureSignatures, id: \.self) { signature in
+                            customCell(signature: signature)
+                                .id(GestureSignatureLookup.id(for: signature))
+                        }
+                        addCustomSignatureButton
+                    }
                 }
+                .frame(width: gridWidth)
+                .frame(maxWidth: .infinity)
+                .padding(12)
             }
-            .frame(width: gridWidth)
-            .frame(maxWidth: .infinity)
-            .padding(12)
-            .background(NarrowVerticalScrollBarConfigurator())
+            .narrowVerticalScrollBar()
+            .onChange(of: scrollTargetID) { targetID in
+                guard let targetID else { return }
+                withAnimation {
+                    proxy.scrollTo(targetID, anchor: .center)
+                }
+                scrollTargetID = nil
+            }
         }
-        .narrowVerticalScrollBar()
-        .frame(width: gridWidth + 24, height: 280)
+        .frame(width: gridWidth + 24, height: 300)
         .background(Color(nsColor: .controlBackgroundColor))
+    }
+
+    private func builtInCell(option: GestureSignatureOption) -> some View {
+        GestureSignaturePopoverCell(
+            signature: option.signature,
+            displayName: option.displayName,
+            isSelected: selection == option.signature,
+            onSelect: {
+                selection = option.signature
+                isPopoverPresented = false
+            }
+        )
+    }
+
+    private func customCell(signature: GestureSignature) -> some View {
+        GestureSignaturePopoverCell(
+            signature: signature,
+            displayName: signature.chineseDisplayName,
+            isSelected: selection == signature,
+            onSelect: {
+                selection = signature
+                isPopoverPresented = false
+            }
+        )
+    }
+
+    private var addCustomSignatureButton: some View {
+        Image(systemName: "plus")
+            .font(.system(size: 14, weight: .semibold))
+            .frame(width: 34, height: 34)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(addCustomSignatureButtonBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(Color.secondary.opacity(0.35), lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+            .scaleEffect(isAddCustomSignatureButtonHovered ? 1.12 : 1)
+            .animation(.easeOut(duration: 0.14), value: isAddCustomSignatureButtonHovered)
+            .onHover { isAddCustomSignatureButtonHovered = $0 }
+            .onTapGesture {
+                isRecordingSheetPresented = true
+            }
+            .help("绘制自定义手势")
+            .accessibilityLabel("绘制自定义手势")
+            .accessibilityAddTraits(.isButton)
+    }
+
+    private var addCustomSignatureButtonBackground: Color {
+        if isAddCustomSignatureButtonHovered {
+            return Color(nsColor: .quaternarySystemFill)
+        }
+        return Color(nsColor: .windowBackgroundColor)
+    }
+
+    private func handleRecordingConfirm(_ signature: GestureSignature) {
+        isRecordingSheetPresented = false
+
+        if GestureSignatureLookup.exists(signature, customSignatures: customGestureSignatures) {
+            selection = signature
+            scrollTargetID = GestureSignatureLookup.id(for: signature)
+            return
+        }
+
+        customGestureSignatures.append(signature)
+        onPersistCustomSignatures()
+        selection = signature
+        scrollTargetID = GestureSignatureLookup.id(for: signature)
     }
 
     private func previewImage(for signature: GestureSignature, size: CGSize) -> some View {
@@ -75,7 +184,8 @@ struct GestureSignaturePicker: View {
 }
 
 private struct GestureSignaturePopoverCell: View {
-    let option: GestureSignatureOption
+    let signature: GestureSignature
+    let displayName: String
     let isSelected: Bool
     let onSelect: () -> Void
 
@@ -97,13 +207,13 @@ private struct GestureSignaturePopoverCell: View {
                 isHovered = hovering
             }
             .onTapGesture(perform: onSelect)
-            .help(option.displayName)
-            .accessibilityLabel(option.displayName)
+            .help(displayName)
+            .accessibilityLabel(displayName)
             .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var preview: some View {
-        GestureSignatureGlyphRenderer.image(for: option.signature, size: glyphSize)
+        GestureSignatureGlyphRenderer.image(for: signature, size: glyphSize)
             .resizable()
             .interpolation(.high)
             .antialiased(true)
