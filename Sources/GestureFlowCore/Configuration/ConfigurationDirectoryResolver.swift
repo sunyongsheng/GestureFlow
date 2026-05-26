@@ -72,11 +72,11 @@ public struct ConfigurationDirectoryResolver {
     }
 
     public var configFileURL: URL {
-        configurationDirectoryURL.appendingPathComponent("config.json")
+        configurationDirectoryURL.appendingPathComponent(ConfigurationFileNames.config)
     }
 
     public var gesturesFileURL: URL {
-        configurationDirectoryURL.appendingPathComponent("gestures.json")
+        configurationDirectoryURL.appendingPathComponent(ConfigurationFileNames.gestures)
     }
 
     public static func bootstrap(

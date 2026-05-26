@@ -6,7 +6,7 @@ final class GestureConfigurationServiceTests: XCTestCase {
     func testLoadCreatesFileWhenMissing() throws {
         let directory = try makeTemporaryDirectory()
         let store = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         let service = GestureConfigurationService(store: store)
 
@@ -19,7 +19,7 @@ final class GestureConfigurationServiceTests: XCTestCase {
     func testSaveWritesToDisk() throws {
         let directory = try makeTemporaryDirectory()
         let store = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         let service = GestureConfigurationService(store: store)
         service.load()

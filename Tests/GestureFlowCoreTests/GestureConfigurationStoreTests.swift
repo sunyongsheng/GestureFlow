@@ -9,7 +9,7 @@ final class GestureConfigurationStoreTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
 
         let store = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
 
         let configuration = try store.load()
@@ -24,7 +24,7 @@ final class GestureConfigurationStoreTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
 
         let store = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         var configuration = GestureConfiguration.defaultTemplate
         configuration.applicationBundleIdentifiers = ["com.apple.Safari"]

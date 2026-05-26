@@ -27,7 +27,7 @@ final class ConfigurationStoreTests: XCTestCase {
 
     func testLoadRecoveringBacksUpCorruptConfigurationAndReturnsDefaults() throws {
         let fileURL = try makeTemporaryConfigURL()
-        try "{ not valid json".write(to: fileURL, atomically: true, encoding: .utf8)
+        try "not: valid: yaml: [[[".write(to: fileURL, atomically: true, encoding: .utf8)
         let store = ConfigurationStore(fileURL: fileURL)
 
         let result = store.loadRecovering()
@@ -37,22 +37,21 @@ final class ConfigurationStoreTests: XCTestCase {
         XCTAssertNotNil(result.backupURL)
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: result.backupURL!.path))
-        XCTAssertTrue(result.backupURL!.lastPathComponent.hasPrefix("config.json.corrupt-"))
+        XCTAssertTrue(
+            result.backupURL!.lastPathComponent.hasPrefix("\(ConfigurationFileNames.config).corrupt-")
+        )
     }
 
-    func testLoadBackfillsDefaultTriggerConfigurationForLegacyConfig() throws {
+    func testLoadBackfillsDefaultTriggerConfigurationWhenTriggerSectionMissing() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let legacyConfiguration = """
-        {
-          "feedback" : {
-            "trailColorHex" : "#0099FF",
-            "trailOpacity" : 0.8,
-            "trailWidth" : 4
-          },
-          "isEnabled" : true
-        }
+        let partialConfiguration = """
+        isEnabled: true
+        feedback:
+          trailColorHex: "#0099FF"
+          trailOpacity: 0.8
+          trailWidth: 4
         """
-        try legacyConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
+        try partialConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
         let store = ConfigurationStore(fileURL: fileURL)
 
         let configuration = try store.load()
@@ -64,17 +63,14 @@ final class ConfigurationStoreTests: XCTestCase {
 
     func testMissingGestureTargetApplicationBackfillsUnderMouse() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let legacyConfiguration = """
-        {
-          "isEnabled" : true,
-          "trigger" : {
-            "movementThreshold" : 24,
-            "holdTimeoutMilliseconds" : 250,
-            "maximumSampleDistance" : 120
-          }
-        }
+        let partialConfiguration = """
+        isEnabled: true
+        trigger:
+          movementThreshold: 24
+          holdTimeoutMilliseconds: 250
+          maximumSampleDistance: 120
         """
-        try legacyConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
+        try partialConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
         let store = ConfigurationStore(fileURL: fileURL)
 
         let configuration = try store.load()
@@ -89,6 +85,6 @@ final class ConfigurationStoreTests: XCTestCase {
         addTeardownBlock {
             try? FileManager.default.removeItem(at: directory)
         }
-        return directory.appendingPathComponent("config.json")
+        return directory.appendingPathComponent(ConfigurationFileNames.config)
     }
 }

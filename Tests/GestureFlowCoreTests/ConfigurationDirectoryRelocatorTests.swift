@@ -9,17 +9,17 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
 
         try "{\"isEnabled\":false}".write(
-            to: oldDirectory.appendingPathComponent("config.json"),
+            to: oldDirectory.appendingPathComponent("config.yaml"),
             atomically: true,
             encoding: .utf8
         )
         try "{\"applicationBundleIdentifiers\":[]}".write(
-            to: oldDirectory.appendingPathComponent("gestures.json"),
+            to: oldDirectory.appendingPathComponent("gestures.yaml"),
             atomically: true,
             encoding: .utf8
         )
 
-        let standaloneURL = root.appendingPathComponent("config_standalone.json")
+        let standaloneURL = root.appendingPathComponent("config_standalone.yaml")
         let relocator = ConfigurationDirectoryRelocator(
             standaloneStore: StandaloneConfigurationStore(fileURL: standaloneURL)
         )
@@ -30,10 +30,10 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         )
 
         XCTAssertEqual(resolvedNewDirectory.standardizedFileURL, newDirectory.standardizedFileURL)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: newDirectory.appendingPathComponent("config.json").path))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: newDirectory.appendingPathComponent("gestures.json").path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("config.json").path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("gestures.json").path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: newDirectory.appendingPathComponent("config.yaml").path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: newDirectory.appendingPathComponent("gestures.yaml").path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("config.yaml").path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("gestures.yaml").path))
 
         let standalone = try StandaloneConfigurationStore(fileURL: standaloneURL).load()
         XCTAssertEqual(standalone?.configurationDirectory, newDirectory.path)
@@ -46,14 +46,14 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: newDirectory, withIntermediateDirectories: true)
         try "{}".write(
-            to: newDirectory.appendingPathComponent("config.json"),
+            to: newDirectory.appendingPathComponent("config.yaml"),
             atomically: true,
             encoding: .utf8
         )
 
         let relocator = ConfigurationDirectoryRelocator(
             standaloneStore: StandaloneConfigurationStore(
-                fileURL: root.appendingPathComponent("config_standalone.json")
+                fileURL: root.appendingPathComponent("config_standalone.yaml")
             )
         )
 

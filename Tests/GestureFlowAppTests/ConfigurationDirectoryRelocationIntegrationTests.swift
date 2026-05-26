@@ -11,20 +11,20 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
         try FileManager.default.createDirectory(at: bootstrapDirectory, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
 
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.json")
+        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
         try StandaloneConfigurationStore(fileURL: standaloneURL).save(
             StandaloneConfiguration(configurationDirectory: oldDirectory.path)
         )
 
         let configuration = AppConfiguration(isEnabled: true)
         let configurationStore = ConfigurationStore(
-            fileURL: oldDirectory.appendingPathComponent("config.json")
+            fileURL: oldDirectory.appendingPathComponent("config.yaml")
         )
         try configurationStore.save(configuration)
 
         let gestureService = GestureConfigurationService(
             store: GestureConfigurationStore(
-                fileURL: oldDirectory.appendingPathComponent("gestures.json")
+                fileURL: oldDirectory.appendingPathComponent("gestures.yaml")
             )
         )
         gestureService.load()
@@ -56,7 +56,7 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
         XCTAssertEqual(try resolver.makeConfigurationStore().load(), configuration)
         XCTAssertFalse(
             FileManager.default.fileExists(
-                atPath: oldDirectory.appendingPathComponent("config.json").path
+                atPath: oldDirectory.appendingPathComponent("config.yaml").path
             )
         )
     }

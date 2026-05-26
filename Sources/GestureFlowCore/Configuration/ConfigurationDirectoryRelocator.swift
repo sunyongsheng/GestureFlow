@@ -94,15 +94,16 @@ public struct ConfigurationDirectoryRelocator {
             }
         }
 
-        let configURL = directory.appendingPathComponent("config.json")
-        let gesturesURL = directory.appendingPathComponent("gestures.json")
-        if fileManager.fileExists(atPath: configURL.path) || fileManager.fileExists(atPath: gesturesURL.path) {
-            throw ConfigurationDirectoryRelocationError.targetContainsConfigurationFiles
+        for fileName in ConfigurationFileNames.configurationDirectoryFiles {
+            let fileURL = directory.appendingPathComponent(fileName)
+            if fileManager.fileExists(atPath: fileURL.path) {
+                throw ConfigurationDirectoryRelocationError.targetContainsConfigurationFiles
+            }
         }
     }
 
     private func copyConfigurationFiles(from oldDirectory: URL, to newDirectory: URL) throws {
-        let files = ["config.json", "gestures.json"]
+        let files = ConfigurationFileNames.configurationDirectoryFiles
         for fileName in files {
             let source = oldDirectory.appendingPathComponent(fileName)
             guard fileManager.fileExists(atPath: source.path) else {
@@ -118,7 +119,7 @@ public struct ConfigurationDirectoryRelocator {
     }
 
     private func deleteBusinessConfigurationFiles(in directory: URL) {
-        for fileName in ["config.json", "gestures.json"] {
+        for fileName in ConfigurationFileNames.configurationDirectoryFiles {
             let fileURL = directory.appendingPathComponent(fileName)
             try? fileManager.removeItem(at: fileURL)
         }

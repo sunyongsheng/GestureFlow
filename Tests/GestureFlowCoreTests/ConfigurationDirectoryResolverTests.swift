@@ -4,7 +4,7 @@ import XCTest
 final class ConfigurationDirectoryResolverTests: XCTestCase {
     func testBootstrapUsesDefaultDirectoryWhenStandaloneMissing() throws {
         let bootstrapDirectory = try makeTemporaryBootstrapDirectory()
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.json")
+        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
         let standaloneStore = StandaloneConfigurationStore(fileURL: standaloneURL)
 
         let resolver = ConfigurationDirectoryResolver.bootstrap(
@@ -23,7 +23,7 @@ final class ConfigurationDirectoryResolverTests: XCTestCase {
         let customDirectory = bootstrapDirectory.appendingPathComponent("custom-config", isDirectory: true)
         try FileManager.default.createDirectory(at: customDirectory, withIntermediateDirectories: true)
 
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.json")
+        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
         let standaloneStore = StandaloneConfigurationStore(fileURL: standaloneURL)
         try standaloneStore.save(
             StandaloneConfiguration(configurationDirectory: customDirectory.path)
@@ -78,7 +78,7 @@ final class ConfigurationDirectoryResolverTests: XCTestCase {
 
     func testBootstrapFallsBackWhenStandaloneDirectoryInvalid() throws {
         let bootstrapDirectory = try makeTemporaryBootstrapDirectory()
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.json")
+        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
         let standaloneStore = StandaloneConfigurationStore(fileURL: standaloneURL)
         try standaloneStore.save(
             StandaloneConfiguration(configurationDirectory: "/definitely/not/a/real/gestureflow/path")

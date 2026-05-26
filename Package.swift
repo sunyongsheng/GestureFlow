@@ -10,9 +10,15 @@ let package = Package(
         .library(name: "GestureFlowCore", targets: ["GestureFlowCore"]),
         .executable(name: "GestureFlowApp", targets: ["GestureFlowApp"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/jpsim/Yams.git", from: "5.0.6")
+    ],
     targets: [
         .target(
-            name: "GestureFlowCore"
+            name: "GestureFlowCore",
+            dependencies: [
+                .product(name: "Yams", package: "Yams")
+            ]
         ),
         .executableTarget(
             name: "GestureFlowApp",

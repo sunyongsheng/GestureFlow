@@ -4,7 +4,7 @@ import GestureFlowCore
 
 final class SettingsViewModelTests: XCTestCase {
     func testRecoveredConfigurationExposesRecoveryNoticeAndBackupPath() {
-        let backupURL = URL(fileURLWithPath: "/tmp/config.json.corrupt-123")
+        let backupURL = URL(fileURLWithPath: "/tmp/config.yaml.corrupt-123")
         let viewModel = makeViewModel(
             loadResult: ConfigurationLoadResult(
                 configuration: AppConfiguration(),
@@ -15,9 +15,9 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertEqual(
             viewModel.recoveryNoticeMessage,
-            "已从损坏的配置中恢复。备份已保存至 /tmp/config.json.corrupt-123"
+            "已从损坏的配置中恢复。备份已保存至 /tmp/config.yaml.corrupt-123"
         )
-        XCTAssertEqual(viewModel.recoveryBackupPath, "/tmp/config.json.corrupt-123")
+        XCTAssertEqual(viewModel.recoveryBackupPath, "/tmp/config.yaml.corrupt-123")
     }
 
     func testHealthyConfigurationDoesNotExposeRecoveryNotice() {
@@ -30,7 +30,7 @@ final class SettingsViewModelTests: XCTestCase {
     func testRestoreDefaultGestureConfigurationResetsAndPersists() throws {
         let directory = try makeTemporaryDirectory()
         let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         var configuration = GestureConfiguration.defaultTemplate
         configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
@@ -74,7 +74,7 @@ final class SettingsViewModelTests: XCTestCase {
     func testCommitGestureKeepsPendingStateWhenValidationFails() throws {
         let directory = try makeTemporaryDirectory()
         let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         let duplicate = GestureDefinition(
             name: "Duplicate",
@@ -104,7 +104,7 @@ final class SettingsViewModelTests: XCTestCase {
     func testAddGestureDoesNotPersistUntilCommitted() throws {
         let directory = try makeTemporaryDirectory()
         let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         let initialCount = try gestureStore.load().gestures.count
         let viewModel = makeViewModel(
@@ -131,7 +131,7 @@ final class SettingsViewModelTests: XCTestCase {
     func testUpdatingGesturePersistsGestureConfiguration() throws {
         let directory = try makeTemporaryDirectory()
         let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         let gesture = GestureDefinition(
             id: UUID(uuidString: "4A3BB501-27B8-4A3B-9EE4-344D823F3515")!,
@@ -180,7 +180,7 @@ final class SettingsViewModelTests: XCTestCase {
     func testRemoveApplicationDeletesScopedGestures() throws {
         let directory = try makeTemporaryDirectory()
         let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.json")
+            fileURL: directory.appendingPathComponent("gestures.yaml")
         )
         var configuration = GestureConfiguration.defaultTemplate
         configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
@@ -462,7 +462,7 @@ final class SettingsViewModelTests: XCTestCase {
 
     private func makeTemporaryConfigURL() throws -> URL {
         let directory = try makeTemporaryDirectory()
-        return directory.appendingPathComponent("config.json")
+        return directory.appendingPathComponent(ConfigurationFileNames.config)
     }
 
     private func makeTemporaryDirectory() throws -> URL {

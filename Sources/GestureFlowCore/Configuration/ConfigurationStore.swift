@@ -29,7 +29,7 @@ public struct ConfigurationStore {
         }
 
         let data = try Data(contentsOf: fileURL)
-        return try JSONDecoder().decode(AppConfiguration.self, from: data)
+        return try YAMLConfigurationCoder.decode(AppConfiguration.self, from: data)
     }
 
     public func loadRecovering() -> ConfigurationLoadResult {
@@ -55,9 +55,7 @@ public struct ConfigurationStore {
             withIntermediateDirectories: true
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = try encoder.encode(configuration)
+        let data = try YAMLConfigurationCoder.encode(configuration)
         try data.write(to: fileURL, options: .atomic)
     }
 

@@ -801,7 +801,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         addTeardownBlock {
             try? FileManager.default.removeItem(at: directory)
         }
-        return directory.appendingPathComponent("config.json")
+        return directory.appendingPathComponent(ConfigurationFileNames.config)
     }
 }
 

@@ -29,7 +29,7 @@ public struct StandaloneConfigurationStore {
         }
 
         let data = try Data(contentsOf: fileURL)
-        return try JSONDecoder().decode(StandaloneConfiguration.self, from: data)
+        return try YAMLConfigurationCoder.decode(StandaloneConfiguration.self, from: data)
     }
 
     public func loadRecovering() -> StandaloneConfigurationLoadResult {
@@ -55,9 +55,7 @@ public struct StandaloneConfigurationStore {
             withIntermediateDirectories: true
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = try encoder.encode(configuration)
+        let data = try YAMLConfigurationCoder.encode(configuration)
         try data.write(to: fileURL, options: .atomic)
     }
 
@@ -80,6 +78,6 @@ public struct StandaloneConfigurationStore {
 
     public static func defaultFileURL() -> URL {
         ConfigurationDirectoryResolver.bootstrapBaseDirectoryURL
-            .appendingPathComponent("config_standalone.json")
+            .appendingPathComponent(ConfigurationFileNames.standalone)
     }
 }

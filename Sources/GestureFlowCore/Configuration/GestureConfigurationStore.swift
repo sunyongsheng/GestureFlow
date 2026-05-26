@@ -13,7 +13,7 @@ public struct GestureConfigurationStore {
         }
 
         let data = try Data(contentsOf: fileURL)
-        return try JSONDecoder().decode(GestureConfiguration.self, from: data)
+        return try YAMLConfigurationCoder.decode(GestureConfiguration.self, from: data)
     }
 
     public func save(_ configuration: GestureConfiguration) throws {
@@ -23,9 +23,7 @@ public struct GestureConfigurationStore {
             withIntermediateDirectories: true
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = try encoder.encode(configuration)
+        let data = try YAMLConfigurationCoder.encode(configuration)
         try data.write(to: fileURL, options: .atomic)
     }
 

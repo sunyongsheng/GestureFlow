@@ -42,6 +42,6 @@ final class StandaloneConfigurationStoreTests: XCTestCase {
         addTeardownBlock {
             try? FileManager.default.removeItem(at: directory)
         }
-        return directory.appendingPathComponent("config_standalone.json")
+        return directory.appendingPathComponent(ConfigurationFileNames.standalone)
     }
 }
