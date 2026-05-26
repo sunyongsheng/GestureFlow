@@ -185,6 +185,19 @@ struct GeneralSettingsView: View {
                 }
             }
         }
+        .alert(
+            "检测到目标目录已有配置文件，是否覆盖当前配置？",
+            isPresented: $viewModel.isConfigurationDirectoryAdoptionAlertPresented
+        ) {
+            Button("否", role: .cancel) {
+                viewModel.cancelConfigurationDirectoryAdoption()
+            }
+            Button("是") {
+                viewModel.confirmConfigurationDirectoryAdoption()
+            }
+        } message: {
+            Text("将改用目标目录中的配置，当前目录中的配置文件将不再使用。")
+        }
     }
 
     private var launchAtLoginBinding: Binding<Bool> {

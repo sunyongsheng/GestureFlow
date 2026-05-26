@@ -4,10 +4,10 @@ public enum ConfigurationDirectoryRelocationError: Error, Equatable {
     case invalidPath
     case notADirectory
     case directoryNotWritable
-    case targetContainsConfigurationFiles
     case sameAsCurrentDirectory
     case copyFailed
     case configurationDirectoryWriteFailed
+    case invalidConfigurationContent
 }
 
 extension ConfigurationDirectoryRelocationError: LocalizedError {
@@ -19,14 +19,14 @@ extension ConfigurationDirectoryRelocationError: LocalizedError {
             return "请选择文件夹路径。"
         case .directoryNotWritable:
             return "目录不可写。"
-        case .targetContainsConfigurationFiles:
-            return "目标目录已存在配置文件，请选择空目录。"
         case .sameAsCurrentDirectory:
             return "配置目录未更改。"
         case .copyFailed:
             return "复制配置文件失败。"
         case .configurationDirectoryWriteFailed:
             return "保存配置目录设置失败。"
+        case .invalidConfigurationContent:
+            return "目标目录中的配置文件无效，请检查后重试。"
         }
     }
 }
@@ -46,9 +46,25 @@ public struct ConfigurationDirectoryRelocator {
         self.homeDirectory = homeDirectory ?? ConfigurationPathFormatting.homeDirectoryURL(fileManager: fileManager)
     }
 
+    public func targetHasConfigurationFiles(at directoryPath: String) -> Bool {
+        guard let directory = ConfigurationPathFormatting.normalizedDirectoryURL(
+            from: directoryPath,
+            homeDirectory: homeDirectory
+        ) else {
+            return false
+        }
+
+        return ConfigurationFileNames.configurationDirectoryFiles.contains { fileName in
+            fileManager.fileExists(
+                atPath: directory.appendingPathComponent(fileName).path
+            )
+        }
+    }
+
     public func relocate(
         from oldDirectory: URL,
-        to newDirectoryPath: String
+        to newDirectoryPath: String,
+        mode: ConfigurationDirectoryRelocationMode = .copyCurrentToEmptyTarget
     ) throws -> URL {
         guard let newDirectory = ConfigurationPathFormatting.normalizedDirectoryURL(
             from: newDirectoryPath,
@@ -68,7 +84,21 @@ public struct ConfigurationDirectoryRelocator {
             try fileManager.createDirectory(at: newDirectory, withIntermediateDirectories: true)
         }
 
-        try copyConfigurationFiles(from: oldNormalized, to: newDirectory)
+        switch mode {
+        case .copyCurrentToEmptyTarget:
+            try copyConfigurationFiles(from: oldNormalized, to: newDirectory)
+        case .adoptTargetAndMergeMissing:
+            do {
+                try ConfigurationDirectoryValidator.validateForAdoption(
+                    targetDirectory: newDirectory,
+                    oldDirectory: oldNormalized,
+                    fileManager: fileManager
+                )
+            } catch {
+                throw ConfigurationDirectoryRelocationError.invalidConfigurationContent
+            }
+            try mergeMissingConfigurationFiles(from: oldNormalized, to: newDirectory)
+        }
 
         do {
             try configurationDirectoryStore.save(configurationDirectory: newDirectory.path)
@@ -91,23 +121,33 @@ public struct ConfigurationDirectoryRelocator {
                 throw ConfigurationDirectoryRelocationError.directoryNotWritable
             }
         }
-
-        for fileName in ConfigurationFileNames.configurationDirectoryFiles {
-            let fileURL = directory.appendingPathComponent(fileName)
-            if fileManager.fileExists(atPath: fileURL.path) {
-                throw ConfigurationDirectoryRelocationError.targetContainsConfigurationFiles
-            }
-        }
     }
 
     private func copyConfigurationFiles(from oldDirectory: URL, to newDirectory: URL) throws {
-        let files = ConfigurationFileNames.configurationDirectoryFiles
-        for fileName in files {
+        for fileName in ConfigurationFileNames.configurationDirectoryFiles {
             let source = oldDirectory.appendingPathComponent(fileName)
             guard fileManager.fileExists(atPath: source.path) else {
                 continue
             }
             let destination = newDirectory.appendingPathComponent(fileName)
+            do {
+                try fileManager.copyItem(at: source, to: destination)
+            } catch {
+                throw ConfigurationDirectoryRelocationError.copyFailed
+            }
+        }
+    }
+
+    private func mergeMissingConfigurationFiles(from oldDirectory: URL, to newDirectory: URL) throws {
+        for fileName in ConfigurationFileNames.configurationDirectoryFiles {
+            let destination = newDirectory.appendingPathComponent(fileName)
+            guard !fileManager.fileExists(atPath: destination.path) else {
+                continue
+            }
+            let source = oldDirectory.appendingPathComponent(fileName)
+            guard fileManager.fileExists(atPath: source.path) else {
+                continue
+            }
             do {
                 try fileManager.copyItem(at: source, to: destination)
             } catch {

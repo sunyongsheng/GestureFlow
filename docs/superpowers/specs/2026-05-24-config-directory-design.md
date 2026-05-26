@@ -21,7 +21,7 @@ Allow users to choose where GestureFlow stores `config.yaml` and `gestures.yaml`
 | Default business directory | `~/Library/Application Support/GestureFlow` |
 | Missing / invalid stored path | Fall back to default directory; log |
 | Business files | `{configurationDirectory}/config.yaml`, `{configurationDirectory}/gestures.yaml` |
-| Target dir has existing YAML | Reject migration (do not overwrite) |
+| Target dir has existing YAML | Confirm dialog; adopt target config after strict validation (see adoption spec) |
 | Old dir cleanup | Delete only `config.yaml` and `gestures.yaml` from previous directory |
 | After migration | Hot reload stores + runtime in-process (no restart) |
 | General settings UI | Column: title + subtitle; row: `TextField` + **确认** (no **更改** button) |

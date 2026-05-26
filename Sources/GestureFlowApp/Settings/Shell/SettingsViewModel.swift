@@ -19,12 +19,15 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var persistedConfigurationDirectoryPath: String
     @Published private(set) var isRelocatingConfigurationDirectory = false
     @Published private(set) var configurationDirectoryErrorMessage: String?
+    @Published var isConfigurationDirectoryAdoptionAlertPresented = false
 
     private var unsavedGestureIDs: Set<UUID> = []
+    private var pendingConfigurationDirectoryPath: String?
 
     private let saveConfiguration: (AppConfiguration) throws -> Void
     private let saveGestureConfiguration: (GestureConfiguration) throws -> Void
-    private let relocateConfigurationDirectoryAction: (String) throws -> Void
+    private let relocateConfigurationDirectoryAction: (String, ConfigurationDirectoryRelocationMode) throws -> Void
+    private let targetHasConfigurationFiles: (String) -> Bool
     private let permissionPrompt: () -> Void
     private let startGestureFlowAction: () -> Void
     private let stopGestureFlowAction: () -> Void
@@ -42,7 +45,8 @@ final class SettingsViewModel: ObservableObject {
         isLaunchAtLoginEnabled: Bool = false,
         saveConfiguration: @escaping (AppConfiguration) throws -> Void,
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void,
-        relocateConfigurationDirectory: @escaping (String) throws -> Void = { _ in },
+        relocateConfigurationDirectory: @escaping (String, ConfigurationDirectoryRelocationMode) throws -> Void = { _, _ in },
+        targetHasConfigurationFiles: @escaping (String) -> Bool = { _ in false },
         requestAccessibilityPermission: @escaping () -> Void,
         startGestureFlow: @escaping () -> Void = {},
         stopGestureFlow: @escaping () -> Void = {},
@@ -66,6 +70,7 @@ final class SettingsViewModel: ObservableObject {
         self.saveConfiguration = saveConfiguration
         self.saveGestureConfiguration = saveGestureConfiguration
         self.relocateConfigurationDirectoryAction = relocateConfigurationDirectory
+        self.targetHasConfigurationFiles = targetHasConfigurationFiles
         self.permissionPrompt = requestAccessibilityPermission
         self.startGestureFlowAction = startGestureFlow
         self.stopGestureFlowAction = stopGestureFlow
@@ -259,12 +264,47 @@ final class SettingsViewModel: ObservableObject {
         }
 
         configurationDirectoryErrorMessage = nil
+
+        if targetHasConfigurationFiles(draftConfigurationDirectoryPath) {
+            pendingConfigurationDirectoryPath = draftConfigurationDirectoryPath
+            isConfigurationDirectoryAdoptionAlertPresented = true
+            return
+        }
+
+        performConfigurationDirectoryRelocation(
+            path: draftConfigurationDirectoryPath,
+            mode: .copyCurrentToEmptyTarget
+        )
+    }
+
+    func confirmConfigurationDirectoryAdoption() {
+        guard let path = pendingConfigurationDirectoryPath else {
+            return
+        }
+
+        pendingConfigurationDirectoryPath = nil
+        isConfigurationDirectoryAdoptionAlertPresented = false
+        performConfigurationDirectoryRelocation(
+            path: path,
+            mode: .adoptTargetAndMergeMissing
+        )
+    }
+
+    func cancelConfigurationDirectoryAdoption() {
+        pendingConfigurationDirectoryPath = nil
+        isConfigurationDirectoryAdoptionAlertPresented = false
+    }
+
+    private func performConfigurationDirectoryRelocation(
+        path: String,
+        mode: ConfigurationDirectoryRelocationMode
+    ) {
         isRelocatingConfigurationDirectory = true
         defer { isRelocatingConfigurationDirectory = false }
 
         do {
-            try relocateConfigurationDirectoryAction(draftConfigurationDirectoryPath)
-            persistedConfigurationDirectoryPath = draftConfigurationDirectoryPath
+            try relocateConfigurationDirectoryAction(path, mode)
+            persistedConfigurationDirectoryPath = path
             configurationDirectoryErrorMessage = nil
         } catch {
             configurationDirectoryErrorMessage = error.localizedDescription

@@ -192,8 +192,11 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             saveGestureConfiguration: { [weak self] newGestureConfiguration in
                 try self?.applyGestureConfiguration(newGestureConfiguration)
             },
-            relocateConfigurationDirectory: { [weak self] newPath in
-                try self?.relocateConfigurationDirectory(to: newPath)
+            relocateConfigurationDirectory: { [weak self] newPath, mode in
+                try self?.relocateConfigurationDirectory(to: newPath, mode: mode)
+            },
+            targetHasConfigurationFiles: { [weak self] path in
+                self?.configurationDirectoryRelocator.targetHasConfigurationFiles(at: path) ?? false
             },
             requestAccessibilityPermission: { [weak self] in
                 self?.permissionService.promptForAccessibilityPermission()
@@ -216,14 +219,20 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         )
     }
 
-    func relocateConfigurationDirectory(to newPath: String) throws {
-        try configurationStore.save(configuration)
-        try runtimeState.gestureConfigurationService.save()
+    func relocateConfigurationDirectory(
+        to newPath: String,
+        mode: ConfigurationDirectoryRelocationMode = .copyCurrentToEmptyTarget
+    ) throws {
+        if mode == .copyCurrentToEmptyTarget {
+            try configurationStore.save(configuration)
+            try runtimeState.gestureConfigurationService.save()
+        }
 
         let oldDirectory = configurationDirectoryResolver.configurationDirectoryURL
         let newDirectory = try configurationDirectoryRelocator.relocate(
             from: oldDirectory,
-            to: newPath
+            to: newPath,
+            mode: mode
         )
 
         configurationDirectoryResolver.apply(configurationDirectory: newDirectory)
