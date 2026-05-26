@@ -48,6 +48,18 @@ public struct GestureSignatureCatalog {
             build(length: length, previous: nil, current: [])
         }
 
+        for tokens in Self.fourTokenDiagonalPresets {
+            appendOption(tokens: tokens)
+        }
+
         return options
     }
+
+    /// Four-segment corner gestures (e.g. right-down-left-up).
+    private static let fourTokenDiagonalPresets: [[GestureDirection]] = [
+        [.right, .down, .left, .up],
+        [.left, .down, .right, .up],
+        [.right, .up, .left, .down],
+        [.left, .up, .right, .down],
+    ]
 }

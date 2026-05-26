@@ -2,8 +2,24 @@ import XCTest
 @testable import GestureFlowCore
 
 final class GestureSignatureCatalogTests: XCTestCase {
-    func testCatalogCountIs52() {
-        XCTAssertEqual(GestureSignatureCatalog.all.count, 52)
+    func testCatalogCountIs56() {
+        XCTAssertEqual(GestureSignatureCatalog.all.count, 56)
+    }
+
+    func testFourTokenDiagonalPresetsAreIncluded() {
+        let expected: [(tokens: [GestureDirection], displayName: String)] = [
+            ([.right, .down, .left, .up], "右、下、左、上"),
+            ([.left, .down, .right, .up], "左、下、右、上"),
+            ([.right, .up, .left, .down], "右、上、左、下"),
+            ([.left, .up, .right, .down], "左、上、右、下"),
+        ]
+
+        for item in expected {
+            let signature = GestureSignature(tokens: item.tokens)
+            let option = GestureSignatureCatalog.all.first { $0.signature == signature }
+            XCTAssertNotNil(option, "Missing preset \(item.displayName)")
+            XCTAssertEqual(option?.displayName, item.displayName)
+        }
     }
 
     func testNoAdjacentDuplicateTokensInAnyEntry() {
