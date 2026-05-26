@@ -2,7 +2,7 @@
 
 **Goal**
 
-Allow users to choose where GestureFlow stores `config.json` and `gestures.json`, so configs can live in a synced folder (iCloud, Dropbox, etc.). Bootstrap path is always read from a fixed standalone file before any other configuration loads.
+Allow users to choose where GestureFlow stores `config.yaml` and `gestures.yaml`, so configs can live in a synced folder (iCloud, Dropbox, etc.). The configuration directory path is stored in `UserDefaults` before any other configuration loads.
 
 **Out Of Scope**
 
@@ -16,14 +16,13 @@ Allow users to choose where GestureFlow stores `config.json` and `gestures.json`
 
 | Topic | Decision |
 | --- | --- |
-| Bootstrap file | `~/Library/Application Support/GestureFlow/config_standalone.json` (never moves) |
-| Bootstrap content | `{ "configurationDirectory": "<absolute path>" }` only |
+| Configuration directory path | `UserDefaults` key `configurationDirectory` |
+| Default (no custom path) | Key absent; use default business directory |
 | Default business directory | `~/Library/Application Support/GestureFlow` |
-| Missing / corrupt standalone | Fall back to default directory; optional corrupt backup |
-| Default path in standalone | Always written explicitly when user confirms (even if equal to default) |
-| Business files | `{configurationDirectory}/config.json`, `{configurationDirectory}/gestures.json` |
-| Target dir has existing JSON | Reject migration (do not overwrite) |
-| Old dir cleanup | Delete only `config.json` and `gestures.json` from previous directory |
+| Missing / invalid stored path | Fall back to default directory; log |
+| Business files | `{configurationDirectory}/config.yaml`, `{configurationDirectory}/gestures.yaml` |
+| Target dir has existing YAML | Reject migration (do not overwrite) |
+| Old dir cleanup | Delete only `config.yaml` and `gestures.yaml` from previous directory |
 | After migration | Hot reload stores + runtime in-process (no restart) |
 | General settings UI | Column: title + subtitle; row: `TextField` + **确认** (no **更改** button) |
 | Confirm button | Disabled until draft path ≠ persisted path |
@@ -34,31 +33,22 @@ Allow users to choose where GestureFlow stores `config.json` and `gestures.json`
 ### Two-Phase Configuration Loading
 
 ```
-Phase 1 (fixed location)
-  config_standalone.json  →  configurationDirectory URL
+Phase 1 (UserDefaults)
+  configurationDirectory key  →  configurationDirectory URL (or default)
 
 Phase 2 (resolved directory)
-  config.json             →  AppConfiguration
-  gestures.json           →  GestureConfiguration
+  config.yaml             →  AppConfiguration
+  gestures.yaml           →  GestureConfiguration
 ```
 
 `configurationDirectory` must **not** be stored in `config.json` (chicken-and-egg).
 
 ### Core Components (`GestureFlowCore`)
 
-**`StandaloneConfiguration`**
+**`ConfigurationDirectoryStore`**
 
-```json
-{
-  "configurationDirectory": "/Users/you/Library/Application Support/GestureFlow"
-}
-```
-
-**`StandaloneConfigurationStore`**
-
-- Fixed URL: `Application Support/GestureFlow/config_standalone.json`
-- `load()` / `save(_:)` with corrupt-file backup pattern aligned with `ConfigurationStore`
-
+- `UserDefaults` key: `configurationDirectory` (absolute path string)
+- Custom path → set key; default path → remove key (no entry)
 **`ConfigurationDirectoryResolver`**
 
 - `static let bootstrapBaseURL` → `…/Application Support/GestureFlow`
@@ -130,8 +120,8 @@ Placement in `GeneralSettingsView`: between **手势识别** and **辅助功能*
 
 1. Create target directory if needed.
 2. Copy `config.json` / `gestures.json` from old directory if they exist.
-3. Write `config_standalone.json` at bootstrap location with new absolute path.
-4. Delete `config.json` and `gestures.json` from **old** directory only (not standalone, not `.corrupt-*`).
+3. Save new path to `UserDefaults` (`configurationDirectory` key).
+4. Delete `config.yaml` and `gestures.yaml` from **old** directory only (not `.corrupt-*` backups).
 5. Run hot reload (§4 in brainstorming).
 
 ### Failure semantics
@@ -139,25 +129,25 @@ Placement in `GeneralSettingsView`: between **手势识别** and **辅助功能*
 | Failure point | Behavior |
 | --- | --- |
 | Validation | No disk changes |
-| Copy | No standalone update; no delete |
-| Standalone write | No delete of old files; copies may remain in target |
-| Delete old JSON | Log warning; continue hot reload if standalone + copy succeeded |
-| Hot reload load | Show error; do not auto-rewrite standalone |
+| Copy | No UserDefaults update; no delete |
+| UserDefaults write | No delete of old files; copies may remain in target |
+| Delete old YAML | Log warning; continue hot reload if UserDefaults + copy succeeded |
+| Hot reload load | Show error; do not auto-rewrite UserDefaults path |
 
 ## File Locations Reference
 
 | File | Location |
 | --- | --- |
-| `config_standalone.json` | `~/Library/Application Support/GestureFlow/` (always) |
-| `config.json` | `{configurationDirectory}/config.json` |
-| `gestures.json` | `{configurationDirectory}/gestures.json` |
+| Configuration directory path | `UserDefaults` key `configurationDirectory` |
+| `config.yaml` | `{configurationDirectory}/config.yaml` |
+| `gestures.yaml` | `{configurationDirectory}/gestures.yaml` |
 
 ## Testing
 
 ### GestureFlowCore
 
-- `StandaloneConfigurationStore` read/write, missing file, corrupt backup
-- `ConfigurationDirectoryResolver.bootstrap` — no standalone, valid standalone, corrupt standalone, invalid directory in standalone
+- `ConfigurationDirectoryStore` read/write, default path clears key
+- `ConfigurationDirectoryResolver.bootstrap` — missing key, valid custom path, invalid path falls back
 - Path normalization equivalence (`~` vs absolute)
 - Relocator validation — target with existing JSON rejected
 

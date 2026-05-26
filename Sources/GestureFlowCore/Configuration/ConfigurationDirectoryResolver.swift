@@ -2,18 +2,18 @@ import Foundation
 
 public struct ConfigurationDirectoryResolver {
     public private(set) var configurationDirectoryURL: URL
-    public let standaloneStore: StandaloneConfigurationStore
+    public let configurationDirectoryStore: ConfigurationDirectoryStore
     private let fileManager: FileManager
     private let homeDirectory: URL
 
     public init(
         configurationDirectoryURL: URL,
-        standaloneStore: StandaloneConfigurationStore = StandaloneConfigurationStore(),
+        configurationDirectoryStore: ConfigurationDirectoryStore = ConfigurationDirectoryStore(),
         fileManager: FileManager = .default,
         homeDirectory: URL? = nil
     ) {
         self.configurationDirectoryURL = configurationDirectoryURL
-        self.standaloneStore = standaloneStore
+        self.configurationDirectoryStore = configurationDirectoryStore
         self.fileManager = fileManager
         self.homeDirectory = homeDirectory ?? ConfigurationPathFormatting.homeDirectoryURL(fileManager: fileManager)
     }
@@ -80,13 +80,12 @@ public struct ConfigurationDirectoryResolver {
     }
 
     public static func bootstrap(
-        standaloneStore: StandaloneConfigurationStore = StandaloneConfigurationStore(),
+        configurationDirectoryStore: ConfigurationDirectoryStore = ConfigurationDirectoryStore(),
         fileManager: FileManager = .default,
         homeDirectory: URL? = nil
     ) -> ConfigurationDirectoryResolver {
         let home = homeDirectory ?? ConfigurationPathFormatting.homeDirectoryURL(fileManager: fileManager)
-        let loadResult = standaloneStore.loadRecovering()
-        let candidatePath = loadResult.configuration?.configurationDirectory
+        let candidatePath = configurationDirectoryStore.load()
         let resolvedURL: URL
 
         if let candidatePath,
@@ -102,7 +101,7 @@ public struct ConfigurationDirectoryResolver {
 
         return ConfigurationDirectoryResolver(
             configurationDirectoryURL: resolvedURL,
-            standaloneStore: standaloneStore,
+            configurationDirectoryStore: configurationDirectoryStore,
             fileManager: fileManager,
             homeDirectory: home
         )

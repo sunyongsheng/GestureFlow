@@ -7,7 +7,7 @@ public enum ConfigurationDirectoryRelocationError: Error, Equatable {
     case targetContainsConfigurationFiles
     case sameAsCurrentDirectory
     case copyFailed
-    case standaloneWriteFailed
+    case configurationDirectoryWriteFailed
 }
 
 extension ConfigurationDirectoryRelocationError: LocalizedError {
@@ -25,7 +25,7 @@ extension ConfigurationDirectoryRelocationError: LocalizedError {
             return "配置目录未更改。"
         case .copyFailed:
             return "复制配置文件失败。"
-        case .standaloneWriteFailed:
+        case .configurationDirectoryWriteFailed:
             return "保存配置目录设置失败。"
         }
     }
@@ -33,15 +33,15 @@ extension ConfigurationDirectoryRelocationError: LocalizedError {
 
 public struct ConfigurationDirectoryRelocator {
     private let fileManager: FileManager
-    private let standaloneStore: StandaloneConfigurationStore
+    private let configurationDirectoryStore: ConfigurationDirectoryStore
     private let homeDirectory: URL
 
     public init(
-        standaloneStore: StandaloneConfigurationStore = StandaloneConfigurationStore(),
+        configurationDirectoryStore: ConfigurationDirectoryStore = ConfigurationDirectoryStore(),
         fileManager: FileManager = .default,
         homeDirectory: URL? = nil
     ) {
-        self.standaloneStore = standaloneStore
+        self.configurationDirectoryStore = configurationDirectoryStore
         self.fileManager = fileManager
         self.homeDirectory = homeDirectory ?? ConfigurationPathFormatting.homeDirectoryURL(fileManager: fileManager)
     }
@@ -71,11 +71,9 @@ public struct ConfigurationDirectoryRelocator {
         try copyConfigurationFiles(from: oldNormalized, to: newDirectory)
 
         do {
-            try standaloneStore.save(
-                StandaloneConfiguration(configurationDirectory: newDirectory.path)
-            )
+            try configurationDirectoryStore.save(configurationDirectory: newDirectory.path)
         } catch {
-            throw ConfigurationDirectoryRelocationError.standaloneWriteFailed
+            throw ConfigurationDirectoryRelocationError.configurationDirectoryWriteFailed
         }
 
         deleteBusinessConfigurationFiles(in: oldNormalized)

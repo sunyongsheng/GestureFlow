@@ -2,7 +2,7 @@ import XCTest
 @testable import GestureFlowCore
 
 final class ConfigurationDirectoryRelocatorTests: XCTestCase {
-    func testRelocateCopiesFilesWritesStandaloneAndDeletesOldBusinessFiles() throws {
+    func testRelocateCopiesFilesWritesUserDefaultsAndDeletesOldBusinessFiles() throws {
         let root = try makeTemporaryRoot()
         let oldDirectory = root.appendingPathComponent("old", isDirectory: true)
         let newDirectory = root.appendingPathComponent("new", isDirectory: true)
@@ -19,9 +19,9 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
             encoding: .utf8
         )
 
-        let standaloneURL = root.appendingPathComponent("config_standalone.yaml")
+        let isolated = makeIsolatedStore()
         let relocator = ConfigurationDirectoryRelocator(
-            standaloneStore: StandaloneConfigurationStore(fileURL: standaloneURL)
+            configurationDirectoryStore: isolated.store
         )
 
         let resolvedNewDirectory = try relocator.relocate(
@@ -34,9 +34,7 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: newDirectory.appendingPathComponent("gestures.yaml").path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("config.yaml").path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("gestures.yaml").path))
-
-        let standalone = try StandaloneConfigurationStore(fileURL: standaloneURL).load()
-        XCTAssertEqual(standalone?.configurationDirectory, newDirectory.path)
+        XCTAssertEqual(isolated.store.load(), newDirectory.path)
     }
 
     func testRelocateRejectsTargetWithExistingConfigurationFiles() throws {
@@ -52,9 +50,7 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         )
 
         let relocator = ConfigurationDirectoryRelocator(
-            standaloneStore: StandaloneConfigurationStore(
-                fileURL: root.appendingPathComponent("config_standalone.yaml")
-            )
+            configurationDirectoryStore: makeIsolatedStore().store
         )
 
         XCTAssertThrowsError(try relocator.relocate(from: oldDirectory, to: newDirectory.path)) { error in
@@ -63,6 +59,15 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
                 .targetContainsConfigurationFiles
             )
         }
+    }
+
+    private func makeIsolatedStore() -> (store: ConfigurationDirectoryStore, suiteName: String) {
+        let suiteName = UUID().uuidString
+        let defaults = UserDefaults(suiteName: suiteName)!
+        addTeardownBlock {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        return (ConfigurationDirectoryStore(defaults: defaults), suiteName)
     }
 
     private func makeTemporaryRoot() throws -> URL {

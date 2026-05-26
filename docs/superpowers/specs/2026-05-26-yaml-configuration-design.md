@@ -10,7 +10,7 @@ Replace JSON on-disk configuration with YAML for application-managed config file
 |------|----------|
 | `config.yaml` | `{configurationDirectory}/` |
 | `gestures.yaml` | `{configurationDirectory}/` |
-| `config_standalone.yaml` | `~/Library/Application Support/GestureFlow/` |
+| Configuration directory path | `UserDefaults` key `configurationDirectory` |
 
 Out of scope: settings window frame persistence, JSON→YAML migration, dual-format reads.
 
@@ -18,7 +18,7 @@ Out of scope: settings window frame persistence, JSON→YAML migration, dual-for
 
 - Add **Yams** to `GestureFlowCore`.
 - Shared `YAMLConfigurationCoder` for encode/decode of existing `Codable` models (camelCase keys unchanged).
-- Update `ConfigurationStore`, `GestureConfigurationStore`, `StandaloneConfigurationStore`, `ConfigurationDirectoryResolver`, and `ConfigurationDirectoryRelocator`.
+- Update `ConfigurationStore`, `GestureConfigurationStore`, `ConfigurationDirectoryStore`, `ConfigurationDirectoryResolver`, and `ConfigurationDirectoryRelocator`.
 - Corrupt-file backup pattern: `{filename}.corrupt-{timestamp}` (e.g. `config.yaml.corrupt-...`).
 
 ## Non-Goals

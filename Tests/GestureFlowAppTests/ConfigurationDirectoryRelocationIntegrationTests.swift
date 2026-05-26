@@ -5,16 +5,12 @@ import GestureFlowCore
 final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
     func testRelocateConfigurationDirectoryReloadsStores() throws {
         let root = try makeTemporaryRoot()
-        let bootstrapDirectory = root.appendingPathComponent("bootstrap", isDirectory: true)
         let oldDirectory = root.appendingPathComponent("old", isDirectory: true)
         let newDirectory = root.appendingPathComponent("new", isDirectory: true)
-        try FileManager.default.createDirectory(at: bootstrapDirectory, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
 
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
-        try StandaloneConfigurationStore(fileURL: standaloneURL).save(
-            StandaloneConfiguration(configurationDirectory: oldDirectory.path)
-        )
+        let isolated = makeIsolatedStore()
+        try isolated.store.save(configurationDirectory: oldDirectory.path)
 
         let configuration = AppConfiguration(isEnabled: true)
         let configurationStore = ConfigurationStore(
@@ -31,7 +27,7 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
 
         var resolver = ConfigurationDirectoryResolver(
             configurationDirectoryURL: oldDirectory,
-            standaloneStore: StandaloneConfigurationStore(fileURL: standaloneURL)
+            configurationDirectoryStore: isolated.store
         )
 
         let application = GestureFlowApplication(
@@ -39,7 +35,7 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
             configurationStore: configurationStore,
             gestureConfigurationService: gestureService,
             configurationDirectoryRelocator: ConfigurationDirectoryRelocator(
-                standaloneStore: StandaloneConfigurationStore(fileURL: standaloneURL)
+                configurationDirectoryStore: isolated.store
             ),
             showSettings: { _, _ in }
         )
@@ -47,7 +43,7 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
         try application.relocateConfigurationDirectory(to: newDirectory.path)
 
         resolver = ConfigurationDirectoryResolver.bootstrap(
-            standaloneStore: StandaloneConfigurationStore(fileURL: standaloneURL)
+            configurationDirectoryStore: isolated.store
         )
         XCTAssertEqual(
             resolver.configurationDirectoryURL.standardizedFileURL,
@@ -59,6 +55,15 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
                 atPath: oldDirectory.appendingPathComponent("config.yaml").path
             )
         )
+    }
+
+    private func makeIsolatedStore() -> (store: ConfigurationDirectoryStore, suiteName: String) {
+        let suiteName = UUID().uuidString
+        let defaults = UserDefaults(suiteName: suiteName)!
+        addTeardownBlock {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        return (ConfigurationDirectoryStore(defaults: defaults), suiteName)
     }
 
     private func makeTemporaryRoot() throws -> URL {

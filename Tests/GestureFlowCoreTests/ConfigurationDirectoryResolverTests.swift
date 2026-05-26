@@ -2,36 +2,32 @@ import XCTest
 @testable import GestureFlowCore
 
 final class ConfigurationDirectoryResolverTests: XCTestCase {
-    func testBootstrapUsesDefaultDirectoryWhenStandaloneMissing() throws {
-        let bootstrapDirectory = try makeTemporaryBootstrapDirectory()
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
-        let standaloneStore = StandaloneConfigurationStore(fileURL: standaloneURL)
+    func testBootstrapUsesDefaultDirectoryWhenUserDefaultsKeyMissing() throws {
+        let store = makeIsolatedStore().store
 
         let resolver = ConfigurationDirectoryResolver.bootstrap(
-            standaloneStore: standaloneStore,
-            homeDirectory: bootstrapDirectory
+            configurationDirectoryStore: store
         )
 
         XCTAssertEqual(
             resolver.configurationDirectoryURL.standardizedFileURL,
-            ConfigurationDirectoryResolver.bootstrapBaseDirectoryURL.standardizedFileURL
+            ConfigurationDirectoryResolver.defaultConfigurationDirectoryURL.standardizedFileURL
         )
     }
 
-    func testBootstrapUsesStandaloneDirectoryWhenValid() throws {
-        let bootstrapDirectory = try makeTemporaryBootstrapDirectory()
-        let customDirectory = bootstrapDirectory.appendingPathComponent("custom-config", isDirectory: true)
+    func testBootstrapUsesStoredDirectoryWhenValid() throws {
+        let isolated = makeIsolatedStore()
+        let customDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: customDirectory, withIntermediateDirectories: true)
+        addTeardownBlock {
+            try? FileManager.default.removeItem(at: customDirectory)
+        }
 
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
-        let standaloneStore = StandaloneConfigurationStore(fileURL: standaloneURL)
-        try standaloneStore.save(
-            StandaloneConfiguration(configurationDirectory: customDirectory.path)
-        )
+        try isolated.store.save(configurationDirectory: customDirectory.path)
 
         let resolver = ConfigurationDirectoryResolver.bootstrap(
-            standaloneStore: standaloneStore,
-            homeDirectory: bootstrapDirectory
+            configurationDirectoryStore: isolated.store
         )
 
         XCTAssertEqual(
@@ -76,23 +72,27 @@ final class ConfigurationDirectoryResolverTests: XCTestCase {
         )
     }
 
-    func testBootstrapFallsBackWhenStandaloneDirectoryInvalid() throws {
-        let bootstrapDirectory = try makeTemporaryBootstrapDirectory()
-        let standaloneURL = bootstrapDirectory.appendingPathComponent("config_standalone.yaml")
-        let standaloneStore = StandaloneConfigurationStore(fileURL: standaloneURL)
-        try standaloneStore.save(
-            StandaloneConfiguration(configurationDirectory: "/definitely/not/a/real/gestureflow/path")
-        )
+    func testBootstrapFallsBackWhenStoredDirectoryInvalid() throws {
+        let isolated = makeIsolatedStore()
+        try isolated.store.save(configurationDirectory: "/definitely/not/a/real/gestureflow/path")
 
         let resolver = ConfigurationDirectoryResolver.bootstrap(
-            standaloneStore: standaloneStore,
-            homeDirectory: bootstrapDirectory
+            configurationDirectoryStore: isolated.store
         )
 
         XCTAssertEqual(
             resolver.configurationDirectoryURL.standardizedFileURL,
-            ConfigurationDirectoryResolver.bootstrapBaseDirectoryURL.standardizedFileURL
+            ConfigurationDirectoryResolver.defaultConfigurationDirectoryURL.standardizedFileURL
         )
+    }
+
+    private func makeIsolatedStore() -> (store: ConfigurationDirectoryStore, suiteName: String) {
+        let suiteName = UUID().uuidString
+        let defaults = UserDefaults(suiteName: suiteName)!
+        addTeardownBlock {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        return (ConfigurationDirectoryStore(defaults: defaults), suiteName)
     }
 
     private func makeTemporaryBootstrapDirectory() throws -> URL {

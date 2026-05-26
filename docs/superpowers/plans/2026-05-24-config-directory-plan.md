@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Let users set a custom directory for `config.json` and `gestures.json` via a bootstrap `config_standalone.json`, with General settings UI (TextField + 确认) and in-process hot reload after migration.
+**Goal:** Let users set a custom directory for `config.yaml` and `gestures.yaml` via `UserDefaults`, with General settings UI (TextField + 确认) and in-process hot reload after migration.
 
-**Architecture:** Add `StandaloneConfigurationStore` + `ConfigurationDirectoryResolver` in GestureFlowCore for two-phase bootstrap. App startup and settings confirmation use `ConfigurationDirectoryRelocator` to copy JSON, update standalone, delete old business files, and rebuild stores without restart.
+**Architecture:** Add `ConfigurationDirectoryStore` + `ConfigurationDirectoryResolver` in GestureFlowCore. App startup and settings confirmation use `ConfigurationDirectoryRelocator` to copy YAML, update UserDefaults, delete old business files, and rebuild stores without restart.
 
 **Tech Stack:** Swift, SwiftUI, AppKit (`TextField` only — no `NSOpenPanel`), GestureFlowCore JSON stores, XCTest.
 
@@ -16,10 +16,9 @@
 
 | File | Responsibility |
 | --- | --- |
-| `Sources/GestureFlowCore/Configuration/StandaloneConfiguration.swift` | Codable model for standalone JSON |
-| `Sources/GestureFlowCore/Configuration/StandaloneConfigurationStore.swift` | Fixed-path read/write + corrupt backup |
+| `Sources/GestureFlowCore/Configuration/ConfigurationDirectoryStore.swift` | UserDefaults read/write for configuration directory path |
 | `Sources/GestureFlowCore/Configuration/ConfigurationDirectoryResolver.swift` | Bootstrap, URLs, validation, store factories |
-| `Sources/GestureFlowCore/Configuration/ConfigurationDirectoryRelocator.swift` | Validate, copy, write standalone, delete old JSON |
+| `Sources/GestureFlowCore/Configuration/ConfigurationDirectoryRelocator.swift` | Validate, copy, update UserDefaults, delete old YAML |
 | `Sources/GestureFlowCore/Configuration/ConfigurationPathFormatting.swift` | `~` shorten/expand + URL normalization |
 | `Sources/GestureFlowCore/Configuration/ConfigurationStore.swift` | Delegate default directory to resolver (minimal change) |
 | `Sources/GestureFlowCore/Configuration/GestureConfigurationStore.swift` | Same |
@@ -32,22 +31,21 @@
 
 ---
 
-### Task 1: Standalone configuration model and store
+### Task 1: Configuration directory UserDefaults store
 
 **Files:**
-- Create: `Sources/GestureFlowCore/Configuration/StandaloneConfiguration.swift`
-- Create: `Sources/GestureFlowCore/Configuration/StandaloneConfigurationStore.swift`
-- Test: `Tests/GestureFlowCoreTests/StandaloneConfigurationStoreTests.swift`
+- Create: `Sources/GestureFlowCore/Configuration/ConfigurationDirectoryStore.swift`
+- Test: `Tests/GestureFlowCoreTests/ConfigurationDirectoryStoreTests.swift`
 
-- [ ] **Step 1: Write failing tests** for load missing → nil/default, round-trip save/load, corrupt file → backup + default.
+- [ ] **Step 1: Write failing tests** for load missing → nil, round-trip save/load, default path clears key.
 
 - [ ] **Step 2: Run tests** — expect failure.
 
 ```bash
-swift test --filter StandaloneConfigurationStoreTests
+swift test --filter ConfigurationDirectoryStoreTests
 ```
 
-- [ ] **Step 3: Implement** model (`configurationDirectory: String`) and store at fixed `Application Support/GestureFlow/config_standalone.json`.
+- [ ] **Step 3: Implement** `ConfigurationDirectoryStore` with `UserDefaults` key `configurationDirectory`.
 
 - [ ] **Step 4: Run tests** — expect pass.
 

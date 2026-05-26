@@ -73,7 +73,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.configurationDirectoryResolver = resolvedResolver
         self.configurationStore = resolvedConfigurationStore
         self.configurationDirectoryRelocator = configurationDirectoryRelocator
-            ?? ConfigurationDirectoryRelocator(standaloneStore: resolvedResolver.standaloneStore)
+            ?? ConfigurationDirectoryRelocator(
+                configurationDirectoryStore: resolvedResolver.configurationDirectoryStore
+            )
         self.permissionService = permissionService
         self.launchAtLoginService = launchAtLoginService
         self.notificationCenter = notificationCenter
