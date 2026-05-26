@@ -1,0 +1,43 @@
+import XCTest
+@testable import GestureFlowCore
+
+final class FeedbackConfigurationTests: XCTestCase {
+    func testFeedbackConfigurationDefaultsStrokeDisabled() {
+        let config = FeedbackConfiguration.default
+
+        XCTAssertEqual(config.trailWidth, 3, accuracy: 0.001)
+        XCTAssertFalse(config.trailStrokeEnabled)
+        XCTAssertEqual(config.trailStrokeColorHex, "#FFFFFF")
+        XCTAssertEqual(config.trailStrokeWidth, 1.5, accuracy: 0.001)
+    }
+
+    func testFeedbackConfigurationDecodesWithoutStrokeKeys() throws {
+        let json = """
+        {"trailColorHex":"#4A90E2","trailWidth":3,"trailOpacity":0.85}
+        """.data(using: .utf8)!
+
+        let config = try JSONDecoder().decode(FeedbackConfiguration.self, from: json)
+
+        XCTAssertFalse(config.trailStrokeEnabled)
+        XCTAssertEqual(config.trailStrokeColorHex, "#FFFFFF")
+        XCTAssertEqual(config.trailStrokeWidth, 1.5, accuracy: 0.001)
+    }
+
+    func testFeedbackConfigurationEncodesStrokeFields() throws {
+        let config = FeedbackConfiguration(
+            trailColorHex: "#111111",
+            trailWidth: 4,
+            trailOpacity: 0.9,
+            trailStrokeEnabled: true,
+            trailStrokeColorHex: "#000000",
+            trailStrokeWidth: 2
+        )
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(FeedbackConfiguration.self, from: data)
+
+        XCTAssertTrue(decoded.trailStrokeEnabled)
+        XCTAssertEqual(decoded.trailStrokeColorHex, "#000000")
+        XCTAssertEqual(decoded.trailStrokeWidth, 2, accuracy: 0.001)
+    }
+}

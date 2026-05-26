@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 enum SettingsSection: String, CaseIterable, Identifiable {
@@ -114,11 +115,19 @@ struct SettingsRowDivider: View {
     }
 }
 
-struct SettingsSliderRow<SliderView: View>: View {
+struct SettingsSliderRow: View {
     let title: String
-    let valueText: String
     let rangeText: String
-    @ViewBuilder let slider: SliderView
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let step: Double
+    let precision: Int
+    var valueSuffix: String = ""
+    var usesIntegerDisplay: Bool = false
+
+    private var snappedValue: Binding<Double> {
+        $value.snapping(to: step, in: range)
+    }
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
@@ -135,19 +144,157 @@ struct SettingsSliderRow<SliderView: View>: View {
             Spacer(minLength: 12)
 
             HStack(spacing: 12) {
-                Text(valueText)
-                    .font(.subheadline.weight(.medium).monospacedDigit())
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.primary.opacity(0.06))
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                EditableSliderValueField(
+                    value: snappedValue,
+                    range: range,
+                    step: step,
+                    precision: precision,
+                    suffix: valueSuffix,
+                    usesIntegerDisplay: usesIntegerDisplay
+                )
 
-                slider
+                Slider(value: snappedValue, in: range)
                     .frame(width: 140)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct EditableSliderValueField: View {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let step: Double
+    let precision: Int
+    let suffix: String
+    let usesIntegerDisplay: Bool
+
+    @State private var isEditing = false
+    @State private var draftText = ""
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        valueContent
+            .frame(width: fieldContentWidth, alignment: .center)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .fixedSize(horizontal: true, vertical: false)
+            .background(Color.primary.opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            .help("点击输入数值")
+            .onChange(of: isFocused) { _, focused in
+                if !focused, isEditing {
+                    commitDraft()
+                }
+            }
+    }
+
+    @ViewBuilder
+    private var valueContent: some View {
+        if isEditing {
+            TextField("", text: $draftText)
+                .textFieldStyle(.plain)
+                .font(valueFont)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(1)
+                .focused($isFocused)
+                .onSubmit(commitDraft)
+        } else {
+            Text(displayText)
+                .font(valueFont)
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .onTapGesture { beginEditing() }
+        }
+    }
+
+    private var valueFont: Font {
+        .subheadline.weight(.medium).monospacedDigit()
+    }
+
+    private var fieldContentWidth: CGFloat {
+        let displayWidth = measuredWidth(for: displayText)
+        guard isEditing else { return displayWidth }
+
+        let sizingText = draftText.isEmpty ? editableDraftText(for: value) : draftText
+        let draftWidth = measuredWidth(for: sizingText)
+        let maxWidth = measuredWidth(for: rangeUpperBoundDisplayText)
+        return min(max(draftWidth, displayWidth), maxWidth)
+    }
+
+    private var rangeUpperBoundDisplayText: String {
+        SliderValueFormatting.displayText(
+            for: range.upperBound,
+            precision: precision,
+            suffix: suffix,
+            usesIntegerDisplay: usesIntegerDisplay
+        )
+    }
+
+    private func measuredWidth(for text: String) -> CGFloat {
+        let nsFont = NSFont.monospacedDigitSystemFont(
+            ofSize: NSFont.preferredFont(forTextStyle: .subheadline).pointSize,
+            weight: .medium
+        )
+        return ceil((text as NSString).size(withAttributes: [.font: nsFont]).width)
+    }
+
+    private var displayText: String {
+        SliderValueFormatting.displayText(
+            for: value,
+            precision: precision,
+            suffix: suffix,
+            usesIntegerDisplay: usesIntegerDisplay
+        )
+    }
+
+    private func beginEditing() {
+        draftText = editableDraftText(for: value)
+        isEditing = true
+        isFocused = true
+    }
+
+    private func commitDraft() {
+        defer {
+            isEditing = false
+            isFocused = false
+        }
+
+        let trimmed = draftText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let parsed = Double(trimmed) else {
+            draftText = editableDraftText(for: value)
+            return
+        }
+
+        value = SliderValueFormatting.quantized(parsed, step: step, in: range)
+        draftText = editableDraftText(for: value)
+    }
+
+    private func editableDraftText(for value: Double) -> String {
+        if usesIntegerDisplay {
+            return String(Int(value.rounded()))
+        }
+        return String(format: "%.\(precision)f", value)
+    }
+}
+
+private enum SliderValueFormatting {
+    static func displayText(
+        for value: Double,
+        precision: Int,
+        suffix: String,
+        usesIntegerDisplay: Bool
+    ) -> String {
+        if usesIntegerDisplay {
+            return "\(Int(value.rounded()))\(suffix)"
+        }
+        return String(format: "%.\(precision)f", value) + suffix
+    }
+
+    static func quantized(_ value: Double, step: Double, in range: ClosedRange<Double>) -> Double {
+        let clamped = Swift.min(Swift.max(value, range.lowerBound), range.upperBound)
+        let quantized = (clamped / step).rounded() * step
+        return Swift.min(Swift.max(quantized, range.lowerBound), range.upperBound)
     }
 }
 
@@ -157,9 +304,7 @@ extension Binding where Value == Double {
         Binding(
             get: { wrappedValue },
             set: { newValue in
-                let clamped = Swift.min(Swift.max(newValue, range.lowerBound), range.upperBound)
-                let quantized = (clamped / step).rounded() * step
-                wrappedValue = Swift.min(Swift.max(quantized, range.lowerBound), range.upperBound)
+                wrappedValue = SliderValueFormatting.quantized(newValue, step: step, in: range)
             }
         )
     }

@@ -11,25 +11,39 @@ struct GestureTrailPreview: View {
                 .foregroundStyle(.secondary)
 
             ZStack {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color(nsColor: .windowBackgroundColor))
+                TrailPreviewCheckerboard()
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .stroke(Color.primary.opacity(0.08), lineWidth: 1)
                     )
 
-                TrailPreviewCurve()
-                    .stroke(
-                        trailColor,
-                        style: StrokeStyle(
-                            lineWidth: CGFloat(feedback.trailWidth),
-                            lineCap: .round,
-                            lineJoin: .round
+                ZStack {
+                    if feedback.trailStrokeEnabled {
+                        TrailPreviewCurve()
+                            .stroke(
+                                strokeColor,
+                                style: StrokeStyle(
+                                    lineWidth: strokeLineWidth,
+                                    lineCap: .round,
+                                    lineJoin: .round
+                                )
+                            )
+                    }
+
+                    TrailPreviewCurve()
+                        .stroke(
+                            trailColor,
+                            style: StrokeStyle(
+                                lineWidth: CGFloat(feedback.trailWidth),
+                                lineCap: .round,
+                                lineJoin: .round
+                            )
                         )
-                    )
-                    .opacity(feedback.trailOpacity)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 14)
+                        .opacity(feedback.trailOpacity)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
             }
             .frame(height: 76)
         }
@@ -38,6 +52,49 @@ struct GestureTrailPreview: View {
 
     private var trailColor: Color {
         ColorHexFormatting.color(fromHex: feedback.trailColorHex)
+    }
+
+    private var strokeColor: Color {
+        ColorHexFormatting.color(fromHex: feedback.trailStrokeColorHex)
+    }
+
+    private var strokeLineWidth: CGFloat {
+        CGFloat(feedback.trailWidth + 2 * feedback.trailStrokeWidth)
+    }
+}
+
+private struct TrailPreviewCheckerboard: View {
+    private let squareSize: CGFloat = 10
+
+    var body: some View {
+        Canvas { context, size in
+            let columns = Int(ceil(size.width / squareSize))
+            let rows = Int(ceil(size.height / squareSize))
+
+            for row in 0..<rows {
+                for column in 0..<columns {
+                    let isLight = (row + column).isMultiple(of: 2)
+                    let rect = CGRect(
+                        x: CGFloat(column) * squareSize,
+                        y: CGFloat(row) * squareSize,
+                        width: squareSize,
+                        height: squareSize
+                    )
+                    context.fill(
+                        Path(rect),
+                        with: .color(isLight ? lightSquare : darkSquare)
+                    )
+                }
+            }
+        }
+    }
+
+    private var lightSquare: Color {
+        Color(nsColor: .controlBackgroundColor)
+    }
+
+    private var darkSquare: Color {
+        Color.primary.opacity(0.12)
     }
 }
 

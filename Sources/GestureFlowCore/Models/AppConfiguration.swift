@@ -75,16 +75,51 @@ public struct FeedbackConfiguration: Codable, Equatable {
     public var trailColorHex: String
     public var trailWidth: Double
     public var trailOpacity: Double
+    public var trailStrokeEnabled: Bool
+    public var trailStrokeColorHex: String
+    public var trailStrokeWidth: Double
 
-    public init(trailColorHex: String, trailWidth: Double, trailOpacity: Double) {
+    private enum CodingKeys: String, CodingKey {
+        case trailColorHex
+        case trailWidth
+        case trailOpacity
+        case trailStrokeEnabled
+        case trailStrokeColorHex
+        case trailStrokeWidth
+    }
+
+    public init(
+        trailColorHex: String,
+        trailWidth: Double,
+        trailOpacity: Double,
+        trailStrokeEnabled: Bool = false,
+        trailStrokeColorHex: String = "#FFFFFF",
+        trailStrokeWidth: Double = 1.5
+    ) {
         self.trailColorHex = trailColorHex
         self.trailWidth = trailWidth
         self.trailOpacity = trailOpacity
+        self.trailStrokeEnabled = trailStrokeEnabled
+        self.trailStrokeColorHex = trailStrokeColorHex
+        self.trailStrokeWidth = trailStrokeWidth
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        trailColorHex = try container.decode(String.self, forKey: .trailColorHex)
+        trailWidth = try container.decode(Double.self, forKey: .trailWidth)
+        trailOpacity = try container.decode(Double.self, forKey: .trailOpacity)
+        trailStrokeEnabled = try container.decodeIfPresent(Bool.self, forKey: .trailStrokeEnabled) ?? false
+        trailStrokeColorHex = try container.decodeIfPresent(String.self, forKey: .trailStrokeColorHex) ?? "#FFFFFF"
+        trailStrokeWidth = try container.decodeIfPresent(Double.self, forKey: .trailStrokeWidth) ?? 1.5
     }
 
     public static let `default` = FeedbackConfiguration(
         trailColorHex: "#4A90E2",
         trailWidth: 3,
-        trailOpacity: 0.85
+        trailOpacity: 0.85,
+        trailStrokeEnabled: false,
+        trailStrokeColorHex: "#FFFFFF",
+        trailStrokeWidth: 1.5
     )
 }

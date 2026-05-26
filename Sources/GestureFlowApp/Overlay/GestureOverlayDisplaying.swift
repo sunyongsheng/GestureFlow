@@ -5,11 +5,17 @@ struct GestureTrailAppearance: Equatable {
     var colorHex: String
     var width: Double
     var opacity: Double
+    var strokeEnabled: Bool
+    var strokeColorHex: String
+    var strokeWidth: Double
 
     init(feedback: FeedbackConfiguration) {
         self.colorHex = feedback.trailColorHex
         self.width = feedback.trailWidth
         self.opacity = feedback.trailOpacity
+        self.strokeEnabled = feedback.trailStrokeEnabled
+        self.strokeColorHex = feedback.trailStrokeColorHex
+        self.strokeWidth = feedback.trailStrokeWidth
     }
 }
 

@@ -27,25 +27,56 @@ struct FeedbackSettingsView: View {
 
                 SettingsSliderRow(
                     title: "轨迹粗细",
-                    valueText: formatted(viewModel.configuration.feedback.trailWidth, precision: 1),
-                    rangeText: "1.0 - 12.0"
-                ) {
-                    Slider(
-                        value: feedbackBinding(\.trailWidth).snapping(to: 0.5, in: 1...12),
-                        in: 1...12
-                    )
-                }
+                    rangeText: "1.0 - 12.0",
+                    value: feedbackBinding(\.trailWidth),
+                    range: 1...12,
+                    step: 0.5,
+                    precision: 1
+                )
 
                 SettingsRowDivider()
 
                 SettingsSliderRow(
                     title: "轨迹透明度",
-                    valueText: formatted(viewModel.configuration.feedback.trailOpacity, precision: 2),
-                    rangeText: "0.10 - 1.00"
+                    rangeText: "0.10 - 1.00",
+                    value: feedbackBinding(\.trailOpacity),
+                    range: 0.1...1,
+                    step: 0.05,
+                    precision: 2
+                )
+
+                SettingsRowDivider()
+
+                SettingsValueRow(
+                    title: "启用轨迹描边",
+                    description: "在轨迹外侧绘制一圈对比色描边。",
+                    statusText: nil
                 ) {
-                    Slider(
-                        value: feedbackBinding(\.trailOpacity).snapping(to: 0.05, in: 0.1...1),
-                        in: 0.1...1
+                    Toggle("", isOn: feedbackBinding(\.trailStrokeEnabled))
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                }
+
+                if viewModel.configuration.feedback.trailStrokeEnabled {
+                    SettingsRowDivider()
+
+                    SettingsValueRow(
+                        title: "描边颜色",
+                        description: "轨迹外侧描边使用的颜色。",
+                        statusText: nil
+                    ) {
+                        TrailColorPickerControl(color: strokeColorBinding, help: "选择描边颜色")
+                    }
+
+                    SettingsRowDivider()
+
+                    SettingsSliderRow(
+                        title: "描边粗细",
+                        rangeText: "0.5 - 8.0",
+                        value: feedbackBinding(\.trailStrokeWidth),
+                        range: 0.5...8,
+                        step: 0.1,
+                        precision: 1
                     )
                 }
             }
@@ -65,6 +96,19 @@ struct FeedbackSettingsView: View {
         )
     }
 
+    private var strokeColorBinding: Binding<Color> {
+        Binding(
+            get: {
+                ColorHexFormatting.color(fromHex: viewModel.configuration.feedback.trailStrokeColorHex)
+            },
+            set: { newColor in
+                viewModel.updateFeedback { feedback in
+                    feedback.trailStrokeColorHex = ColorHexFormatting.hexString(from: newColor)
+                }
+            }
+        )
+    }
+
     private func feedbackBinding<Value>(_ keyPath: WritableKeyPath<FeedbackConfiguration, Value>) -> Binding<Value> {
         Binding(
             get: {
@@ -78,13 +122,11 @@ struct FeedbackSettingsView: View {
         )
     }
 
-    private func formatted(_ value: Double, precision: Int) -> String {
-        String(format: "%.\(precision)f", value)
-    }
 }
 
 private struct TrailColorPickerControl: View {
     @Binding var color: Color
+    var help: String = "选择轨迹颜色"
     @State private var panelCoordinator = TrailColorPanelCoordinator()
     @State private var anchorCoordinator = ScreenAnchorCoordinator()
 
@@ -107,7 +149,7 @@ private struct TrailColorPickerControl: View {
         .background {
             ScreenAnchorReader(coordinator: anchorCoordinator)
         }
-        .help("选择轨迹颜色")
+        .help(help)
     }
 
     private var trailColorDisplay: some View {
@@ -158,7 +200,9 @@ private final class TrailColorPanelCoordinator: NSObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.syncFromPanel()
+            Task { @MainActor in
+                self?.syncFromPanel()
+            }
         }
     }
 

@@ -76,26 +76,40 @@ final class GestureOverlayView: NSView {
     private func drawTrail() {
         guard !points.isEmpty else { return }
 
-        let color = ColorHexFormatting.nsColor(fromHex: trailAppearance.colorHex)?
-            .withAlphaComponent(trailAppearance.opacity)
-            ?? NSColor.systemBlue.withAlphaComponent(trailAppearance.opacity)
-        color.setStroke()
-        color.setFill()
-
         if points.count == 1, let point = points.first {
-            let radius = max(trailAppearance.width * 1.5, 3)
-            let rect = NSRect(
-                x: point.x - radius / 2,
-                y: point.y - radius / 2,
-                width: radius,
-                height: radius
-            )
-            NSBezierPath(ovalIn: rect).fill()
+            drawSinglePointTrail(at: point)
             return
         }
 
+        let path = makeTrailPath()
+        if trailAppearance.strokeEnabled {
+            strokePath(
+                path,
+                colorHex: trailAppearance.strokeColorHex,
+                lineWidth: trailAppearance.width + 2 * trailAppearance.strokeWidth,
+                opaque: true
+            )
+        }
+        strokePath(path, colorHex: trailAppearance.colorHex, lineWidth: trailAppearance.width)
+    }
+
+    private func drawSinglePointTrail(at point: GesturePoint) {
+        if trailAppearance.strokeEnabled {
+            let outerDiameter = max((trailAppearance.width + 2 * trailAppearance.strokeWidth) * 1.5, 3)
+            fillCircle(
+                at: point,
+                diameter: outerDiameter,
+                colorHex: trailAppearance.strokeColorHex,
+                opaque: true
+            )
+        }
+
+        let innerDiameter = max(trailAppearance.width * 1.5, 3)
+        fillCircle(at: point, diameter: innerDiameter, colorHex: trailAppearance.colorHex)
+    }
+
+    private func makeTrailPath() -> NSBezierPath {
         let path = NSBezierPath()
-        path.lineWidth = max(trailAppearance.width, 1)
         path.lineCapStyle = .round
         path.lineJoinStyle = .round
         path.move(to: points[0].nsPoint)
@@ -104,7 +118,48 @@ final class GestureOverlayView: NSView {
             path.line(to: point.nsPoint)
         }
 
-        path.stroke()
+        return path
+    }
+
+    private func strokePath(
+        _ path: NSBezierPath,
+        colorHex: String,
+        lineWidth: Double,
+        opaque: Bool = false
+    ) {
+        let color = resolvedTrailColor(fromHex: colorHex, opaque: opaque)
+        color.setStroke()
+
+        let strokedPath = path.copy() as? NSBezierPath ?? path
+        strokedPath.lineWidth = max(lineWidth, 1)
+        strokedPath.lineCapStyle = .round
+        strokedPath.lineJoinStyle = .round
+        strokedPath.stroke()
+    }
+
+    private func fillCircle(
+        at point: GesturePoint,
+        diameter: Double,
+        colorHex: String,
+        opaque: Bool = false
+    ) {
+        let color = resolvedTrailColor(fromHex: colorHex, opaque: opaque)
+        color.setFill()
+
+        let rect = NSRect(
+            x: point.x - diameter / 2,
+            y: point.y - diameter / 2,
+            width: diameter,
+            height: diameter
+        )
+        NSBezierPath(ovalIn: rect).fill()
+    }
+
+    private func resolvedTrailColor(fromHex colorHex: String, opaque: Bool = false) -> NSColor {
+        let alpha = opaque ? 1 : trailAppearance.opacity
+        return ColorHexFormatting.nsColor(fromHex: colorHex)?
+            .withAlphaComponent(alpha)
+            ?? NSColor.systemBlue.withAlphaComponent(alpha)
     }
 
     private func drawMarker() {

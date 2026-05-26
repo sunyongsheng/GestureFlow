@@ -29,40 +29,38 @@ struct GestureTriggerSettingsView: View {
 
                 SettingsSliderRow(
                     title: "移动阈值",
-                    valueText: "\(formatted(viewModel.configuration.trigger.movementThreshold, precision: 0)) pt",
-                    rangeText: "4 - 80 pt"
-                ) {
-                    Slider(
-                        value: movementThresholdBinding.snapping(to: 1, in: 4...80),
-                        in: 4...80
-                    )
-                }
+                    rangeText: "4 - 80 pt",
+                    value: movementThresholdBinding,
+                    range: 4...80,
+                    step: 1,
+                    precision: 0,
+                    valueSuffix: " pt"
+                )
 
                 SettingsRowDivider()
 
                 SettingsSliderRow(
                     title: "按住超时",
-                    valueText: "\(viewModel.configuration.trigger.holdTimeoutMilliseconds) ms",
-                    rangeText: "50 - 1000 ms"
-                ) {
-                    Slider(
-                        value: holdTimeoutBinding.snapping(to: 25, in: 50...1000),
-                        in: 50...1000
-                    )
-                }
+                    rangeText: "50 - 1000 ms",
+                    value: holdTimeoutBinding,
+                    range: 50...1000,
+                    step: 25,
+                    precision: 0,
+                    valueSuffix: " ms",
+                    usesIntegerDisplay: true
+                )
 
                 SettingsRowDivider()
 
                 SettingsSliderRow(
                     title: "采样跳变阈值",
-                    valueText: "\(formatted(viewModel.configuration.trigger.maximumSampleDistance, precision: 0)) pt",
-                    rangeText: "40 - 240 pt"
-                ) {
-                    Slider(
-                        value: maximumSampleDistanceBinding.snapping(to: 5, in: 40...240),
-                        in: 40...240
-                    )
-                }
+                    rangeText: "40 - 240 pt",
+                    value: maximumSampleDistanceBinding,
+                    range: 40...240,
+                    step: 5,
+                    precision: 0,
+                    valueSuffix: " pt"
+                )
             }
         }
     }
@@ -107,7 +105,4 @@ struct GestureTriggerSettingsView: View {
         )
     }
 
-    private func formatted(_ value: Double, precision: Int) -> String {
-        String(format: "%.\(precision)f", value)
-    }
 }
