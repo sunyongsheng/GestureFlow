@@ -50,7 +50,6 @@ struct GestureSettingsView: View {
             }
         }
         .frame(minWidth: 120, idealWidth: 150, maxWidth: 260, maxHeight: .infinity, alignment: .topLeading)
-        .background(Color(nsColor: .controlBackgroundColor))
     }
 
     private func applicationScopeRow(
@@ -248,7 +247,6 @@ struct GestureSettingsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .onSubmit {
                 commitNameDraft(for: gesture.id)
-                viewModel.commitGesture(id: gesture.id)
                 focusedNameGestureID = nil
                 if editingGestureID == gesture.id {
                     editingGestureID = nil
@@ -296,6 +294,11 @@ struct GestureSettingsView: View {
             onResumeGestureRecognition: viewModel.resumeGestureRecognition
         )
         .frame(width: 72, alignment: .leading)
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                commitFocusedNameEditing(for: gesture.id)
+            }
+        )
     }
 
     private var customGestureSignaturesBinding: Binding<[GestureSignature]> {
@@ -317,6 +320,7 @@ struct GestureSettingsView: View {
     private func shortcutCell(for gesture: GestureDefinition) -> some View {
         ZStack {
             Button {
+                commitFocusedNameEditing(for: gesture.id)
                 activateGestureEditing(gesture.id)
                 recordingGestureID = gesture.id
             } label: {
@@ -363,6 +367,13 @@ struct GestureSettingsView: View {
         }
 
         nameEditDrafts.removeValue(forKey: gestureID)
+        viewModel.commitGesture(id: gestureID)
+    }
+
+    private func commitFocusedNameEditing(for gestureID: UUID) {
+        guard focusedNameGestureID == gestureID else { return }
+        commitNameDraft(for: gestureID)
+        focusedNameGestureID = nil
     }
 
     private func activateGestureEditing(_ gestureID: UUID) {
@@ -375,7 +386,6 @@ struct GestureSettingsView: View {
         guard let editingGestureID, editingGestureID != nextGestureID else { return }
 
         commitNameDraft(for: editingGestureID)
-        viewModel.commitGesture(id: editingGestureID)
         self.editingGestureID = nextGestureID
     }
 
@@ -400,6 +410,7 @@ struct GestureSettingsView: View {
                     ?? gesture.signature
             },
             set: { newValue in
+                commitFocusedNameEditing(for: gesture.id)
                 activateGestureEditing(gesture.id)
                 viewModel.stageGestureUpdate(id: gesture.id) { $0.signature = newValue }
             }
@@ -413,6 +424,7 @@ struct GestureSettingsView: View {
                     ?? gesture.trigger
             },
             set: { newValue in
+                commitFocusedNameEditing(for: gesture.id)
                 activateGestureEditing(gesture.id)
                 viewModel.stageGestureUpdate(id: gesture.id) { $0.trigger = newValue }
             }
@@ -426,6 +438,7 @@ struct GestureSettingsView: View {
                     ?? gesture.isEnabled
             },
             set: { newValue in
+                commitFocusedNameEditing(for: gesture.id)
                 activateGestureEditing(gesture.id)
                 viewModel.stageGestureUpdate(id: gesture.id) { $0.isEnabled = newValue }
             }
