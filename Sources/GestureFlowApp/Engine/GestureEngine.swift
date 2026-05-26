@@ -167,23 +167,25 @@ final class GestureEngine {
         let resolvedTarget = pendingGestureTarget
             ?? targetResolver.resolve(policy: targetPolicy, at: startPoint)
         pendingGestureTarget = nil
+        let matchedGesture = matcher.match(
+            trigger: trigger,
+            signature: signature,
+            targetBundleIdentifier: resolvedTarget.bundleIdentifier,
+            in: gestureConfigurationProvider().gestures
+        )
 
         if targetPolicy == .underMouse, !resolvedTarget.isValid {
             reportActionFailure(
                 trigger: trigger,
                 signature: signature,
                 message: Self.underMouseTargetMissingMessage,
+                displayName: matchedGesture?.name ?? GestureFeedbackCopy.unmatchedGesture,
                 at: completionPoint
             )
             return
         }
 
-        guard let gesture = matcher.match(
-            trigger: trigger,
-            signature: signature,
-            targetBundleIdentifier: resolvedTarget.bundleIdentifier,
-            in: gestureConfigurationProvider().gestures
-        ) else {
+        guard let gesture = matchedGesture else {
             overlay.completeGesture(with: .unmatched, at: completionPoint, hideAfter: hideAfter)
             feedbackHandler(.unmatched(trigger: trigger, signature: signature))
             return
@@ -194,6 +196,7 @@ final class GestureEngine {
                 trigger: trigger,
                 signature: signature,
                 message: "Shortcut is not configured",
+                displayName: gesture.name,
                 at: completionPoint
             )
             return
@@ -204,6 +207,7 @@ final class GestureEngine {
                 trigger: trigger,
                 signature: signature,
                 message: Self.targetDeliveryFailedMessage,
+                displayName: gesture.name,
                 at: completionPoint
             )
             return
@@ -219,6 +223,7 @@ final class GestureEngine {
                 trigger: trigger,
                 signature: signature,
                 message: error.localizedDescription,
+                displayName: gesture.name,
                 at: completionPoint
             )
             return
@@ -241,6 +246,7 @@ final class GestureEngine {
         trigger: GestureTrigger,
         signature: GestureSignature,
         message: String,
+        displayName: String,
         at completionPoint: GesturePoint?
     ) {
         let signatureDescription = signature.tokens.map(\.rawValue).joined(separator: ",")
@@ -248,7 +254,7 @@ final class GestureEngine {
             "[GestureFlow] 分发失败 trigger=\(trigger.rawValue) signature=\(signatureDescription) detail=\(message)"
         )
         overlay.completeGesture(
-            with: .actionFailed,
+            with: .actionFailed(displayName: displayName),
             at: completionPoint,
             hideAfter: overlayHideDelay()
         )

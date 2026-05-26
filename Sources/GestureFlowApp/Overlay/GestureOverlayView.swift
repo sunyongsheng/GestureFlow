@@ -45,8 +45,8 @@ final class GestureOverlayView: NSView {
     }
 
     func complete(with completion: GestureOverlayCompletion, feedbackFrame: CGRect?) {
-        if let feedbackFrame {
-            feedbackCardView.show(message: completion.message, in: feedbackFrame)
+        if let feedbackFrame, let message = completion.overlayMessage {
+            feedbackCardView.show(message: message, in: feedbackFrame)
         } else {
             feedbackCardView.hide()
         }
@@ -207,16 +207,16 @@ final class GestureOverlayView: NSView {
 }
 
 private extension GestureOverlayCompletion {
-    var message: String {
+    var overlayMessage: String? {
         switch self {
         case let .recognized(name):
             return name
         case .unmatched:
             return GestureFeedbackCopy.unmatchedGesture
         case .rejected:
-            return "手势过短"
-        case .actionFailed:
-            return "分发失败"
+            return nil
+        case let .actionFailed(displayName):
+            return displayName
         }
     }
 }

@@ -149,6 +149,7 @@ final class GestureEngineTests: XCTestCase {
             ]
         )
         let tap = SpyMouseEventTapController()
+        let overlay = SpyGestureOverlay()
         let actionExecutor = SpyActionExecutor()
         var feedback: [GestureEngineFeedback] = []
         let engine = makeEngine(
@@ -159,6 +160,7 @@ final class GestureEngineTests: XCTestCase {
             gestureConfiguration: gestureConfiguration,
             targetResolver: SpyGestureTargetResolver(resolvedTarget: .invalid),
             eventTap: tap,
+            overlay: overlay,
             actionExecutor: actionExecutor,
             feedbackHandler: { feedback.append($0) }
         )
@@ -174,6 +176,10 @@ final class GestureEngineTests: XCTestCase {
         )
 
         XCTAssertTrue(actionExecutor.executedActions.isEmpty)
+        XCTAssertEqual(
+            overlay.events,
+            [.completed(.actionFailed(displayName: "Back"), GesturePoint(x: 20, y: 0))]
+        )
         XCTAssertEqual(
             feedback,
             [
@@ -376,7 +382,10 @@ final class GestureEngineTests: XCTestCase {
                 )
             ]
         )
-        XCTAssertEqual(overlay.events, [.completed(.actionFailed, GesturePoint(x: 50, y: 0))])
+        XCTAssertEqual(
+            overlay.events,
+            [.completed(.actionFailed(displayName: "Close"), GesturePoint(x: 50, y: 0))]
+        )
         XCTAssertEqual(
             feedback,
             [

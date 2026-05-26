@@ -49,7 +49,7 @@ enum GestureOverlayCompletion: Equatable {
     case recognized(name: String)
     case unmatched
     case rejected
-    case actionFailed
+    case actionFailed(displayName: String)
 }
 
 protocol GestureOverlayDisplaying: AnyObject {

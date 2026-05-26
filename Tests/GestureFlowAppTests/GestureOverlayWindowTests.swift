@@ -96,6 +96,28 @@ final class GestureOverlayWindowTests: XCTestCase {
         XCTAssertEqual(messageLabel.stringValue, "关闭窗口")
     }
 
+    func testActionFailedCompletionShowsMatchedGestureName() throws {
+        let overlayWindow = GestureOverlayWindow()
+        let origin = GesturePoint(x: 250, y: 420)
+
+        overlayWindow.beginGesture(
+            at: origin,
+            appearance: GestureTrailAppearance(feedback: .default)
+        )
+        overlayWindow.completeGesture(
+            with: .actionFailed(displayName: "关闭窗口"),
+            at: origin,
+            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
+        )
+
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
+        let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
+
+        XCTAssertFalse(feedbackCardView.isHidden)
+        XCTAssertEqual(messageLabel.stringValue, "关闭窗口")
+    }
+
     func testFeedbackCardCentersMessageLabelWithinCard() throws {
         let overlayWindow = GestureOverlayWindow()
         let origin = GesturePoint(x: 250, y: 420)
