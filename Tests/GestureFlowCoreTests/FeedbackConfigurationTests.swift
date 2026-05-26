@@ -9,6 +9,8 @@ final class FeedbackConfigurationTests: XCTestCase {
         XCTAssertFalse(config.trailStrokeEnabled)
         XCTAssertEqual(config.trailStrokeColorHex, "#FFFFFF")
         XCTAssertEqual(config.trailStrokeWidth, 1.5, accuracy: 0.001)
+        XCTAssertEqual(config.overlayHideDelayMilliseconds, 500)
+        XCTAssertEqual(config.unrecognizedTrailColorHex, "#8E8E93")
     }
 
     func testFeedbackConfigurationDecodesWithoutStrokeKeys() throws {
@@ -21,6 +23,36 @@ final class FeedbackConfigurationTests: XCTestCase {
         XCTAssertFalse(config.trailStrokeEnabled)
         XCTAssertEqual(config.trailStrokeColorHex, "#FFFFFF")
         XCTAssertEqual(config.trailStrokeWidth, 1.5, accuracy: 0.001)
+        XCTAssertEqual(config.overlayHideDelayMilliseconds, 500)
+        XCTAssertEqual(config.unrecognizedTrailColorHex, "#8E8E93")
+    }
+
+    func testFeedbackConfigurationEncodesUnrecognizedTrailColor() throws {
+        let config = FeedbackConfiguration(
+            trailColorHex: "#4A90E2",
+            trailWidth: 3,
+            trailOpacity: 0.85,
+            unrecognizedTrailColorHex: "#AABBCC"
+        )
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(FeedbackConfiguration.self, from: data)
+
+        XCTAssertEqual(decoded.unrecognizedTrailColorHex, "#AABBCC")
+    }
+
+    func testFeedbackConfigurationEncodesOverlayHideDelay() throws {
+        let config = FeedbackConfiguration(
+            trailColorHex: "#4A90E2",
+            trailWidth: 3,
+            trailOpacity: 0.85,
+            overlayHideDelayMilliseconds: 750
+        )
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(FeedbackConfiguration.self, from: data)
+
+        XCTAssertEqual(decoded.overlayHideDelayMilliseconds, 750)
     }
 
     func testFeedbackConfigurationEncodesStrokeFields() throws {

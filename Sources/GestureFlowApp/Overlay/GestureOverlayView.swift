@@ -34,6 +34,16 @@ final class GestureOverlayView: NSView {
         needsDisplay = true
     }
 
+    func updateLive(appearance: GestureTrailAppearance, feedback: LiveGestureOverlayFeedback, feedbackFrame: CGRect?) {
+        trailAppearance = appearance
+        if feedback.showsCard, let message = feedback.message, let feedbackFrame {
+            feedbackCardView.show(message: message, in: feedbackFrame)
+        } else {
+            feedbackCardView.hide()
+        }
+        needsDisplay = true
+    }
+
     func complete(with completion: GestureOverlayCompletion, feedbackFrame: CGRect?) {
         if let feedbackFrame {
             feedbackCardView.show(message: completion.message, in: feedbackFrame)
@@ -90,7 +100,11 @@ final class GestureOverlayView: NSView {
                 opaque: true
             )
         }
-        strokePath(path, colorHex: trailAppearance.colorHex, lineWidth: trailAppearance.width)
+        strokePath(
+            path,
+            colorHex: trailAppearance.resolvedTrailColorHex,
+            lineWidth: trailAppearance.width
+        )
     }
 
     private func drawSinglePointTrail(at point: GesturePoint) {
@@ -105,7 +119,11 @@ final class GestureOverlayView: NSView {
         }
 
         let innerDiameter = max(trailAppearance.width * 1.5, 3)
-        fillCircle(at: point, diameter: innerDiameter, colorHex: trailAppearance.colorHex)
+        fillCircle(
+            at: point,
+            diameter: innerDiameter,
+            colorHex: trailAppearance.resolvedTrailColorHex
+        )
     }
 
     private func makeTrailPath() -> NSBezierPath {
@@ -194,7 +212,7 @@ private extension GestureOverlayCompletion {
         case let .recognized(name):
             return name
         case .unmatched:
-            return "未找到匹配手势"
+            return GestureFeedbackCopy.unmatchedGesture
         case .rejected:
             return "手势过短"
         case .actionFailed:

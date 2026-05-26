@@ -78,6 +78,10 @@ public struct FeedbackConfiguration: Codable, Equatable {
     public var trailStrokeEnabled: Bool
     public var trailStrokeColorHex: String
     public var trailStrokeWidth: Double
+    /// How long the trail and completion feedback stay visible after mouse release.
+    public var overlayHideDelayMilliseconds: Int
+    /// Main trail color while drawing a gesture that does not prefix-match any configured gesture.
+    public var unrecognizedTrailColorHex: String
 
     private enum CodingKeys: String, CodingKey {
         case trailColorHex
@@ -86,6 +90,8 @@ public struct FeedbackConfiguration: Codable, Equatable {
         case trailStrokeEnabled
         case trailStrokeColorHex
         case trailStrokeWidth
+        case overlayHideDelayMilliseconds
+        case unrecognizedTrailColorHex
     }
 
     public init(
@@ -94,7 +100,9 @@ public struct FeedbackConfiguration: Codable, Equatable {
         trailOpacity: Double,
         trailStrokeEnabled: Bool = false,
         trailStrokeColorHex: String = "#FFFFFF",
-        trailStrokeWidth: Double = 1.5
+        trailStrokeWidth: Double = 1.5,
+        overlayHideDelayMilliseconds: Int = 500,
+        unrecognizedTrailColorHex: String = "#8E8E93"
     ) {
         self.trailColorHex = trailColorHex
         self.trailWidth = trailWidth
@@ -102,6 +110,8 @@ public struct FeedbackConfiguration: Codable, Equatable {
         self.trailStrokeEnabled = trailStrokeEnabled
         self.trailStrokeColorHex = trailStrokeColorHex
         self.trailStrokeWidth = trailStrokeWidth
+        self.overlayHideDelayMilliseconds = overlayHideDelayMilliseconds
+        self.unrecognizedTrailColorHex = unrecognizedTrailColorHex
     }
 
     public init(from decoder: Decoder) throws {
@@ -112,6 +122,14 @@ public struct FeedbackConfiguration: Codable, Equatable {
         trailStrokeEnabled = try container.decodeIfPresent(Bool.self, forKey: .trailStrokeEnabled) ?? false
         trailStrokeColorHex = try container.decodeIfPresent(String.self, forKey: .trailStrokeColorHex) ?? "#FFFFFF"
         trailStrokeWidth = try container.decodeIfPresent(Double.self, forKey: .trailStrokeWidth) ?? 1.5
+        overlayHideDelayMilliseconds = try container.decodeIfPresent(
+            Int.self,
+            forKey: .overlayHideDelayMilliseconds
+        ) ?? 500
+        unrecognizedTrailColorHex = try container.decodeIfPresent(
+            String.self,
+            forKey: .unrecognizedTrailColorHex
+        ) ?? "#8E8E93"
     }
 
     public static let `default` = FeedbackConfiguration(
@@ -120,6 +138,8 @@ public struct FeedbackConfiguration: Codable, Equatable {
         trailOpacity: 0.85,
         trailStrokeEnabled: false,
         trailStrokeColorHex: "#FFFFFF",
-        trailStrokeWidth: 1.5
+        trailStrokeWidth: 1.5,
+        overlayHideDelayMilliseconds: 500,
+        unrecognizedTrailColorHex: "#8E8E93"
     )
 }

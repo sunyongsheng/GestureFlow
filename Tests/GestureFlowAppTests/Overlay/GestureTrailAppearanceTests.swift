@@ -28,4 +28,20 @@ final class GestureTrailAppearanceTests: XCTestCase {
 
         XCTAssertFalse(appearance.strokeEnabled)
     }
+
+    func testMutedAppearanceUsesConfiguredUnrecognizedTrailColor() {
+        let feedback = FeedbackConfiguration(
+            trailColorHex: "#FF00AA",
+            trailWidth: 3,
+            trailOpacity: 0.8,
+            trailStrokeEnabled: true,
+            trailStrokeColorHex: "#FFFFFF",
+            trailStrokeWidth: 1,
+            unrecognizedTrailColorHex: "#666666"
+        )
+        let appearance = GestureTrailAppearance(feedback: feedback, isHighlighted: false)
+
+        XCTAssertEqual(appearance.resolvedTrailColorHex, "#666666")
+        XCTAssertEqual(appearance.strokeColorHex, "#FFFFFF")
+    }
 }

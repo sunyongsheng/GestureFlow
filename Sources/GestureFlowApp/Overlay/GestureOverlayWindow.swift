@@ -4,11 +4,9 @@ import GestureFlowCore
 final class GestureOverlayWindow: GestureOverlayDisplaying {
     private let panel: NSPanel
     private let overlayView: GestureOverlayView
-    private let hideDelay: TimeInterval
     private var hideWorkItem: DispatchWorkItem?
 
-    init(hideDelay: TimeInterval = 0.8) {
-        self.hideDelay = hideDelay
+    init() {
         self.overlayView = GestureOverlayView(frame: .zero)
         self.panel = NSPanel(
             contentRect: .zero,
@@ -45,12 +43,35 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
         overlayView.append(localPoint)
     }
 
-    func completeGesture(with completion: GestureOverlayCompletion, at point: GesturePoint?) {
+    func updateLiveGesture(
+        at point: GesturePoint,
+        appearance: GestureTrailAppearance,
+        feedback: LiveGestureOverlayFeedback
+    ) {
+        cancelPendingHide()
+        if !panel.isVisible {
+            let frame = Self.overlayFrame()
+            panel.setFrame(frame, display: false)
+            overlayView.frame = NSRect(origin: .zero, size: frame.size)
+            panel.orderFrontRegardless()
+        }
+        overlayView.updateLive(
+            appearance: appearance,
+            feedback: feedback,
+            feedbackFrame: resolveFeedbackFrame(for: point)
+        )
+    }
+
+    func completeGesture(
+        with completion: GestureOverlayCompletion,
+        at point: GesturePoint?,
+        hideAfter: TimeInterval
+    ) {
         overlayView.complete(
             with: completion,
             feedbackFrame: point.map(resolveFeedbackFrame)
         )
-        scheduleHide()
+        scheduleHide(after: hideAfter)
     }
 
     func showMarker(_ marker: GestureOverlayMarker, appearance: GestureTrailAppearance) {
@@ -98,13 +119,13 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
         panel.contentView = overlayView
     }
 
-    private func scheduleHide() {
+    private func scheduleHide(after delay: TimeInterval) {
         cancelPendingHide()
         let workItem = DispatchWorkItem { [weak self] in
             self?.hideNow()
         }
         hideWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + hideDelay, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
     }
 
     private func cancelPendingHide() {

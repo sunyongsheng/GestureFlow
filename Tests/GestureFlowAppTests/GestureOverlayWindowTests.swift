@@ -82,7 +82,11 @@ final class GestureOverlayWindowTests: XCTestCase {
             at: origin,
             appearance: GestureTrailAppearance(feedback: .default)
         )
-        overlayWindow.completeGesture(with: .recognized(name: "关闭窗口"), at: origin)
+        overlayWindow.completeGesture(
+            with: .recognized(name: "关闭窗口"),
+            at: origin,
+            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
+        )
 
         let overlayView = extractOverlayView(from: overlayWindow)
         let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
@@ -100,7 +104,11 @@ final class GestureOverlayWindowTests: XCTestCase {
             at: origin,
             appearance: GestureTrailAppearance(feedback: .default)
         )
-        overlayWindow.completeGesture(with: .unmatched, at: origin)
+        overlayWindow.completeGesture(
+            with: .unmatched,
+            at: origin,
+            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
+        )
 
         let overlayView = extractOverlayView(from: overlayWindow)
         let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))

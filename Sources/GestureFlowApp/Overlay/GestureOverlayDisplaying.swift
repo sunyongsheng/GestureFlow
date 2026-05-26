@@ -1,6 +1,10 @@
 import Foundation
 import GestureFlowCore
 
+enum GestureFeedbackCopy {
+    static let unmatchedGesture = "未识别手势"
+}
+
 struct GestureTrailAppearance: Equatable {
     var colorHex: String
     var width: Double
@@ -8,15 +12,28 @@ struct GestureTrailAppearance: Equatable {
     var strokeEnabled: Bool
     var strokeColorHex: String
     var strokeWidth: Double
+    var unrecognizedTrailColorHex: String
+    var isHighlighted: Bool
 
-    init(feedback: FeedbackConfiguration) {
+    init(feedback: FeedbackConfiguration, isHighlighted: Bool = true) {
         self.colorHex = feedback.trailColorHex
         self.width = feedback.trailWidth
         self.opacity = feedback.trailOpacity
         self.strokeEnabled = feedback.trailStrokeEnabled
         self.strokeColorHex = feedback.trailStrokeColorHex
         self.strokeWidth = feedback.trailStrokeWidth
+        self.unrecognizedTrailColorHex = feedback.unrecognizedTrailColorHex
+        self.isHighlighted = isHighlighted
     }
+
+    var resolvedTrailColorHex: String {
+        isHighlighted ? colorHex : unrecognizedTrailColorHex
+    }
+}
+
+struct LiveGestureOverlayFeedback: Equatable {
+    var message: String?
+    var showsCard: Bool
 }
 
 struct GestureOverlayMarker: Equatable {
@@ -38,7 +55,16 @@ enum GestureOverlayCompletion: Equatable {
 protocol GestureOverlayDisplaying: AnyObject {
     func beginGesture(at point: GesturePoint, appearance: GestureTrailAppearance)
     func appendGesturePoint(_ point: GesturePoint)
-    func completeGesture(with completion: GestureOverlayCompletion, at point: GesturePoint?)
+    func updateLiveGesture(
+        at point: GesturePoint,
+        appearance: GestureTrailAppearance,
+        feedback: LiveGestureOverlayFeedback
+    )
+    func completeGesture(
+        with completion: GestureOverlayCompletion,
+        at point: GesturePoint?,
+        hideAfter: TimeInterval
+    )
     func showMarker(_ marker: GestureOverlayMarker, appearance: GestureTrailAppearance)
     func clearMarker()
     func cancelGesture()
@@ -47,7 +73,16 @@ protocol GestureOverlayDisplaying: AnyObject {
 final class NoopGestureOverlay: GestureOverlayDisplaying {
     func beginGesture(at point: GesturePoint, appearance: GestureTrailAppearance) {}
     func appendGesturePoint(_ point: GesturePoint) {}
-    func completeGesture(with completion: GestureOverlayCompletion, at point: GesturePoint?) {}
+    func updateLiveGesture(
+        at point: GesturePoint,
+        appearance: GestureTrailAppearance,
+        feedback: LiveGestureOverlayFeedback
+    ) {}
+    func completeGesture(
+        with completion: GestureOverlayCompletion,
+        at point: GesturePoint?,
+        hideAfter: TimeInterval
+    ) {}
     func showMarker(_ marker: GestureOverlayMarker, appearance: GestureTrailAppearance) {}
     func clearMarker() {}
     func cancelGesture() {}

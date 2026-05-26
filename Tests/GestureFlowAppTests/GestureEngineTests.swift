@@ -441,7 +441,15 @@ final class GestureEngineTests: XCTestCase {
                     GesturePoint(x: 100, y: 100),
                     GestureTrailAppearance(feedback: feedbackConfiguration)
                 ),
+                initialLiveFeedback(
+                    at: GesturePoint(x: 100, y: 100),
+                    feedback: feedbackConfiguration
+                ),
                 .moved(GesturePoint(x: 80, y: 100)),
+                initialLiveFeedback(
+                    at: GesturePoint(x: 80, y: 100),
+                    feedback: feedbackConfiguration
+                ),
                 .completed(.recognized(name: "Back"), GesturePoint(x: 20, y: 100))
             ]
         )
@@ -520,13 +528,12 @@ final class GestureEngineTests: XCTestCase {
         tap.onGestureBegan?(.rightMouse, GesturePoint(x: 10, y: 10))
         tap.onGestureCancelled?()
 
+        let beganPoint = GestureOverlayGeometry.applyHotspotOffset(to: GesturePoint(x: 10, y: 10))
         XCTAssertEqual(
             overlay.events,
             [
-                .began(
-                    GestureOverlayGeometry.applyHotspotOffset(to: GesturePoint(x: 10, y: 10)),
-                    GestureTrailAppearance(feedback: .default)
-                ),
+                .began(beganPoint, GestureTrailAppearance(feedback: .default)),
+                initialLiveFeedback(at: beganPoint),
                 .cancelled
             ]
         )
@@ -568,6 +575,75 @@ final class GestureEngineTests: XCTestCase {
         )
     }
 
+    func testLiveFeedbackShowsUnrecognizedWithHighlightedTrailForPrefixMatch() {
+        let shortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Close Window",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.down, .right]),
+                    shortcut: shortcut
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let overlay = SpyGestureOverlay()
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
+            eventTap: tap,
+            overlay: overlay,
+            feedbackHandler: { _ in }
+        )
+
+        engine.start()
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100))
+        tap.onGestureMoved?(GesturePoint(x: 100, y: 50))
+        tap.onGestureMoved?(GesturePoint(x: 100, y: 10))
+
+        let lastLive = overlay.liveUpdates.last
+        XCTAssertEqual(lastLive?.feedback.message, GestureFeedbackCopy.unmatchedGesture)
+        XCTAssertTrue(lastLive?.feedback.showsCard ?? false)
+        XCTAssertTrue(lastLive?.appearance.isHighlighted ?? false)
+
+        tap.onGestureMoved?(GesturePoint(x: 40, y: 10))
+
+        let brokenLive = overlay.liveUpdates.last
+        XCTAssertEqual(brokenLive?.feedback.message, GestureFeedbackCopy.unmatchedGesture)
+        XCTAssertFalse(brokenLive?.appearance.isHighlighted ?? true)
+    }
+
+    func testLiveFeedbackShowsGestureNameOnExactMatchBeforeRelease() {
+        let shortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Close Window",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.down, .right]),
+                    shortcut: shortcut
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let overlay = SpyGestureOverlay()
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
+            eventTap: tap,
+            overlay: overlay,
+            feedbackHandler: { _ in }
+        )
+
+        engine.start()
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 0, y: 60))
+        tap.onGestureMoved?(GesturePoint(x: 0, y: 0))
+        tap.onGestureMoved?(GesturePoint(x: 70, y: 0))
+
+        let lastLive = overlay.liveUpdates.last
+        XCTAssertEqual(lastLive?.feedback.message, "Close Window")
+        XCTAssertTrue(lastLive?.appearance.isHighlighted ?? false)
+    }
+
     func testStopCancelsOverlayForActiveGesture() {
         let tap = SpyMouseEventTapController()
         let overlay = SpyGestureOverlay()
@@ -577,18 +653,28 @@ final class GestureEngineTests: XCTestCase {
         tap.onGestureBegan?(.rightMouse, GesturePoint(x: 20, y: 30))
         engine.stop()
 
+        let beganPoint = GestureOverlayGeometry.applyHotspotOffset(to: GesturePoint(x: 20, y: 30))
         XCTAssertEqual(
             overlay.events,
             [
-                .began(
-                    GestureOverlayGeometry.applyHotspotOffset(to: GesturePoint(x: 20, y: 30)),
-                    GestureTrailAppearance(feedback: .default)
-                ),
+                .began(beganPoint, GestureTrailAppearance(feedback: .default)),
+                initialLiveFeedback(at: beganPoint),
                 .cancelled
             ]
         )
         XCTAssertFalse(engine.isRunning)
         XCTAssertEqual(tap.stopCount, 1)
+    }
+
+    private func initialLiveFeedback(
+        at point: GesturePoint,
+        feedback: FeedbackConfiguration = .default
+    ) -> SpyGestureOverlay.Event {
+        .live(
+            point,
+            GestureTrailAppearance(feedback: feedback, isHighlighted: false),
+            LiveGestureOverlayFeedback(message: nil, showsCard: false)
+        )
     }
 
     private func makeEngine(
@@ -678,9 +764,16 @@ private final class SpyMouseEventTapController: MouseEventTapControlling {
 }
 
 private final class SpyGestureOverlay: GestureOverlayDisplaying {
+    struct LiveUpdate: Equatable {
+        var point: GesturePoint
+        var appearance: GestureTrailAppearance
+        var feedback: LiveGestureOverlayFeedback
+    }
+
     enum Event: Equatable {
         case began(GesturePoint, GestureTrailAppearance)
         case moved(GesturePoint)
+        case live(GesturePoint, GestureTrailAppearance, LiveGestureOverlayFeedback)
         case completed(GestureOverlayCompletion, GesturePoint?)
         case marker(GestureOverlayMarker, GestureTrailAppearance)
         case markerCleared
@@ -688,6 +781,13 @@ private final class SpyGestureOverlay: GestureOverlayDisplaying {
     }
 
     private(set) var events: [Event] = []
+
+    var liveUpdates: [LiveUpdate] {
+        events.compactMap { event in
+            guard case let .live(point, appearance, feedback) = event else { return nil }
+            return LiveUpdate(point: point, appearance: appearance, feedback: feedback)
+        }
+    }
 
     func beginGesture(at point: GesturePoint, appearance: GestureTrailAppearance) {
         events.append(.began(point, appearance))
@@ -697,7 +797,19 @@ private final class SpyGestureOverlay: GestureOverlayDisplaying {
         events.append(.moved(point))
     }
 
-    func completeGesture(with completion: GestureOverlayCompletion, at point: GesturePoint?) {
+    func updateLiveGesture(
+        at point: GesturePoint,
+        appearance: GestureTrailAppearance,
+        feedback: LiveGestureOverlayFeedback
+    ) {
+        events.append(.live(point, appearance, feedback))
+    }
+
+    func completeGesture(
+        with completion: GestureOverlayCompletion,
+        at point: GesturePoint?,
+        hideAfter: TimeInterval
+    ) {
         events.append(.completed(completion, point))
     }
 
