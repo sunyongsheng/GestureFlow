@@ -4,6 +4,7 @@ import GestureFlowCore
 
 struct FeedbackSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @FocusState.Binding var isSliderValueFieldFocused: Bool
 
     var body: some View {
         SettingsCard(
@@ -27,22 +28,24 @@ struct FeedbackSettingsView: View {
 
                 SettingsSliderRow(
                     title: "轨迹粗细",
-                    rangeText: "1.0 - 12.0",
+                    description: "控制手势轨迹线条的宽度。",
                     value: feedbackBinding(\.trailWidth),
                     range: 1...12,
                     step: 0.5,
-                    precision: 1
+                    precision: 1,
+                    isFocused: $isSliderValueFieldFocused
                 )
 
                 SettingsRowDivider()
 
                 SettingsSliderRow(
                     title: "轨迹透明度",
-                    rangeText: "0.10 - 1.00",
+                    description: "控制手势轨迹的不透明度，描边不受此项影响。",
                     value: feedbackBinding(\.trailOpacity),
                     range: 0.1...1,
                     step: 0.05,
-                    precision: 2
+                    precision: 2,
+                    isFocused: $isSliderValueFieldFocused
                 )
 
                 SettingsRowDivider()
@@ -72,14 +75,20 @@ struct FeedbackSettingsView: View {
 
                     SettingsSliderRow(
                         title: "描边粗细",
-                        rangeText: "0.5 - 8.0",
+                        description: "控制轨迹外侧描边线条的宽度。",
                         value: feedbackBinding(\.trailStrokeWidth),
                         range: 0.5...8,
                         step: 0.1,
-                        precision: 1
+                        precision: 1,
+                        isFocused: $isSliderValueFieldFocused
                     )
                 }
             }
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    isSliderValueFieldFocused = false
+                }
+            )
         }
     }
 

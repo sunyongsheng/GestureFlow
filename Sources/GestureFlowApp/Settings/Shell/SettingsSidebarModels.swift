@@ -117,47 +117,93 @@ struct SettingsRowDivider: View {
 
 struct SettingsSliderRow: View {
     let title: String
-    let rangeText: String
+    var description: String? = nil
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double
     let precision: Int
     var valueSuffix: String = ""
     var usesIntegerDisplay: Bool = false
+    @FocusState.Binding var isFocused: Bool
 
     private var snappedValue: Binding<Double> {
         $value.snapping(to: step, in: range)
     }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.body.weight(.medium))
 
-                Text(rangeText)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                if let description {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .frame(minWidth: 148, alignment: .leading)
 
             Spacer(minLength: 12)
 
-            HStack(spacing: 12) {
-                EditableSliderValueField(
-                    value: snappedValue,
-                    range: range,
-                    step: step,
-                    precision: precision,
-                    suffix: valueSuffix,
-                    usesIntegerDisplay: usesIntegerDisplay
-                )
+            HStack(spacing: 4) {
+                Text(rangeBoundLabel(range.lowerBound))
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+                    .frame(width: rangeLabelWidth, alignment: .trailing)
 
                 Slider(value: snappedValue, in: range)
-                    .frame(width: 140)
+                    .frame(minWidth: 120, idealWidth: 140, maxWidth: 160)
+                    .onTapGesture {
+                        isFocused = false
+                    }
+                    .onChange(of: snappedValue.wrappedValue) { _, _ in
+                        if isFocused {
+                            isFocused = false
+                        }
+                    }
+
+                Text(rangeBoundLabel(range.upperBound))
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+                    .frame(width: rangeLabelWidth, alignment: .leading)
             }
+
+            EditableSliderValueField(
+                value: snappedValue,
+                range: range,
+                step: step,
+                precision: precision,
+                suffix: valueSuffix,
+                usesIntegerDisplay: usesIntegerDisplay,
+                isFocused: $isFocused
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var rangeLabelWidth: CGFloat {
+        let lowerWidth = measuredCaptionWidth(for: rangeBoundLabel(range.lowerBound))
+        let upperWidth = measuredCaptionWidth(for: rangeBoundLabel(range.upperBound))
+        return max(lowerWidth, upperWidth)
+    }
+
+    private func rangeBoundLabel(_ bound: Double) -> String {
+        SliderValueFormatting.displayText(
+            for: bound,
+            precision: precision,
+            suffix: valueSuffix,
+            usesIntegerDisplay: usesIntegerDisplay
+        )
+    }
+
+    private func measuredCaptionWidth(for text: String) -> CGFloat {
+        let nsFont = NSFont.monospacedDigitSystemFont(
+            ofSize: NSFont.preferredFont(forTextStyle: .caption1).pointSize,
+            weight: .regular
+        )
+        return ceil((text as NSString).size(withAttributes: [.font: nsFont]).width)
     }
 }
 
@@ -168,10 +214,10 @@ private struct EditableSliderValueField: View {
     let precision: Int
     let suffix: String
     let usesIntegerDisplay: Bool
+    @FocusState.Binding var isFocused: Bool
 
     @State private var isEditing = false
     @State private var draftText = ""
-    @FocusState private var isFocused: Bool
 
     var body: some View {
         valueContent
@@ -317,7 +363,7 @@ struct SettingsValueRow<Control: View>: View {
     @ViewBuilder let control: Control
 
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.body.weight(.medium))
@@ -326,10 +372,12 @@ struct SettingsValueRow<Control: View>: View {
                     Text(description)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
+            .frame(minWidth: 148, alignment: .leading)
 
-            Spacer(minLength: 16)
+            Spacer(minLength: 12)
 
             if let statusText {
                 Text(statusText)
@@ -337,8 +385,12 @@ struct SettingsValueRow<Control: View>: View {
                     .foregroundColor(.secondary)
             }
 
-            control
+            HStack {
+                Spacer(minLength: 0)
+                control
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+

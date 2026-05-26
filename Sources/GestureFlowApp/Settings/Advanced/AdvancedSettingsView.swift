@@ -3,16 +3,28 @@ import SwiftUI
 struct AdvancedSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
     @State private var isRestoreDefaultsConfirmationPresented = false
+    @FocusState private var isSliderValueFieldFocused: Bool
 
     var body: some View {
         SettingsPage {
             VStack(alignment: .leading, spacing: 24) {
-                GestureTriggerSettingsView(viewModel: viewModel)
-                FeedbackSettingsView(viewModel: viewModel)
+                GestureTriggerSettingsView(
+                    viewModel: viewModel,
+                    isSliderValueFieldFocused: $isSliderValueFieldFocused
+                )
+                FeedbackSettingsView(
+                    viewModel: viewModel,
+                    isSliderValueFieldFocused: $isSliderValueFieldFocused
+                )
 
                 restoreDefaultsButton
             }
             .frame(maxWidth: 720, alignment: .leading)
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    isSliderValueFieldFocused = false
+                }
+            )
         }
         .confirmationDialog(
             "是否恢复为默认设置",

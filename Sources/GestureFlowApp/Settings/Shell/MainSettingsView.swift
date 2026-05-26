@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import GestureFlowCore
 
@@ -52,6 +53,9 @@ struct MainSettingsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(SettingsWindowChrome.detailBackground)
+        .onChange(of: selectedSection) { _, _ in
+            NSApp.keyWindow?.makeFirstResponder(nil)
+        }
     }
 
     @ViewBuilder

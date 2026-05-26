@@ -3,6 +3,7 @@ import GestureFlowCore
 
 struct GestureTriggerSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @FocusState.Binding var isSliderValueFieldFocused: Bool
 
     var body: some View {
         SettingsCard(
@@ -22,46 +23,54 @@ struct GestureTriggerSettingsView: View {
                     }
                     .labelsHidden()
                     .pickerStyle(.menu)
-                    .frame(width: 180)
+                    .fixedSize()
                 }
 
                 SettingsRowDivider()
 
                 SettingsSliderRow(
                     title: "移动阈值",
-                    rangeText: "4 - 80 pt",
+                    description: "指针移动超过该距离后才开始绘制并识别手势。",
                     value: movementThresholdBinding,
                     range: 4...80,
                     step: 1,
                     precision: 0,
-                    valueSuffix: " pt"
+                    valueSuffix: " pt",
+                    isFocused: $isSliderValueFieldFocused
                 )
 
                 SettingsRowDivider()
 
                 SettingsSliderRow(
                     title: "按住超时",
-                    rangeText: "50 - 1000 ms",
+                    description: "右键按住超过该时间后，在按下位置显示超时原点标记。",
                     value: holdTimeoutBinding,
                     range: 50...1000,
-                    step: 25,
+                    step: 10,
                     precision: 0,
                     valueSuffix: " ms",
-                    usesIntegerDisplay: true
+                    usesIntegerDisplay: true,
+                    isFocused: $isSliderValueFieldFocused
                 )
 
                 SettingsRowDivider()
 
                 SettingsSliderRow(
                     title: "采样跳变阈值",
-                    rangeText: "40 - 240 pt",
+                    description: "相邻采样点允许的最大间距，用于过滤指针抖动。",
                     value: maximumSampleDistanceBinding,
                     range: 40...240,
-                    step: 5,
+                    step: 1,
                     precision: 0,
-                    valueSuffix: " pt"
+                    valueSuffix: " pt",
+                    isFocused: $isSliderValueFieldFocused
                 )
             }
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    isSliderValueFieldFocused = false
+                }
+            )
         }
     }
 
