@@ -22,6 +22,10 @@ final class GestureTrailAppearanceTests: XCTestCase {
         XCTAssertEqual(appearance.width, 4)
         XCTAssertEqual(appearance.opacity, 0.9)
         XCTAssertEqual(appearance.feedbackCardCornerRadius, feedback.feedbackCardCornerRadius)
+        XCTAssertEqual(
+            appearance.feedbackCardLiquidGlassEnabled,
+            feedback.feedbackCardLiquidGlassEnabled
+        )
     }
 
     func testGestureTrailAppearanceDefaultsStrokeDisabled() {
@@ -29,6 +33,7 @@ final class GestureTrailAppearanceTests: XCTestCase {
 
         XCTAssertFalse(appearance.strokeEnabled)
         XCTAssertEqual(appearance.feedbackCardCornerRadius, 18, accuracy: 0.001)
+        XCTAssertFalse(appearance.feedbackCardLiquidGlassEnabled)
     }
 
     func testMutedAppearanceUsesConfiguredUnrecognizedTrailColor() {

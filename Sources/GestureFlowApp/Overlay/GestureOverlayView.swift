@@ -41,7 +41,8 @@ final class GestureOverlayView: NSView {
                 message: message,
                 in: feedbackFrame,
                 textColor: feedbackTextColor(usesTrailColor: feedback.usesTrailColor),
-                cornerRadius: CGFloat(trailAppearance.feedbackCardCornerRadius)
+                cornerRadius: CGFloat(trailAppearance.feedbackCardCornerRadius),
+                liquidGlassEnabled: trailAppearance.feedbackCardLiquidGlassEnabled
             )
         } else {
             feedbackCardView.hide()
@@ -55,7 +56,8 @@ final class GestureOverlayView: NSView {
                 message: message,
                 in: feedbackFrame,
                 textColor: feedbackTextColor(usesTrailColor: completion.usesTrailColorText),
-                cornerRadius: CGFloat(trailAppearance.feedbackCardCornerRadius)
+                cornerRadius: CGFloat(trailAppearance.feedbackCardCornerRadius),
+                liquidGlassEnabled: trailAppearance.feedbackCardLiquidGlassEnabled
             )
         } else {
             feedbackCardView.hide()

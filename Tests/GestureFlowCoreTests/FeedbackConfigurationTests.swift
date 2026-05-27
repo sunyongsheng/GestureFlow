@@ -12,6 +12,7 @@ final class FeedbackConfigurationTests: XCTestCase {
         XCTAssertEqual(config.overlayHideDelayMilliseconds, 500)
         XCTAssertEqual(config.unrecognizedTrailColorHex, "#8E8E93")
         XCTAssertEqual(config.feedbackCardCornerRadius, 18, accuracy: 0.001)
+        XCTAssertFalse(config.feedbackCardLiquidGlassEnabled)
     }
 
     func testFeedbackConfigurationDecodesWithoutStrokeKeys() throws {
@@ -27,6 +28,21 @@ final class FeedbackConfigurationTests: XCTestCase {
         XCTAssertEqual(config.overlayHideDelayMilliseconds, 500)
         XCTAssertEqual(config.unrecognizedTrailColorHex, "#8E8E93")
         XCTAssertEqual(config.feedbackCardCornerRadius, 18, accuracy: 0.001)
+        XCTAssertFalse(config.feedbackCardLiquidGlassEnabled)
+    }
+
+    func testFeedbackConfigurationEncodesFeedbackCardLiquidGlassEnabled() throws {
+        let config = FeedbackConfiguration(
+            trailColorHex: "#4A90E2",
+            trailWidth: 3,
+            trailOpacity: 0.85,
+            feedbackCardLiquidGlassEnabled: true
+        )
+
+        let data = try JSONEncoder().encode(config)
+        let decoded = try JSONDecoder().decode(FeedbackConfiguration.self, from: data)
+
+        XCTAssertTrue(decoded.feedbackCardLiquidGlassEnabled)
     }
 
     func testFeedbackConfigurationEncodesFeedbackCardCornerRadius() throws {

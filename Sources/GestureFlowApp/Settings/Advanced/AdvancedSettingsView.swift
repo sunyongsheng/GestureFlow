@@ -16,6 +16,10 @@ struct AdvancedSettingsView: View {
                     viewModel: viewModel,
                     isSliderValueFieldFocused: $isSliderValueFieldFocused
                 )
+                FeedbackPopupSettingsView(
+                    viewModel: viewModel,
+                    isSliderValueFieldFocused: $isSliderValueFieldFocused
+                )
 
                 restoreDefaultsButton
             }

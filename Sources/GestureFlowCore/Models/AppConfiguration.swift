@@ -84,6 +84,8 @@ public struct FeedbackConfiguration: Codable, Equatable {
     public var unrecognizedTrailColorHex: String
     /// Corner radius of the on-screen gesture feedback card (not exposed in settings UI).
     public var feedbackCardCornerRadius: Double
+    /// Use macOS 26 liquid glass styling for the on-screen feedback card.
+    public var feedbackCardLiquidGlassEnabled: Bool
 
     private enum CodingKeys: String, CodingKey {
         case trailColorHex
@@ -95,6 +97,7 @@ public struct FeedbackConfiguration: Codable, Equatable {
         case overlayHideDelayMilliseconds
         case unrecognizedTrailColorHex
         case feedbackCardCornerRadius
+        case feedbackCardLiquidGlassEnabled
     }
 
     public init(
@@ -106,7 +109,8 @@ public struct FeedbackConfiguration: Codable, Equatable {
         trailStrokeWidth: Double = 1.5,
         overlayHideDelayMilliseconds: Int = 500,
         unrecognizedTrailColorHex: String = "#8E8E93",
-        feedbackCardCornerRadius: Double = 18
+        feedbackCardCornerRadius: Double = 18,
+        feedbackCardLiquidGlassEnabled: Bool = false
     ) {
         self.trailColorHex = trailColorHex
         self.trailWidth = trailWidth
@@ -117,6 +121,7 @@ public struct FeedbackConfiguration: Codable, Equatable {
         self.overlayHideDelayMilliseconds = overlayHideDelayMilliseconds
         self.unrecognizedTrailColorHex = unrecognizedTrailColorHex
         self.feedbackCardCornerRadius = feedbackCardCornerRadius
+        self.feedbackCardLiquidGlassEnabled = feedbackCardLiquidGlassEnabled
     }
 
     public init(from decoder: Decoder) throws {
@@ -139,6 +144,10 @@ public struct FeedbackConfiguration: Codable, Equatable {
             Double.self,
             forKey: .feedbackCardCornerRadius
         ) ?? 18
+        feedbackCardLiquidGlassEnabled = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .feedbackCardLiquidGlassEnabled
+        ) ?? false
     }
 
     public static let `default` = FeedbackConfiguration(
