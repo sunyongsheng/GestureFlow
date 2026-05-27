@@ -82,6 +82,8 @@ public struct FeedbackConfiguration: Codable, Equatable {
     public var overlayHideDelayMilliseconds: Int
     /// Main trail color while drawing a gesture that does not prefix-match any configured gesture.
     public var unrecognizedTrailColorHex: String
+    /// Corner radius of the on-screen gesture feedback card (not exposed in settings UI).
+    public var feedbackCardCornerRadius: Double
 
     private enum CodingKeys: String, CodingKey {
         case trailColorHex
@@ -92,6 +94,7 @@ public struct FeedbackConfiguration: Codable, Equatable {
         case trailStrokeWidth
         case overlayHideDelayMilliseconds
         case unrecognizedTrailColorHex
+        case feedbackCardCornerRadius
     }
 
     public init(
@@ -102,7 +105,8 @@ public struct FeedbackConfiguration: Codable, Equatable {
         trailStrokeColorHex: String = "#FFFFFF",
         trailStrokeWidth: Double = 1.5,
         overlayHideDelayMilliseconds: Int = 500,
-        unrecognizedTrailColorHex: String = "#8E8E93"
+        unrecognizedTrailColorHex: String = "#8E8E93",
+        feedbackCardCornerRadius: Double = 18
     ) {
         self.trailColorHex = trailColorHex
         self.trailWidth = trailWidth
@@ -112,6 +116,7 @@ public struct FeedbackConfiguration: Codable, Equatable {
         self.trailStrokeWidth = trailStrokeWidth
         self.overlayHideDelayMilliseconds = overlayHideDelayMilliseconds
         self.unrecognizedTrailColorHex = unrecognizedTrailColorHex
+        self.feedbackCardCornerRadius = feedbackCardCornerRadius
     }
 
     public init(from decoder: Decoder) throws {
@@ -130,6 +135,10 @@ public struct FeedbackConfiguration: Codable, Equatable {
             String.self,
             forKey: .unrecognizedTrailColorHex
         ) ?? "#8E8E93"
+        feedbackCardCornerRadius = try container.decodeIfPresent(
+            Double.self,
+            forKey: .feedbackCardCornerRadius
+        ) ?? 18
     }
 
     public static let `default` = FeedbackConfiguration(

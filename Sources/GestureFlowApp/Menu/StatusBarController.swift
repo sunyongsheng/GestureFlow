@@ -46,20 +46,17 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     init(
         statusBar: NSStatusBar = .system,
         actions: StatusBarActions,
-        scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) },
-        dismissMenuTracking: (() -> Void)? = nil
+        scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }
     ) {
         self.statusItem = statusBar.statusItem(withLength: NSStatusItem.variableLength)
         self.actions = actions
         self.scheduleOnMain = scheduleOnMain
-        self.dismissMenuTracking = dismissMenuTracking ?? {}
+        self.dismissMenuTracking = {}
         super.init()
         configureStatusItem()
         configureMenu()
-        if dismissMenuTracking == nil {
-            self.dismissMenuTracking = { [weak menu = self.menu] in
-                menu?.cancelTracking()
-            }
+        self.dismissMenuTracking = { [weak menu = self.menu] in
+            menu?.cancelTracking()
         }
     }
 

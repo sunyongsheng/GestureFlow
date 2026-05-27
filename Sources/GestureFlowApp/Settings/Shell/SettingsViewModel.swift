@@ -50,14 +50,14 @@ final class SettingsViewModel: ObservableObject {
         relocateConfigurationDirectory: @escaping (String, ConfigurationDirectoryRelocationMode) throws -> Void = { _, _ in },
         targetHasConfigurationFiles: @escaping (String) -> Bool = { _ in false },
         requestAccessibilityPermission: @escaping () -> Void,
-        startGestureFlow: @escaping () -> Void = {},
-        stopGestureFlow: @escaping () -> Void = {},
-        quitApplication: @escaping () -> Void = {},
+        startGestureFlow: @escaping () -> Void,
+        stopGestureFlow: @escaping () -> Void,
+        quitApplication: @escaping () -> Void,
         setLaunchAtLoginEnabled: @escaping (Bool) throws -> Void = { _ in },
         launchAtLoginStatus: @escaping () -> Bool = { false },
         openApplicationPanel: @escaping () -> URL? = SettingsViewModel.defaultOpenApplicationPanel,
-        pauseGestureRecognition: @escaping () -> Void = {},
-        resumeGestureRecognition: @escaping () -> Void = {}
+        pauseGestureRecognition: @escaping () -> Void,
+        resumeGestureRecognition: @escaping () -> Void
     ) {
         self.configuration = loadResult.configuration
         self.gestureConfiguration = gestureConfiguration

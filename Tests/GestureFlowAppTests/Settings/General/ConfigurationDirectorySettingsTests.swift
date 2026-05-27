@@ -178,7 +178,12 @@ final class ConfigurationDirectorySettingsTests: XCTestCase {
             saveGestureConfiguration: { _ in },
             relocateConfigurationDirectory: relocateConfigurationDirectory,
             targetHasConfigurationFiles: targetHasConfigurationFiles,
-            requestAccessibilityPermission: {}
+            requestAccessibilityPermission: {},
+            startGestureFlow: {},
+            stopGestureFlow: {},
+            quitApplication: {},
+            pauseGestureRecognition: {},
+            resumeGestureRecognition: {}
         )
     }
 }

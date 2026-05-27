@@ -13,6 +13,7 @@ struct GestureTrailAppearance: Equatable {
     var strokeColorHex: String
     var strokeWidth: Double
     var unrecognizedTrailColorHex: String
+    var feedbackCardCornerRadius: Double
     var isHighlighted: Bool
 
     init(feedback: FeedbackConfiguration, isHighlighted: Bool = true) {
@@ -23,6 +24,7 @@ struct GestureTrailAppearance: Equatable {
         self.strokeColorHex = feedback.trailStrokeColorHex
         self.strokeWidth = feedback.trailStrokeWidth
         self.unrecognizedTrailColorHex = feedback.unrecognizedTrailColorHex
+        self.feedbackCardCornerRadius = feedback.feedbackCardCornerRadius
         self.isHighlighted = isHighlighted
     }
 

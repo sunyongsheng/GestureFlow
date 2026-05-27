@@ -24,7 +24,8 @@ final class StatusBarControllerTests: XCTestCase {
                 stop: { stopped = true },
                 openSettings: {},
                 quit: {}
-            )
+            ),
+            scheduleOnMain: { $0() }
         )
 
         controller.performMenuItem(tag: .gestureFlow)
@@ -40,7 +41,6 @@ final class StatusBarControllerTests: XCTestCase {
     func testSettingsMenuItemInvokesOpenSettingsAction() {
         var openedSettings = false
         var scheduledActions: [() -> Void] = []
-        var dismissMenuTrackingCount = 0
         let controller = StatusBarController(
             actions: StatusBarActions(
                 start: {},
@@ -48,8 +48,7 @@ final class StatusBarControllerTests: XCTestCase {
                 openSettings: { openedSettings = true },
                 quit: {}
             ),
-            scheduleOnMain: { scheduledActions.append($0) },
-            dismissMenuTracking: { dismissMenuTrackingCount += 1 }
+            scheduleOnMain: { scheduledActions.append($0) }
         )
 
         let item = NSMenuItem(
@@ -63,7 +62,6 @@ final class StatusBarControllerTests: XCTestCase {
 
         XCTAssertFalse(openedSettings)
         XCTAssertEqual(scheduledActions.count, 1)
-        XCTAssertEqual(dismissMenuTrackingCount, 1)
 
         scheduledActions.removeFirst()()
 
@@ -92,7 +90,8 @@ final class StatusBarControllerTests: XCTestCase {
                 stop: {},
                 openSettings: {},
                 quit: { quitCount += 1 }
-            )
+            ),
+            scheduleOnMain: { $0() }
         )
 
         controller.performMenuItem(tag: .quit)

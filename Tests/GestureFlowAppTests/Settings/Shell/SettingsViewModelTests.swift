@@ -456,7 +456,9 @@ final class SettingsViewModelTests: XCTestCase {
             quitApplication: quitApplication,
             setLaunchAtLoginEnabled: setLaunchAtLoginEnabled,
             launchAtLoginStatus: launchAtLoginStatus,
-            openApplicationPanel: openApplicationPanel
+            openApplicationPanel: openApplicationPanel,
+            pauseGestureRecognition: {},
+            resumeGestureRecognition: {}
         )
     }
 

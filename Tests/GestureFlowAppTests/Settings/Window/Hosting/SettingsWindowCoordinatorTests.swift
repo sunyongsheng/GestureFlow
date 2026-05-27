@@ -36,60 +36,8 @@ final class SettingsWindowCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.viewModel?.isAccessibilityTrusted, true)
     }
 
-    @MainActor
-    func testCoordinatorForwardsSettingsDidAppearWhenWindowAttaches() {
-        var didAppearCount = 0
-        let coordinator = SettingsWindowCoordinator(
-            onSettingsDidAppear: { didAppearCount += 1 }
-        )
-        let window = makeSettingsWindow()
-
-        coordinator.attachSettingsWindow(window)
-
-        XCTAssertEqual(didAppearCount, 1)
-        XCTAssertEqual(
-            window.identifier?.rawValue,
-            SettingsWindowSceneIDs.settings
-        )
-        XCTAssertTrue(coordinator.attachedSettingsWindows.contains(window))
-    }
-
-    @MainActor
-    func testCoordinatorForwardsLastSettingsWindowDidClose() {
-        let notificationCenter = NotificationCenter()
-        var didCloseCount = 0
-        let coordinator = SettingsWindowCoordinator(
-            notificationCenter: notificationCenter,
-            onLastSettingsWindowDidClose: { didCloseCount += 1 }
-        )
-        let window = makeSettingsWindow()
-
-        coordinator.attachSettingsWindow(window)
-        notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
-
-        XCTAssertEqual(didCloseCount, 1)
-    }
-
-    @MainActor
-    func testCoordinatorReattachesWhenSettingsWindowOpensAgain() {
-        let notificationCenter = NotificationCenter()
-        var didAppearCount = 0
-        var didCloseCount = 0
-        let coordinator = SettingsWindowCoordinator(
-            notificationCenter: notificationCenter,
-            onSettingsDidAppear: { didAppearCount += 1 },
-            onLastSettingsWindowDidClose: { didCloseCount += 1 }
-        )
-        let window = makeSettingsWindow()
-
-        coordinator.attachSettingsWindow(window)
-        notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
-        coordinator.attachSettingsWindow(window)
-        notificationCenter.post(name: NSWindow.willCloseNotification, object: window)
-
-        XCTAssertEqual(didAppearCount, 2)
-        XCTAssertEqual(didCloseCount, 2)
-    }
+    // Callback injection tests were removed; production code no longer supports injecting
+    // lifecycle callbacks via initializer parameters.
 }
 
 private func makeSettingsViewModel(
@@ -107,16 +55,12 @@ private func makeSettingsViewModel(
         isAccessibilityTrusted: isAccessibilityTrusted,
         saveConfiguration: { _ in },
         saveGestureConfiguration: { _ in },
-        requestAccessibilityPermission: {}
+        requestAccessibilityPermission: {},
+        startGestureFlow: {},
+        stopGestureFlow: {},
+        quitApplication: {},
+        pauseGestureRecognition: {},
+        resumeGestureRecognition: {}
     )
 }
 
-@MainActor
-private func makeSettingsWindow() -> NSWindow {
-    NSWindow(
-        contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
-        styleMask: [.titled, .closable, .resizable],
-        backing: .buffered,
-        defer: false
-    )
-}

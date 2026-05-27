@@ -575,14 +575,13 @@ final class GestureFlowApplicationTests: XCTestCase {
             activateApp: {},
             scheduleOnMain: { scheduledAccessoryFallback = $0 }
         )
-        let coordinator = SettingsWindowCoordinator(
-            onSettingsDidAppear: {
-                presentationController.handleSettingsDidAppear()
-            },
-            onLastSettingsWindowDidClose: {
-                presentationController.handleLastSettingsWindowDidClose()
-            }
-        )
+        let coordinator = SettingsWindowCoordinator()
+        coordinator.onSettingsDidAppear = {
+            presentationController.handleSettingsDidAppear()
+        }
+        coordinator.onLastSettingsWindowDidClose = {
+            presentationController.handleLastSettingsWindowDidClose()
+        }
         let opener = SettingsWindowOpener(
             resolveOpenAction: {
                 {
@@ -666,14 +665,13 @@ final class GestureFlowApplicationTests: XCTestCase {
             activateApp: {},
             scheduleOnMain: { _ in }
         )
-        let coordinator = SettingsWindowCoordinator(
-            onSettingsDidAppear: {
-                presentationController.handleSettingsDidAppear()
-            },
-            onLastSettingsWindowDidClose: {
-                presentationController.handleLastSettingsWindowDidClose()
-            }
-        )
+        let coordinator = SettingsWindowCoordinator()
+        coordinator.onSettingsDidAppear = {
+            presentationController.handleSettingsDidAppear()
+        }
+        coordinator.onLastSettingsWindowDidClose = {
+            presentationController.handleLastSettingsWindowDidClose()
+        }
         let opener = SettingsWindowOpener(
             resolveOpenAction: {
                 {

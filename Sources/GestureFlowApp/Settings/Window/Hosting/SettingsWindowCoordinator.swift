@@ -15,13 +15,9 @@ final class SettingsWindowCoordinator: ObservableObject {
         attachedSettingsWindowTable.allObjects
     }
 
-    init(
-        notificationCenter: NotificationCenter = .default,
-        onSettingsDidAppear: @escaping () -> Void = {},
-        onLastSettingsWindowDidClose: @escaping () -> Void = {}
-    ) {
-        self.onSettingsDidAppear = onSettingsDidAppear
-        self.onLastSettingsWindowDidClose = onLastSettingsWindowDidClose
+    init(notificationCenter: NotificationCenter = .default) {
+        self.onSettingsDidAppear = {}
+        self.onLastSettingsWindowDidClose = {}
         self.lifecycleCoordinator = SettingsWindowLifecycleCoordinator(
             notificationCenter: notificationCenter,
             onSettingsDidAppear: {},

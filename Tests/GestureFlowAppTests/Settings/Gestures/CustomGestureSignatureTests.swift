@@ -49,7 +49,12 @@ final class CustomGestureSignatureTests: XCTestCase {
             isAccessibilityTrusted: true,
             saveConfiguration: { _ in },
             saveGestureConfiguration: saveGestureConfiguration,
-            requestAccessibilityPermission: {}
+            requestAccessibilityPermission: {},
+            startGestureFlow: {},
+            stopGestureFlow: {},
+            quitApplication: {},
+            pauseGestureRecognition: {},
+            resumeGestureRecognition: {}
         )
     }
 }

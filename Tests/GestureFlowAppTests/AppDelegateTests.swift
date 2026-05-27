@@ -178,6 +178,11 @@ private func makeSettingsViewModel() -> SettingsViewModel {
         isAccessibilityTrusted: true,
         saveConfiguration: { _ in },
         saveGestureConfiguration: { _ in },
-        requestAccessibilityPermission: {}
+        requestAccessibilityPermission: {},
+        startGestureFlow: {},
+        stopGestureFlow: {},
+        quitApplication: {},
+        pauseGestureRecognition: {},
+        resumeGestureRecognition: {}
     )
 }

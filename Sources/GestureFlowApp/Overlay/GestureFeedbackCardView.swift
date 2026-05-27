@@ -28,7 +28,13 @@ final class GestureFeedbackCardView: NSView {
         configureView()
     }
 
-    func show(message: String, in anchorFrame: CGRect, textColor: NSColor = .labelColor) {
+    func show(
+        message: String,
+        in anchorFrame: CGRect,
+        textColor: NSColor = .labelColor,
+        cornerRadius: CGFloat
+    ) {
+        applyCornerRadius(cornerRadius)
         messageLabel.stringValue = message
         messageLabel.textColor = textColor
         let labelSize = messageLabel.fittingSize
@@ -53,6 +59,18 @@ final class GestureFeedbackCardView: NSView {
         backgroundView.autoresizingMask = [.width, .height]
         addSubview(backgroundView)
         configureMessageLabel()
+    }
+
+    private func applyCornerRadius(_ cornerRadius: CGFloat) {
+        if #available(macOS 26.0, *), let glassView = backgroundView as? NSGlassEffectView {
+            glassView.cornerRadius = cornerRadius
+            return
+        }
+
+        backgroundView.layer?.cornerRadius = cornerRadius
+        for case let visualEffectView as NSVisualEffectView in backgroundView.subviews {
+            visualEffectView.layer?.cornerRadius = cornerRadius
+        }
     }
 
     private func configureMessageLabel() {

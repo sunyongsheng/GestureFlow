@@ -21,12 +21,14 @@ final class GestureTrailAppearanceTests: XCTestCase {
         XCTAssertEqual(appearance.colorHex, "#111111")
         XCTAssertEqual(appearance.width, 4)
         XCTAssertEqual(appearance.opacity, 0.9)
+        XCTAssertEqual(appearance.feedbackCardCornerRadius, feedback.feedbackCardCornerRadius)
     }
 
     func testGestureTrailAppearanceDefaultsStrokeDisabled() {
         let appearance = GestureTrailAppearance(feedback: .default)
 
         XCTAssertFalse(appearance.strokeEnabled)
+        XCTAssertEqual(appearance.feedbackCardCornerRadius, 18, accuracy: 0.001)
     }
 
     func testMutedAppearanceUsesConfiguredUnrecognizedTrailColor() {
