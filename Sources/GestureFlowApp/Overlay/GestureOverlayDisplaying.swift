@@ -34,6 +34,7 @@ struct GestureTrailAppearance: Equatable {
 struct LiveGestureOverlayFeedback: Equatable {
     var message: String?
     var showsCard: Bool
+    var usesTrailColor: Bool = false
 }
 
 struct GestureOverlayMarker: Equatable {
@@ -49,7 +50,10 @@ enum GestureOverlayCompletion: Equatable {
     case recognized(name: String)
     case unmatched
     case rejected
-    case actionFailed(displayName: String)
+    case targetNotFound(gestureName: String)
+    case shortcutNotConfigured(gestureName: String)
+    case deliveryFailed(gestureName: String)
+    case executionFailed(gestureName: String)
 }
 
 protocol GestureOverlayDisplaying: AnyObject {

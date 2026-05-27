@@ -178,7 +178,7 @@ final class GestureEngineTests: XCTestCase {
         XCTAssertTrue(actionExecutor.executedActions.isEmpty)
         XCTAssertEqual(
             overlay.events,
-            [.completed(.actionFailed(displayName: "Back"), GesturePoint(x: 20, y: 0))]
+            [.completed(.targetNotFound(gestureName: "Back"), GesturePoint(x: 20, y: 0))]
         )
         XCTAssertEqual(
             feedback,
@@ -384,7 +384,7 @@ final class GestureEngineTests: XCTestCase {
         )
         XCTAssertEqual(
             overlay.events,
-            [.completed(.actionFailed(displayName: "Close"), GesturePoint(x: 50, y: 0))]
+            [.completed(.executionFailed(gestureName: "Close"), GesturePoint(x: 50, y: 0))]
         )
         XCTAssertEqual(
             feedback,

@@ -105,7 +105,7 @@ final class GestureOverlayWindowTests: XCTestCase {
             appearance: GestureTrailAppearance(feedback: .default)
         )
         overlayWindow.completeGesture(
-            with: .actionFailed(displayName: "关闭窗口"),
+            with: .deliveryFailed(gestureName: "关闭窗口"),
             at: origin,
             hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
         )
@@ -116,6 +116,73 @@ final class GestureOverlayWindowTests: XCTestCase {
 
         XCTAssertFalse(feedbackCardView.isHidden)
         XCTAssertEqual(messageLabel.stringValue, "关闭窗口")
+    }
+
+    func testUnmatchedCompletionResetsTextColorAfterLiveRecognition() throws {
+        let feedback = FeedbackConfiguration(
+            trailColorHex: "#FF00AA",
+            trailWidth: 3,
+            trailOpacity: 0.85
+        )
+        let appearance = GestureTrailAppearance(feedback: feedback, isHighlighted: true)
+        let overlayWindow = GestureOverlayWindow()
+        let origin = GesturePoint(x: 250, y: 420)
+
+        overlayWindow.beginGesture(at: origin, appearance: appearance)
+        overlayWindow.updateLiveGesture(
+            at: origin,
+            appearance: appearance,
+            feedback: LiveGestureOverlayFeedback(
+                message: "关闭窗口",
+                showsCard: true,
+                usesTrailColor: true
+            )
+        )
+
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
+        let liveLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
+        let liveTextColor = try XCTUnwrap(liveLabel.textColor)
+        let trailColor = try XCTUnwrap(ColorHexFormatting.nsColor(fromHex: "#FF00AA"))
+        XCTAssertTrue(liveTextColor.isEqual(trailColor))
+
+        overlayWindow.completeGesture(
+            with: .unmatched,
+            at: origin,
+            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
+        )
+
+        let completionLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
+        let completionTextColor = try XCTUnwrap(completionLabel.textColor)
+        XCTAssertEqual(completionLabel.stringValue, GestureFeedbackCopy.unmatchedGesture)
+        XCTAssertTrue(completionTextColor.isEqual(NSColor.labelColor))
+        XCTAssertFalse(completionTextColor.isEqual(trailColor))
+    }
+
+    func testUnderMouseTargetNotFoundWithoutMatchUsesUnmatchedOverlay() throws {
+        let overlayWindow = GestureOverlayWindow()
+        let origin = GesturePoint(x: 250, y: 420)
+        let appearance = GestureTrailAppearance(
+            feedback: FeedbackConfiguration(
+                trailColorHex: "#FF00AA",
+                trailWidth: 3,
+                trailOpacity: 0.85
+            ),
+            isHighlighted: true
+        )
+
+        overlayWindow.beginGesture(at: origin, appearance: appearance)
+        overlayWindow.completeGesture(
+            with: .unmatched,
+            at: origin,
+            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
+        )
+
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
+        let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
+        let textColor = try XCTUnwrap(messageLabel.textColor)
+        XCTAssertTrue(textColor.isEqual(NSColor.labelColor))
     }
 
     func testFeedbackCardCentersMessageLabelWithinCard() throws {
@@ -137,8 +204,12 @@ final class GestureOverlayWindowTests: XCTestCase {
         let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
         feedbackCardView.layoutSubtreeIfNeeded()
 
-        XCTAssertEqual(messageLabel.frame.midY, feedbackCardView.bounds.midY, accuracy: 1.0)
-        XCTAssertLessThanOrEqual(messageLabel.frame.height, messageLabel.fittingSize.height + 1.0)
+        let labelMidYInCard = messageLabel.convert(
+            NSPoint(x: 0, y: messageLabel.bounds.midY),
+            to: feedbackCardView
+        ).y
+        XCTAssertEqual(labelMidYInCard, feedbackCardView.bounds.midY, accuracy: 1.0)
+        XCTAssertGreaterThan(messageLabel.bounds.height, 0)
     }
 
     private func extractPanel(from overlayWindow: GestureOverlayWindow) -> NSPanel? {

@@ -175,11 +175,16 @@ final class GestureEngine {
         )
 
         if targetPolicy == .underMouse, !resolvedTarget.isValid {
-            reportActionFailure(
+            let overlayCompletion: GestureOverlayCompletion = if let matchedGesture {
+                .targetNotFound(gestureName: matchedGesture.name)
+            } else {
+                .unmatched
+            }
+            reportGestureFailure(
+                overlayCompletion: overlayCompletion,
                 trigger: trigger,
                 signature: signature,
                 message: Self.underMouseTargetMissingMessage,
-                displayName: matchedGesture?.name ?? GestureFeedbackCopy.unmatchedGesture,
                 at: completionPoint
             )
             return
@@ -192,22 +197,22 @@ final class GestureEngine {
         }
 
         guard gesture.shortcut.isRecorded else {
-            reportActionFailure(
+            reportGestureFailure(
+                overlayCompletion: .shortcutNotConfigured(gestureName: gesture.name),
                 trigger: trigger,
                 signature: signature,
                 message: "Shortcut is not configured",
-                displayName: gesture.name,
                 at: completionPoint
             )
             return
         }
 
         guard let targetProcessIdentifier = resolvedTarget.processIdentifier else {
-            reportActionFailure(
+            reportGestureFailure(
+                overlayCompletion: .deliveryFailed(gestureName: gesture.name),
                 trigger: trigger,
                 signature: signature,
                 message: Self.targetDeliveryFailedMessage,
-                displayName: gesture.name,
                 at: completionPoint
             )
             return
@@ -219,11 +224,11 @@ final class GestureEngine {
                 targetProcessIdentifier: targetProcessIdentifier
             )
         } catch {
-            reportActionFailure(
+            reportGestureFailure(
+                overlayCompletion: .executionFailed(gestureName: gesture.name),
                 trigger: trigger,
                 signature: signature,
                 message: error.localizedDescription,
-                displayName: gesture.name,
                 at: completionPoint
             )
             return
@@ -242,11 +247,11 @@ final class GestureEngine {
         return TimeInterval(milliseconds) / 1000
     }
 
-    private func reportActionFailure(
+    private func reportGestureFailure(
+        overlayCompletion: GestureOverlayCompletion,
         trigger: GestureTrigger,
         signature: GestureSignature,
         message: String,
-        displayName: String,
         at completionPoint: GesturePoint?
     ) {
         let signatureDescription = signature.tokens.map(\.rawValue).joined(separator: ",")
@@ -254,7 +259,7 @@ final class GestureEngine {
             "[GestureFlow] 分发失败 trigger=\(trigger.rawValue) signature=\(signatureDescription) detail=\(message)"
         )
         overlay.completeGesture(
-            with: .actionFailed(displayName: displayName),
+            with: overlayCompletion,
             at: completionPoint,
             hideAfter: overlayHideDelay()
         )
@@ -289,7 +294,11 @@ final class GestureEngine {
         )
         let feedback: LiveGestureOverlayFeedback
         if let exactMatch = liveResult.exactMatch {
-            feedback = LiveGestureOverlayFeedback(message: exactMatch.name, showsCard: true)
+            feedback = LiveGestureOverlayFeedback(
+                message: exactMatch.name,
+                showsCard: true,
+                usesTrailColor: true
+            )
         } else if partialSignature != nil {
             feedback = LiveGestureOverlayFeedback(
                 message: GestureFeedbackCopy.unmatchedGesture,

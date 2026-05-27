@@ -37,7 +37,11 @@ final class GestureOverlayView: NSView {
     func updateLive(appearance: GestureTrailAppearance, feedback: LiveGestureOverlayFeedback, feedbackFrame: CGRect?) {
         trailAppearance = appearance
         if feedback.showsCard, let message = feedback.message, let feedbackFrame {
-            feedbackCardView.show(message: message, in: feedbackFrame)
+            feedbackCardView.show(
+                message: message,
+                in: feedbackFrame,
+                textColor: feedbackTextColor(usesTrailColor: feedback.usesTrailColor)
+            )
         } else {
             feedbackCardView.hide()
         }
@@ -46,7 +50,11 @@ final class GestureOverlayView: NSView {
 
     func complete(with completion: GestureOverlayCompletion, feedbackFrame: CGRect?) {
         if let feedbackFrame, let message = completion.overlayMessage {
-            feedbackCardView.show(message: message, in: feedbackFrame)
+            feedbackCardView.show(
+                message: message,
+                in: feedbackFrame,
+                textColor: feedbackTextColor(usesTrailColor: completion.usesTrailColorText)
+            )
         } else {
             feedbackCardView.hide()
         }
@@ -180,6 +188,11 @@ final class GestureOverlayView: NSView {
             ?? NSColor.systemBlue.withAlphaComponent(alpha)
     }
 
+    private func feedbackTextColor(usesTrailColor: Bool) -> NSColor {
+        guard usesTrailColor else { return .labelColor }
+        return resolvedTrailColor(fromHex: trailAppearance.colorHex, opaque: true)
+    }
+
     private func drawMarker() {
         guard let marker else { return }
 
@@ -215,8 +228,24 @@ private extension GestureOverlayCompletion {
             return GestureFeedbackCopy.unmatchedGesture
         case .rejected:
             return nil
-        case let .actionFailed(displayName):
-            return displayName
+        case let .targetNotFound(gestureName),
+             let .shortcutNotConfigured(gestureName),
+             let .deliveryFailed(gestureName),
+             let .executionFailed(gestureName):
+            return gestureName
+        }
+    }
+
+    var usesTrailColorText: Bool {
+        switch self {
+        case .recognized,
+             .targetNotFound,
+             .shortcutNotConfigured,
+             .deliveryFailed,
+             .executionFailed:
+            return true
+        case .unmatched, .rejected:
+            return false
         }
     }
 }
@@ -224,79 +253,5 @@ private extension GestureOverlayCompletion {
 private extension GesturePoint {
     var nsPoint: NSPoint {
         NSPoint(x: x, y: y)
-    }
-}
-
-private final class GestureFeedbackCardView: NSView {
-    private let visualEffectView = NSVisualEffectView()
-    private let messageLabel = NSTextField(labelWithString: "")
-
-    var isVisible: Bool {
-        !isHidden
-    }
-
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        configureView()
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        configureView()
-    }
-
-    func show(message: String, in anchorFrame: CGRect) {
-        messageLabel.stringValue = message
-        let labelSize = messageLabel.fittingSize
-        let cardWidth = max(220, min(360, labelSize.width + 36))
-        let cardHeight = max(54, labelSize.height + 22)
-        frame = NSRect(
-            x: anchorFrame.midX - cardWidth / 2,
-            y: anchorFrame.midY - cardHeight / 2,
-            width: cardWidth,
-            height: cardHeight
-        ).integral
-        isHidden = false
-    }
-
-    func hide() {
-        isHidden = true
-    }
-
-    private func configureView() {
-        wantsLayer = true
-        layer?.shadowColor = NSColor.black.withAlphaComponent(0.10).cgColor
-        layer?.shadowOpacity = 1
-        layer?.shadowRadius = 10
-        layer?.shadowOffset = CGSize(width: 0, height: 4)
-
-        visualEffectView.material = .hudWindow
-        visualEffectView.blendingMode = .withinWindow
-        visualEffectView.state = .active
-        visualEffectView.isEmphasized = false
-        visualEffectView.wantsLayer = true
-        visualEffectView.layer?.cornerRadius = 18
-        visualEffectView.layer?.masksToBounds = true
-        visualEffectView.layer?.borderWidth = 1
-        visualEffectView.layer?.borderColor = NSColor.white.withAlphaComponent(0.28).cgColor
-        visualEffectView.frame = bounds
-        visualEffectView.autoresizingMask = [.width, .height]
-        addSubview(visualEffectView)
-
-        messageLabel.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
-        messageLabel.textColor = .labelColor
-        messageLabel.alignment = .center
-        messageLabel.lineBreakMode = .byTruncatingTail
-        messageLabel.maximumNumberOfLines = 1
-        messageLabel.translatesAutoresizingMaskIntoConstraints = false
-        messageLabel.setContentHuggingPriority(.required, for: .vertical)
-        messageLabel.setContentCompressionResistancePriority(.required, for: .vertical)
-        visualEffectView.addSubview(messageLabel)
-
-        NSLayoutConstraint.activate([
-            messageLabel.leadingAnchor.constraint(equalTo: visualEffectView.leadingAnchor, constant: 18),
-            messageLabel.trailingAnchor.constraint(equalTo: visualEffectView.trailingAnchor, constant: -18),
-            messageLabel.centerYAnchor.constraint(equalTo: visualEffectView.centerYAnchor)
-        ])
     }
 }
