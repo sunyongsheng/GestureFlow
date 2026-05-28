@@ -134,9 +134,14 @@ final class GestureOverlayView: NSView {
     }
 
     private func liveFeedbackMessage(for feedback: LiveGestureOverlayFeedback) -> String? {
-        if let gestureID = feedback.matchedGestureID,
-           let storedName = feedback.matchedGestureStoredName {
-            return localization.localizedGestureDisplayName(id: gestureID, storedName: storedName)
+        if let gestureID = feedback.matchedGestureID {
+            let displayName = localization.localizedGestureDisplayName(
+                id: gestureID,
+                storedName: feedback.matchedGestureStoredName
+            )
+            if !displayName.isEmpty {
+                return displayName
+            }
         }
         return feedback.message
     }

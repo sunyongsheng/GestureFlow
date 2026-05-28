@@ -20,8 +20,7 @@ final class GestureEngine {
     private let permissionService: PermissionService
     private let eventTap: MouseEventTapControlling
     private let recognizer: GestureRecognizer
-    private let matcher: ScopedGestureMatcher
-    private let liveMatcher: GestureLiveMatcher
+    private let matcher: GestureMatcher
     private let actionExecutor: ActionExecuting
     private let feedbackHandler: FeedbackHandler
     private let overlay: GestureOverlayDisplaying
@@ -40,8 +39,7 @@ final class GestureEngine {
         permissionService: PermissionService = PermissionService(),
         eventTap: MouseEventTapControlling = MouseEventTap(),
         recognizer: GestureRecognizer = GestureRecognizer(),
-        matcher: ScopedGestureMatcher = ScopedGestureMatcher(),
-        liveMatcher: GestureLiveMatcher = GestureLiveMatcher(),
+        matcher: GestureMatcher = GestureMatcher(),
         overlay: GestureOverlayDisplaying = NoopGestureOverlay(),
         actionExecutor: ActionExecuting = ActionExecutor(),
         feedbackHandler: @escaping FeedbackHandler = { feedback in
@@ -55,7 +53,6 @@ final class GestureEngine {
         self.eventTap = eventTap
         self.recognizer = recognizer
         self.matcher = matcher
-        self.liveMatcher = liveMatcher
         self.overlay = overlay
         self.actionExecutor = actionExecutor
         self.feedbackHandler = feedbackHandler
@@ -164,12 +161,14 @@ final class GestureEngine {
         let resolvedTarget = pendingGestureTarget
             ?? targetResolver.resolve(policy: targetPolicy, at: startPoint)
         pendingGestureTarget = nil
-        let matchedGesture = matcher.match(
+        let match = matcher.match(
             trigger: trigger,
             signature: signature,
             targetBundleIdentifier: resolvedTarget.bundleIdentifier,
+            prefixPolicy: .disabled,
             in: gestureConfigurationProvider().gestures
         )
+        let matchedGesture = match.gesture
 
         if targetPolicy == .underMouse, !resolvedTarget.isValid {
             let overlayCompletion: GestureOverlayCompletion = if let matchedGesture {
@@ -295,23 +294,24 @@ final class GestureEngine {
 
         let partialSignature = recognizer.recognize(points: activeGesturePoints)
         let resolvedTarget = pendingGestureTarget
-        let liveResult = liveMatcher.evaluate(
+        let liveMatch = matcher.match(
             trigger: trigger,
-            partialSignature: partialSignature,
+            signature: partialSignature,
             targetBundleIdentifier: resolvedTarget?.bundleIdentifier,
+            prefixPolicy: .fallbackToPrefix,
             in: gestureConfigurationProvider().gestures
         )
-        let isHighlighted = liveResult.exactMatch != nil || liveResult.hasPrefixMatch
+        let isHighlighted = liveMatch.gesture != nil
         let appearance = GestureTrailAppearance(
             feedback: appConfigurationProvider().feedback,
             isHighlighted: isHighlighted
         )
         let feedback: LiveGestureOverlayFeedback
-        if let exactMatch = liveResult.exactMatch {
+        if let displayGesture = liveMatch.gesture {
             feedback = LiveGestureOverlayFeedback(
                 message: nil,
-                matchedGestureID: exactMatch.id,
-                matchedGestureStoredName: exactMatch.name,
+                matchedGestureID: displayGesture.id,
+                matchedGestureStoredName: displayGesture.name,
                 showsCard: true,
                 usesTrailColor: true
             )

@@ -645,11 +645,10 @@ final class GestureEngineTests: XCTestCase {
         tap.onGestureMoved?(GesturePoint(x: 100, y: 50))
         tap.onGestureMoved?(GesturePoint(x: 100, y: 10))
 
+        let gesture = gestureConfiguration.gestures[0]
         let lastLive = overlay.liveUpdates.last
-        XCTAssertEqual(
-            lastLive?.feedback.message,
-            LocalizationManager(language: .zhHans).string(.overlayUnmatchedGesture)
-        )
+        XCTAssertEqual(lastLive?.feedback.matchedGestureID, gesture.id)
+        XCTAssertEqual(lastLive?.feedback.matchedGestureStoredName, "Close Window")
         XCTAssertTrue(lastLive?.feedback.showsCard ?? false)
         XCTAssertTrue(lastLive?.appearance.isHighlighted ?? false)
 
@@ -661,6 +660,44 @@ final class GestureEngineTests: XCTestCase {
             LocalizationManager(language: .zhHans).string(.overlayUnmatchedGesture)
         )
         XCTAssertFalse(brokenLive?.appearance.isHighlighted ?? true)
+    }
+
+    func testLiveFeedbackStaysVisibleWhenExtendingFromDownToDownRight() {
+        let downGesture = GestureDefinition(
+            name: "向下",
+            trigger: .rightMouse,
+            signature: GestureSignature(tokens: [.down]),
+            shortcut: KeyboardShortcutAction(keyCode: 1, modifiers: [.command])
+        )
+        let downRightGesture = GestureDefinition(
+            trigger: .rightMouse,
+            signature: GestureSignature(tokens: [.down, .right]),
+            shortcut: KeyboardShortcutAction(keyCode: 2, modifiers: [.command])
+        )
+        let gestureConfiguration = GestureConfiguration(gestures: [downGesture, downRightGesture])
+        let tap = SpyMouseEventTapController()
+        let overlay = SpyGestureOverlay()
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
+            eventTap: tap,
+            overlay: overlay,
+            feedbackHandler: { _ in }
+        )
+
+        engine.start()
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 0, y: 60))
+        tap.onGestureMoved?(GesturePoint(x: 0, y: 0))
+
+        let downLive = overlay.liveUpdates.last
+        XCTAssertEqual(downLive?.feedback.matchedGestureID, downGesture.id)
+        XCTAssertTrue(downLive?.feedback.showsCard ?? false)
+
+        tap.onGestureMoved?(GesturePoint(x: 70, y: 0))
+
+        let downRightLive = overlay.liveUpdates.last
+        XCTAssertEqual(downRightLive?.feedback.matchedGestureID, downRightGesture.id)
+        XCTAssertTrue(downRightLive?.feedback.showsCard ?? false)
+        XCTAssertTrue(downRightLive?.appearance.isHighlighted ?? false)
     }
 
     func testLiveFeedbackShowsGestureNameOnExactMatchBeforeRelease() {
