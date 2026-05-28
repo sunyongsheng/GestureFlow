@@ -21,4 +21,16 @@ final class LocalizationManagerTests: XCTestCase {
             "Configuration files in the target directory are invalid. Check them and try again."
         )
     }
+
+    func testJapaneseLocalization() {
+        let manager = LocalizationManager(language: .ja)
+        XCTAssertEqual(manager.string(.settingsSectionGeneral), "一般")
+        XCTAssertEqual(manager.string(.builtInCloseWindowGestureName), "ウィンドウを閉じる")
+    }
+
+    func testGestureSignatureUsesIdeographicSeparatorForJapanese() {
+        let manager = LocalizationManager(language: .ja)
+        let signature = GestureSignature(tokens: [.up, .left])
+        XCTAssertEqual(manager.localizedDisplayName(for: signature), "上、左")
+    }
 }

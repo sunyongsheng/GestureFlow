@@ -61,8 +61,9 @@ struct GeneralSettingsView: View {
                         statusText: nil
                     ) {
                         Picker("", selection: appLanguageBinding) {
-                            Text("中文（简体）").tag(AppLanguage.zhHans)
-                            Text("English").tag(AppLanguage.en)
+                            ForEach(AppLanguage.allCases, id: \.self) { language in
+                                Text(language.nativeDisplayName).tag(language)
+                            }
                         }
                         .labelsHidden()
                         .frame(maxWidth: 220, alignment: .trailing)

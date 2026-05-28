@@ -66,7 +66,16 @@ final class LocalizationManager: ObservableObject {
     func localizedDisplayName(for signature: GestureSignature) -> String {
         signature.tokens
             .map { localizedDisplayName(for: $0) }
-            .joined(separator: language == .zhHans ? "、" : ", ")
+            .joined(separator: gestureSignatureSeparator)
+    }
+
+    private var gestureSignatureSeparator: String {
+        switch language {
+        case .zhHans, .zhHant, .ja, .ko:
+            return "、"
+        case .en, .hi, .es, .fr:
+            return ", "
+        }
     }
 
     func localizedGestureDisplayName(id: UUID, storedName: String) -> String {
