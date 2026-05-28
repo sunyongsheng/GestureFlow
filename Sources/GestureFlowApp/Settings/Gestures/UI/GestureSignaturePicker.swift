@@ -3,6 +3,7 @@ import SwiftUI
 import GestureFlowCore
 
 struct GestureSignaturePicker: View {
+    @EnvironmentObject private var l10n: LocalizationManager
     @Binding var selection: GestureSignature
     @Binding var customGestureSignatures: [GestureSignature]
     let onPersistCustomSignatures: () -> Void
@@ -38,8 +39,8 @@ struct GestureSignaturePicker: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(selection.chineseDisplayName)
-        .help(selection.chineseDisplayName)
+        .accessibilityLabel(l10n.localizedDisplayName(for: selection))
+        .help(l10n.localizedDisplayName(for: selection))
         .popover(isPresented: $isPopoverPresented, arrowEdge: .bottom) {
             signatureSelectionGrid
         }
@@ -103,7 +104,7 @@ struct GestureSignaturePicker: View {
     private func builtInCell(option: GestureSignatureOption) -> some View {
         GestureSignaturePopoverCell(
             signature: option.signature,
-            displayName: option.displayName,
+            displayName: l10n.localizedDisplayName(for: option.signature),
             isSelected: selection == option.signature,
             onSelect: {
                 selection = option.signature
@@ -115,7 +116,7 @@ struct GestureSignaturePicker: View {
     private func customCell(signature: GestureSignature) -> some View {
         GestureSignaturePopoverCell(
             signature: signature,
-            displayName: signature.chineseDisplayName,
+            displayName: l10n.localizedDisplayName(for: signature),
             isSelected: selection == signature,
             onSelect: {
                 selection = signature
@@ -143,8 +144,8 @@ struct GestureSignaturePicker: View {
             .onTapGesture {
                 isRecordingSheetPresented = true
             }
-            .help("绘制自定义手势")
-            .accessibilityLabel("绘制自定义手势")
+            .help(l10n.string(.gesturesDrawCustomSignatureHelp))
+            .accessibilityLabel(l10n.string(.gesturesDrawCustomSignatureAccessibility))
             .accessibilityAddTraits(.isButton)
     }
 

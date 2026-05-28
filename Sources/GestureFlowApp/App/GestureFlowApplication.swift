@@ -39,6 +39,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private let showSettingsHandler: (SettingsViewModel, SettingsPresentationSource) -> Void
     private let scheduleOnMain: (@escaping () -> Void) -> Void
     private let initialLoadResult: ConfigurationLoadResult
+    private let localizationManager: LocalizationManager
     private var configuration: AppConfiguration
     private var activationObserver: NSObjectProtocol?
     private var terminationObserver: NSObjectProtocol?
@@ -93,6 +94,10 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.configuration = runtimeState.appConfiguration
         runtimeState.gestureConfigurationService.load()
 
+        let localizationManager = LocalizationManager(language: configuration.general.language)
+        self.localizationManager = localizationManager
+        AppServices.localization = localizationManager
+
         let runtimeState = self.runtimeState
         self.gestureEngine = injectedGestureEngine ?? GestureEngine(
             appConfigurationProvider: { runtimeState.appConfiguration },
@@ -101,9 +106,12 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             eventTap: MouseEventTap(
                 triggerConfigurationProvider: { runtimeState.appConfiguration.trigger }
             ),
-            overlay: GestureOverlayWindow()
+            overlay: GestureOverlayWindow(localization: localizationManager)
         )
-        self.statusBarController = StatusBarController(actions: makeStatusBarActions())
+        self.statusBarController = StatusBarController(
+            actions: makeStatusBarActions(),
+            localization: localizationManager
+        )
         reconcilePersistedRunningState()
         self.statusBarController?.update(state: currentStatusBarState())
     }
@@ -190,7 +198,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     }
 
     private func makeSettingsViewModel() -> SettingsViewModel {
-        SettingsViewModel(
+        let viewModel = SettingsViewModel(
             loadResult: ConfigurationLoadResult(
                 configuration: configuration,
                 didRecoverFromCorruption: initialLoadResult.didRecoverFromCorruption,
@@ -201,6 +209,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
             isLaunchAtLoginEnabled: launchAtLoginService.isEnabled,
+            localizationManager: localizationManager,
             saveConfiguration: { [weak self] newConfiguration in
                 try self?.applySettingsConfiguration(newConfiguration)
             },
@@ -238,6 +247,14 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
                 self?.resumeGestureRecognitionAfterCustomSignatureRecording()
             }
         )
+        viewModel.onLanguageDidChange = { [weak self] in
+            self?.statusBarController?.refreshLocalizedStrings()
+            self?.statusBarController?.update(state: self?.currentStatusBarState() ?? StatusBarState(
+                isRunning: false,
+                isAccessibilityTrusted: false
+            ))
+        }
+        return viewModel
     }
 
     func relocateConfigurationDirectory(
@@ -264,6 +281,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
         let loadResult = configurationStore.loadRecovering()
         configuration = loadResult.configuration
+        localizationManager.setLanguage(configuration.general.language)
         runtimeState.appConfiguration = configuration
         runtimeState.gestureConfigurationService.load()
 
@@ -283,9 +301,14 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     }
 
     private func applySettingsConfiguration(_ newConfiguration: AppConfiguration) throws {
+        let previousLanguage = configuration.general.language
         configuration = newConfiguration
         runtimeState.appConfiguration = newConfiguration
         try configurationStore.save(configuration)
+        if configuration.general.language != previousLanguage {
+            localizationManager.setLanguage(configuration.general.language)
+            statusBarController?.refreshLocalizedStrings()
+        }
         statusBarController?.update(state: currentStatusBarState())
         settingsViewModel?.updateRuntimeStatus(
             configuration: configuration,

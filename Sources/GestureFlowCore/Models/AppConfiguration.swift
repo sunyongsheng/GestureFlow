@@ -1,13 +1,38 @@
 import Foundation
 
+public struct GeneralConfiguration: Codable, Equatable {
+    public var language: AppLanguage
+
+    private enum CodingKeys: String, CodingKey {
+        case language
+    }
+
+    public init(language: AppLanguage = .zhHans) {
+        self.language = language
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let rawLanguage = try container.decodeIfPresent(String.self, forKey: .language) {
+            language = AppLanguage(decodingPersistedValue: rawLanguage)
+        } else {
+            language = .zhHans
+        }
+    }
+
+    public static let `default` = GeneralConfiguration()
+}
+
 public struct AppConfiguration: Codable, Equatable {
     public var isEnabled: Bool
+    public var general: GeneralConfiguration
     public var feedback: FeedbackConfiguration
     public var trigger: GestureTriggerConfiguration
     public var gestureTargetApplication: GestureTargetApplication
 
     private enum CodingKeys: String, CodingKey {
         case isEnabled
+        case general
         case feedback
         case trigger
         case gestureTargetApplication
@@ -15,11 +40,13 @@ public struct AppConfiguration: Codable, Equatable {
 
     public init(
         isEnabled: Bool = false,
+        general: GeneralConfiguration = .default,
         feedback: FeedbackConfiguration = .default,
         trigger: GestureTriggerConfiguration = .default,
         gestureTargetApplication: GestureTargetApplication = .defaultValue
     ) {
         self.isEnabled = isEnabled
+        self.general = general
         self.feedback = feedback
         self.trigger = trigger
         self.gestureTargetApplication = gestureTargetApplication
@@ -28,6 +55,7 @@ public struct AppConfiguration: Codable, Equatable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? false
+        general = try container.decodeIfPresent(GeneralConfiguration.self, forKey: .general) ?? .default
         feedback = try container.decodeIfPresent(FeedbackConfiguration.self, forKey: .feedback) ?? .default
         trigger = try container.decodeIfPresent(GestureTriggerConfiguration.self, forKey: .trigger) ?? .default
         gestureTargetApplication = try container.decodeIfPresent(

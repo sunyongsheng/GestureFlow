@@ -2,6 +2,7 @@ import SwiftUI
 import GestureFlowCore
 
 struct GestureSignatureRecordingSheet: View {
+    @EnvironmentObject private var l10n: LocalizationManager
     let onConfirm: (GestureSignature) -> Void
     let onCancel: () -> Void
 
@@ -9,20 +10,20 @@ struct GestureSignatureRecordingSheet: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("绘制自定义手势")
+            Text(l10n.string(.gesturesRecordingSheetTitle))
                 .font(.headline)
 
             GestureSignatureRecordingView(recognizedSignature: $recognizedSignature)
 
             HStack {
-                Button("取消", role: .cancel) {
+                Button(l10n.string(.gesturesRecordingSheetCancel), role: .cancel) {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
 
                 Spacer()
 
-                Button("确认") {
+                Button(l10n.string(.gesturesRecordingSheetConfirm)) {
                     guard let recognizedSignature else { return }
                     onConfirm(recognizedSignature)
                 }

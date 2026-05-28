@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct AboutSettingsView: View {
+    @EnvironmentObject private var l10n: LocalizationManager
+
     private let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
         ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
         ?? "GestureFlow"
@@ -11,11 +13,17 @@ struct AboutSettingsView: View {
         SettingsPage {
             SettingsCard(
                 title: appName,
-                description: "当前安装包的版本元信息。"
+                description: l10n.string(.aboutCardDescription)
             ) {
                 VStack(alignment: .leading, spacing: 14) {
-                    versionRow(title: "版本号", value: version ?? "开发环境")
-                    versionRow(title: "构建号", value: build ?? "未提供")
+                    versionRow(
+                        title: l10n.string(.aboutVersionLabel),
+                        value: version ?? l10n.string(.aboutDevelopmentEnvironment)
+                    )
+                    versionRow(
+                        title: l10n.string(.aboutBuildLabel),
+                        value: build ?? l10n.string(.aboutBuildUnavailable)
+                    )
                 }
             }
         }

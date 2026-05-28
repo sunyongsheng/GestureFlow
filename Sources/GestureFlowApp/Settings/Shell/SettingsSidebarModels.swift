@@ -9,16 +9,16 @@ enum SettingsSection: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var title: String {
+    func title(using l10n: LocalizationManager) -> String {
         switch self {
         case .general:
-            return "通用"
+            return l10n.string(.settingsSectionGeneral)
         case .advanced:
-            return "高级"
+            return l10n.string(.settingsSectionAdvanced)
         case .gestures:
-            return "手势"
+            return l10n.string(.settingsSectionGestures)
         case .about:
-            return "关于"
+            return l10n.string(.settingsSectionAbout)
         }
     }
 
@@ -208,6 +208,7 @@ struct SettingsSliderRow: View {
 }
 
 private struct EditableSliderValueField: View {
+    @EnvironmentObject private var l10n: LocalizationManager
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double
@@ -227,7 +228,7 @@ private struct EditableSliderValueField: View {
             .fixedSize(horizontal: true, vertical: false)
             .background(Color.primary.opacity(0.06))
             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-            .help("点击输入数值")
+            .help(l10n.string(.sliderValueFieldHelp))
             .onChange(of: isFocused) { _, focused in
                 if !focused, isEditing {
                     commitDraft()

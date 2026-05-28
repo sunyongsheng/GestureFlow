@@ -4,7 +4,7 @@ import GestureFlowCore
 enum GestureShortcutFormatting {
     static func displayString(for shortcut: KeyboardShortcutAction) -> String {
         guard shortcut.isRecorded else {
-            return "点击录制"
+            return AppServices.localization.string(.shortcutClickToRecord)
         }
 
         let modifierSymbols = shortcut.modifiers.map(symbol(for:)).joined(separator: " ")

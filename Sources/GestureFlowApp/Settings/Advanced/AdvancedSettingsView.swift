@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AdvancedSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @State private var isRestoreDefaultsConfirmationPresented = false
     @FocusState private var isSliderValueFieldFocused: Bool
 
@@ -31,14 +32,14 @@ struct AdvancedSettingsView: View {
             )
         }
         .confirmationDialog(
-            "是否恢复为默认设置",
+            l10n.string(.settingsRestoreDefaultsTitle),
             isPresented: $isRestoreDefaultsConfirmationPresented,
             titleVisibility: .visible
         ) {
-            Button("确认", role: .destructive) {
+            Button(l10n.string(.settingsConfirm), role: .destructive) {
                 viewModel.restoreDefaultAdvancedSettings()
             }
-            Button("取消", role: .cancel) {}
+            Button(l10n.string(.settingsCancel), role: .cancel) {}
         }
     }
 
@@ -46,7 +47,7 @@ struct AdvancedSettingsView: View {
         HStack {
             Spacer()
 
-            Button("恢复默认") {
+            Button(l10n.string(.settingsRestoreDefaults)) {
                 isRestoreDefaultsConfirmationPresented = true
             }
             .buttonStyle(.bordered)

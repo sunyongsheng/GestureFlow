@@ -3,6 +3,7 @@ import GestureFlowCore
 
 struct GestureSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @State private var recordingGestureID: UUID?
     @State private var selectedGestureIDs = Set<GestureDefinition.ID>()
     @State private var nameEditDrafts: [UUID: String] = [:]
@@ -19,13 +20,13 @@ struct GestureSettingsView: View {
 
     private var applicationList: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("应用")
+            Text(l10n.string(.gesturesApplicationsLabel))
                 .font(.headline)
                 .padding(.horizontal, 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             List(selection: $viewModel.selectedApplicationScope) {
-                Text("全局")
+                Text(l10n.string(.gesturesGlobalScope))
                     .padding(.vertical, 6)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .tag(GestureApplicationScope.global)
@@ -46,7 +47,7 @@ struct GestureSettingsView: View {
             Button {
                 viewModel.addApplicationFromPanel()
             } label: {
-                Label("添加应用", systemImage: "plus")
+                Label(l10n.string(.gesturesAddApplication), systemImage: "plus")
             }
         }
         .frame(minWidth: 120, idealWidth: 150, maxWidth: 260, maxHeight: .infinity, alignment: .topLeading)
@@ -68,7 +69,7 @@ struct GestureSettingsView: View {
                 Image(systemName: "minus.circle")
             }
             .buttonStyle(.plain)
-            .help("删除应用及其手势")
+            .help(l10n.string(.gesturesDeleteApplicationHelp))
         }
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -82,7 +83,7 @@ struct GestureSettingsView: View {
 
                 Spacer()
 
-                Button("恢复默认") {
+                Button(l10n.string(.gesturesRestoreDefaults)) {
                     commitEditingGestureIfNeeded(leaving: nil)
                     isRestoreDefaultsConfirmationPresented = true
                 }
@@ -96,7 +97,7 @@ struct GestureSettingsView: View {
                     Image(systemName: "plus")
                         .frame(height: 12)
                 }
-                .help("新增手势")
+                .help(l10n.string(.gesturesAddGestureHelp))
 
                 Button {
                     deleteSelectedGestures()
@@ -104,7 +105,7 @@ struct GestureSettingsView: View {
                     Image(systemName: "minus")
                         .frame(height: 12)
                 }
-                .help("删除选中的手势")
+                .help(l10n.string(.gesturesDeleteGestureHelp))
                 .disabled(selectedGestureIDs.isEmpty)
             }
             .padding(.horizontal, 12)
@@ -144,7 +145,7 @@ struct GestureSettingsView: View {
             }
             if let newFocus {
                 activateGestureEditing(newFocus)
-                nameEditDrafts[newFocus] = gestureName(forGestureID: newFocus)
+                nameEditDrafts[newFocus] = storedGestureName(forGestureID: newFocus)
             }
         }
         .background {
@@ -155,17 +156,17 @@ struct GestureSettingsView: View {
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .confirmationDialog(
-            "恢复默认手势配置？",
+            l10n.string(.gesturesRestoreDefaultsAlertTitle),
             isPresented: $isRestoreDefaultsConfirmationPresented,
             titleVisibility: .visible
         ) {
-            Button("恢复", role: .destructive) {
+            Button(l10n.string(.gesturesRestoreDefaultsConfirm), role: .destructive) {
                 resetGestureEditingState()
                 viewModel.restoreDefaultGestureConfiguration()
             }
-            Button("取消", role: .cancel) {}
+            Button(l10n.string(.settingsCancel), role: .cancel) {}
         } message: {
-            Text("将清除所有自定义应用与手势，仅保留内置的「关闭窗口」手势。")
+            Text(l10n.string(.gesturesRestoreDefaultsMessage))
         }
     }
 
@@ -179,15 +180,15 @@ struct GestureSettingsView: View {
 
     private var gestureListHeader: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text("名称")
+            Text(l10n.string(.gesturesColumnName))
                 .frame(minWidth: 100, maxWidth: 140, alignment: .leading)
-            Text("手势")
+            Text(l10n.string(.gesturesColumnSignature))
                 .frame(width: 72, alignment: .leading)
-            Text("触发")
+            Text(l10n.string(.gesturesColumnTrigger))
                 .frame(width: 80, alignment: .leading)
-            Text("快捷键")
+            Text(l10n.string(.gesturesColumnShortcut))
                 .frame(minWidth: 96, maxWidth: 160, alignment: .leading)
-            Text("启用")
+            Text(l10n.string(.gesturesColumnEnabled))
                 .frame(width: 44, alignment: .leading)
             Spacer(minLength: 0)
         }
@@ -229,7 +230,7 @@ struct GestureSettingsView: View {
     private var scopeTitle: String {
         switch viewModel.selectedApplicationScope {
         case .global:
-            return "全局"
+            return l10n.string(.gesturesGlobalScope)
         case .application(let bundleIdentifier):
             return viewModel.displayName(for: bundleIdentifier)
         }
@@ -240,7 +241,7 @@ struct GestureSettingsView: View {
     }
 
     private func nameCell(for gesture: GestureDefinition) -> some View {
-        TextField("名称", text: nameDraftBinding(for: gesture))
+        TextField(l10n.string(.gesturesNamePlaceholder), text: nameDraftBinding(for: gesture))
             .textFieldStyle(.plain)
             .focused($focusedNameGestureID, equals: gesture.id)
             .lineLimit(1)
@@ -255,7 +256,7 @@ struct GestureSettingsView: View {
             .simultaneousGesture(
                 TapGesture(count: 2).onEnded {
                     activateGestureEditing(gesture.id)
-                    nameEditDrafts[gesture.id] = gestureName(for: gesture)
+                    nameEditDrafts[gesture.id] = storedGestureName(for: gesture)
                     focusedNameGestureID = gesture.id
                 }
             )
@@ -265,9 +266,9 @@ struct GestureSettingsView: View {
         Binding(
             get: {
                 if focusedNameGestureID == gesture.id {
-                    return nameEditDrafts[gesture.id] ?? gestureName(for: gesture)
+                    return nameEditDrafts[gesture.id] ?? storedGestureName(for: gesture)
                 }
-                return gestureName(for: gesture)
+                return viewModel.localizedGestureName(gesture)
             },
             set: { newValue in
                 nameEditDrafts[gesture.id] = newValue
@@ -275,11 +276,11 @@ struct GestureSettingsView: View {
         )
     }
 
-    private func gestureName(for gesture: GestureDefinition) -> String {
-        gestureName(forGestureID: gesture.id) ?? gesture.name
+    private func storedGestureName(for gesture: GestureDefinition) -> String {
+        storedGestureName(forGestureID: gesture.id) ?? gesture.name
     }
 
-    private func gestureName(forGestureID gestureID: UUID) -> String? {
+    private func storedGestureName(forGestureID gestureID: UUID) -> String? {
         viewModel.gestureConfiguration.gestures.first(where: { $0.id == gestureID })?.name
     }
 
@@ -310,8 +311,8 @@ struct GestureSettingsView: View {
 
     private func triggerCell(for gesture: GestureDefinition) -> some View {
         Picker("", selection: triggerBinding(for: gesture)) {
-            Text("右键").tag(GestureTrigger.rightMouse)
-            Text("中键").tag(GestureTrigger.middleMouse)
+            Text(l10n.string(.gesturesTriggerRightMouse)).tag(GestureTrigger.rightMouse)
+            Text(l10n.string(.gesturesTriggerMiddleMouse)).tag(GestureTrigger.middleMouse)
         }
         .labelsHidden()
         .frame(maxWidth: .infinity)
@@ -358,11 +359,11 @@ struct GestureSettingsView: View {
             return
         }
 
-        let draft = nameEditDrafts[gestureID] ?? gestureName(for: gesture)
+        let draft = nameEditDrafts[gestureID] ?? storedGestureName(for: gesture)
         let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        let resolvedName = trimmed.isEmpty ? gestureName(for: gesture) : trimmed
+        let resolvedName = trimmed.isEmpty ? storedGestureName(for: gesture) : trimmed
 
-        if resolvedName != gestureName(for: gesture) {
+        if resolvedName != storedGestureName(for: gesture) {
             viewModel.stageGestureUpdate(id: gesture.id) { $0.name = resolvedName }
         }
 

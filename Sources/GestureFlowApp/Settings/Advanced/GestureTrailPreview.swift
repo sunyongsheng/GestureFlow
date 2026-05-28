@@ -2,11 +2,12 @@ import SwiftUI
 import GestureFlowCore
 
 struct GestureTrailPreview: View {
+    @EnvironmentObject private var l10n: LocalizationManager
     let feedback: FeedbackConfiguration
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("预览")
+            Text(l10n.string(.feedbackTrailPreviewLabel))
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
 
@@ -47,7 +48,7 @@ struct GestureTrailPreview: View {
             }
             .frame(height: 76)
         }
-        .accessibilityLabel("手势轨迹预览")
+        .accessibilityLabel(l10n.string(.feedbackTrailPreviewAccessibility))
     }
 
     private var trailColor: Color {

@@ -136,7 +136,7 @@ final class ConfigurationDirectorySettingsTests: XCTestCase {
 
         XCTAssertEqual(
             viewModel.configurationDirectoryErrorMessage,
-            ConfigurationDirectoryRelocationError.invalidConfigurationContent.localizedDescription
+            viewModel.localizationManager.message(for: .invalidConfigurationContent)
         )
         XCTAssertEqual(viewModel.persistedConfigurationDirectoryPath, "~/old")
     }
@@ -154,7 +154,7 @@ final class ConfigurationDirectorySettingsTests: XCTestCase {
 
         XCTAssertEqual(
             viewModel.configurationDirectoryErrorMessage,
-            ConfigurationDirectoryRelocationError.copyFailed.localizedDescription
+            viewModel.localizationManager.message(for: .copyFailed)
         )
         XCTAssertEqual(viewModel.persistedConfigurationDirectoryPath, "~/old")
     }

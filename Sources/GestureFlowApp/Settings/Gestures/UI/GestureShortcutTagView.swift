@@ -56,16 +56,17 @@ struct GestureShortcutTagView: View {
 }
 
 struct GestureShortcutTagsView: View {
+    @EnvironmentObject private var l10n: LocalizationManager
     let shortcut: KeyboardShortcutAction
     var isRecording: Bool = false
 
     var body: some View {
         if isRecording {
-            GestureShortcutTagView(text: "正在录制…", style: .recording)
+            GestureShortcutTagView(text: l10n.string(.shortcutRecording), style: .recording)
         } else if shortcut.isRecorded {
             GestureShortcutTagView(text: GestureShortcutFormatting.displayString(for: shortcut))
         } else {
-            GestureShortcutTagView(text: "点击录制", style: .placeholder)
+            GestureShortcutTagView(text: l10n.string(.shortcutClickToRecord), style: .placeholder)
         }
     }
 }

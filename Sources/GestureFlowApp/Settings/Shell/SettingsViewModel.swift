@@ -6,7 +6,6 @@ import UniformTypeIdentifiers
 final class SettingsViewModel: ObservableObject {
     @Published private(set) var configuration: AppConfiguration
     @Published var gestureConfiguration: GestureConfiguration
-    @Published private(set) var recoveryNoticeMessage: String?
     @Published private(set) var recoveryBackupPath: String?
     @Published private(set) var saveErrorMessage: String?
     @Published private(set) var gestureSaveErrorMessage: String?
@@ -23,6 +22,10 @@ final class SettingsViewModel: ObservableObject {
 
     private var unsavedGestureIDs: Set<UUID> = []
     private var pendingConfigurationDirectoryPath: String?
+    private let didRecoverFromCorruption: Bool
+
+    let localizationManager: LocalizationManager
+    var onLanguageDidChange: (() -> Void)?
 
     private let saveConfiguration: (AppConfiguration) throws -> Void
     private let saveGestureConfiguration: (GestureConfiguration) throws -> Void
@@ -45,6 +48,7 @@ final class SettingsViewModel: ObservableObject {
         isRunning: Bool,
         isAccessibilityTrusted: Bool,
         isLaunchAtLoginEnabled: Bool = false,
+        localizationManager: LocalizationManager = LocalizationManager(language: .zhHans),
         saveConfiguration: @escaping (AppConfiguration) throws -> Void,
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void,
         relocateConfigurationDirectory: @escaping (String, ConfigurationDirectoryRelocationMode) throws -> Void = { _, _ in },
@@ -61,11 +65,9 @@ final class SettingsViewModel: ObservableObject {
     ) {
         self.configuration = loadResult.configuration
         self.gestureConfiguration = gestureConfiguration
-        self.recoveryNoticeMessage = loadResult.didRecoverFromCorruption
-            ? loadResult.backupURL.map { "已从损坏的配置中恢复。备份已保存至 \($0.path)" }
-                ?? "已从损坏的配置中恢复，但无法备份损坏的文件。"
-            : nil
+        self.didRecoverFromCorruption = loadResult.didRecoverFromCorruption
         self.recoveryBackupPath = loadResult.backupURL?.path
+        self.localizationManager = localizationManager
         self.persistedConfigurationDirectoryPath = configurationDirectoryPath
         self.draftConfigurationDirectoryPath = configurationDirectoryPath
         self.isRunning = isRunning
@@ -86,8 +88,36 @@ final class SettingsViewModel: ObservableObject {
         self.resumeGestureRecognition = resumeGestureRecognition
     }
 
+    var recoveryNoticeMessage: String? {
+        guard didRecoverFromCorruption else { return nil }
+        if let recoveryBackupPath {
+            return localizationManager.format(.recoveryWithBackup, recoveryBackupPath)
+        }
+        return localizationManager.string(.recoveryWithoutBackup)
+    }
+
     var registeredApplicationBundleIdentifiers: [String] {
         gestureConfiguration.applicationBundleIdentifiers
+    }
+
+    func setAppLanguage(_ language: AppLanguage) {
+        let previousLanguage = configuration.general.language
+        guard previousLanguage != language else { return }
+
+        configuration.general.language = language
+        do {
+            try saveConfiguration(configuration)
+            saveErrorMessage = nil
+            localizationManager.setLanguage(language)
+            onLanguageDidChange?()
+        } catch {
+            configuration.general.language = previousLanguage
+            saveErrorMessage = error.localizedDescription
+        }
+    }
+
+    func localizedGestureName(_ gesture: GestureDefinition) -> String {
+        localizationManager.localizedGestureDisplayName(gesture)
     }
 
     func gestures(for scopeBundleIdentifier: String?) -> [GestureDefinition] {
@@ -106,7 +136,7 @@ final class SettingsViewModel: ObservableObject {
         }
 
         guard let bundleIdentifier = Bundle(url: applicationURL)?.bundleIdentifier else {
-            gestureSaveErrorMessage = "无法读取所选应用的 Bundle ID。"
+            gestureSaveErrorMessage = localizationManager.string(.errorBundleIdentifierUnreadable)
             return
         }
 
@@ -140,7 +170,7 @@ final class SettingsViewModel: ObservableObject {
     func addGesture() -> UUID {
         let gesture = GestureDefinition(
             targetBundleIdentifier: selectedApplicationScope.targetBundleIdentifier,
-            name: "新手势",
+            name: localizationManager.string(.gesturesNewGestureName),
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.down, .right]),
             shortcut: KeyboardShortcutAction(keyCode: 0, modifiers: [])
@@ -196,7 +226,7 @@ final class SettingsViewModel: ObservableObject {
         }
 
         guard gesture.shortcut.isRecorded else {
-            gestureSaveErrorMessage = "请录制快捷键。"
+            gestureSaveErrorMessage = localizationManager.string(.errorRecordShortcut)
             return
         }
 
@@ -312,6 +342,8 @@ final class SettingsViewModel: ObservableObject {
             try relocateConfigurationDirectoryAction(path, mode)
             persistedConfigurationDirectoryPath = path
             configurationDirectoryErrorMessage = nil
+        } catch let error as ConfigurationDirectoryRelocationError {
+            configurationDirectoryErrorMessage = localizationManager.message(for: error)
         } catch {
             configurationDirectoryErrorMessage = error.localizedDescription
         }
@@ -326,6 +358,7 @@ final class SettingsViewModel: ObservableObject {
     ) {
         if let configuration {
             self.configuration = configuration
+            localizationManager.setLanguage(configuration.general.language)
         }
         if let gestureConfiguration {
             self.gestureConfiguration = gestureConfiguration
@@ -363,7 +396,7 @@ final class SettingsViewModel: ObservableObject {
     private func persistGestureConfiguration() {
         let conflicts = ConflictDetector().detect(in: gestureConfiguration.gestures)
         guard conflicts.isEmpty else {
-            gestureSaveErrorMessage = "存在重复的手势：同一应用、轨迹与触发键只能配置一条。"
+            gestureSaveErrorMessage = localizationManager.string(.errorGestureDuplicate)
             return
         }
 

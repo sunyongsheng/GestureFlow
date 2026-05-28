@@ -14,9 +14,6 @@ final class GestureEngine {
     typealias GestureConfigurationProvider = () -> GestureConfiguration
     typealias FeedbackHandler = (GestureEngineFeedback) -> Void
 
-    private static let underMouseTargetMissingMessage = "未找到鼠标下方的应用"
-    private static let targetDeliveryFailedMessage = "无法发送到目标应用"
-
     private let appConfigurationProvider: AppConfigurationProvider
     private let gestureConfigurationProvider: GestureConfigurationProvider
     private let targetResolver: GestureTargetResolving
@@ -176,7 +173,10 @@ final class GestureEngine {
 
         if targetPolicy == .underMouse, !resolvedTarget.isValid {
             let overlayCompletion: GestureOverlayCompletion = if let matchedGesture {
-                .targetNotFound(gestureName: matchedGesture.name)
+                .targetNotFound(
+                    gestureID: matchedGesture.id,
+                    storedName: matchedGesture.name
+                )
             } else {
                 .unmatched
             }
@@ -184,7 +184,7 @@ final class GestureEngine {
                 overlayCompletion: overlayCompletion,
                 trigger: trigger,
                 signature: signature,
-                message: Self.underMouseTargetMissingMessage,
+                message: AppServices.localization.string(.engineUnderMouseTargetMissing),
                 at: completionPoint
             )
             return
@@ -198,7 +198,10 @@ final class GestureEngine {
 
         guard gesture.shortcut.isRecorded else {
             reportGestureFailure(
-                overlayCompletion: .shortcutNotConfigured(gestureName: gesture.name),
+                overlayCompletion: .shortcutNotConfigured(
+                    gestureID: gesture.id,
+                    storedName: gesture.name
+                ),
                 trigger: trigger,
                 signature: signature,
                 message: "Shortcut is not configured",
@@ -209,10 +212,13 @@ final class GestureEngine {
 
         guard let targetProcessIdentifier = resolvedTarget.processIdentifier else {
             reportGestureFailure(
-                overlayCompletion: .deliveryFailed(gestureName: gesture.name),
+                overlayCompletion: .deliveryFailed(
+                    gestureID: gesture.id,
+                    storedName: gesture.name
+                ),
                 trigger: trigger,
                 signature: signature,
-                message: Self.targetDeliveryFailedMessage,
+                message: AppServices.localization.string(.engineTargetDeliveryFailed),
                 at: completionPoint
             )
             return
@@ -225,7 +231,10 @@ final class GestureEngine {
             )
         } catch {
             reportGestureFailure(
-                overlayCompletion: .executionFailed(gestureName: gesture.name),
+                overlayCompletion: .executionFailed(
+                    gestureID: gesture.id,
+                    storedName: gesture.name
+                ),
                 trigger: trigger,
                 signature: signature,
                 message: error.localizedDescription,
@@ -235,7 +244,7 @@ final class GestureEngine {
         }
 
         overlay.completeGesture(
-            with: .recognized(name: gesture.name),
+            with: .recognized(gestureID: gesture.id, storedName: gesture.name),
             at: completionPoint,
             hideAfter: hideAfter
         )
@@ -295,13 +304,15 @@ final class GestureEngine {
         let feedback: LiveGestureOverlayFeedback
         if let exactMatch = liveResult.exactMatch {
             feedback = LiveGestureOverlayFeedback(
-                message: exactMatch.name,
+                message: nil,
+                matchedGestureID: exactMatch.id,
+                matchedGestureStoredName: exactMatch.name,
                 showsCard: true,
                 usesTrailColor: true
             )
         } else if partialSignature != nil {
             feedback = LiveGestureOverlayFeedback(
-                message: GestureFeedbackCopy.unmatchedGesture,
+                message: AppServices.localization.string(.overlayUnmatchedGesture),
                 showsCard: true
             )
         } else {

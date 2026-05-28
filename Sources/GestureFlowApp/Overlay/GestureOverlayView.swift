@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import GestureFlowCore
 
 final class GestureOverlayView: NSView {
@@ -6,25 +7,52 @@ final class GestureOverlayView: NSView {
     private var trailAppearance = GestureTrailAppearance(feedback: .default)
     private var marker: GestureOverlayMarker?
     private let feedbackCardView = GestureFeedbackCardView()
+    private let localization: LocalizationManager
+    private var visibleLiveFeedback: LiveGestureOverlayFeedback?
+    private var visibleLiveFeedbackFrame: CGRect?
+    private var visibleCompletion: GestureOverlayCompletion?
+    private var visibleCompletionFrame: CGRect?
+    private var languageObserver: AnyCancellable?
 
     override var isFlipped: Bool { true }
 
     override var isOpaque: Bool { false }
 
-    override init(frame frameRect: NSRect) {
+    init(frame frameRect: NSRect, localization: LocalizationManager) {
+        self.localization = localization
         super.init(frame: frameRect)
         configureFeedbackCard()
+        languageObserver = localization.objectWillChange.sink { [weak self] _ in
+            self?.refreshVisibleFeedback()
+        }
+    }
+
+    override init(frame frameRect: NSRect) {
+        self.localization = AppServices.localization
+        super.init(frame: frameRect)
+        configureFeedbackCard()
+        languageObserver = localization.objectWillChange.sink { [weak self] _ in
+            self?.refreshVisibleFeedback()
+        }
     }
 
     required init?(coder: NSCoder) {
+        self.localization = AppServices.localization
         super.init(coder: coder)
         configureFeedbackCard()
+        languageObserver = localization.objectWillChange.sink { [weak self] _ in
+            self?.refreshVisibleFeedback()
+        }
     }
 
     func begin(at point: GesturePoint, appearance: GestureTrailAppearance) {
         self.points = [point]
         self.trailAppearance = appearance
         self.marker = nil
+        visibleLiveFeedback = nil
+        visibleLiveFeedbackFrame = nil
+        visibleCompletion = nil
+        visibleCompletionFrame = nil
         feedbackCardView.hide()
         needsDisplay = true
     }
@@ -36,7 +64,11 @@ final class GestureOverlayView: NSView {
 
     func updateLive(appearance: GestureTrailAppearance, feedback: LiveGestureOverlayFeedback, feedbackFrame: CGRect?) {
         trailAppearance = appearance
-        if feedback.showsCard, let message = feedback.message, let feedbackFrame {
+        visibleCompletion = nil
+        visibleCompletionFrame = nil
+        visibleLiveFeedback = feedback.showsCard ? feedback : nil
+        visibleLiveFeedbackFrame = feedbackFrame
+        if feedback.showsCard, let message = liveFeedbackMessage(for: feedback), let feedbackFrame {
             feedbackCardView.show(
                 message: message,
                 in: feedbackFrame,
@@ -51,7 +83,11 @@ final class GestureOverlayView: NSView {
     }
 
     func complete(with completion: GestureOverlayCompletion, feedbackFrame: CGRect?) {
-        if let feedbackFrame, let message = completion.overlayMessage {
+        visibleLiveFeedback = nil
+        visibleLiveFeedbackFrame = nil
+        visibleCompletion = completion
+        visibleCompletionFrame = feedbackFrame
+        if let feedbackFrame, let message = overlayMessage(for: completion) {
             feedbackCardView.show(
                 message: message,
                 in: feedbackFrame,
@@ -81,8 +117,43 @@ final class GestureOverlayView: NSView {
     func reset() {
         points = []
         marker = nil
+        visibleLiveFeedback = nil
+        visibleLiveFeedbackFrame = nil
+        visibleCompletion = nil
+        visibleCompletionFrame = nil
         feedbackCardView.hide()
         needsDisplay = true
+    }
+
+    func refreshVisibleFeedback() {
+        if let feedback = visibleLiveFeedback, let feedbackFrame = visibleLiveFeedbackFrame {
+            updateLive(appearance: trailAppearance, feedback: feedback, feedbackFrame: feedbackFrame)
+        } else if let completion = visibleCompletion {
+            complete(with: completion, feedbackFrame: visibleCompletionFrame)
+        }
+    }
+
+    private func liveFeedbackMessage(for feedback: LiveGestureOverlayFeedback) -> String? {
+        if let gestureID = feedback.matchedGestureID,
+           let storedName = feedback.matchedGestureStoredName {
+            return localization.localizedGestureDisplayName(id: gestureID, storedName: storedName)
+        }
+        return feedback.message
+    }
+
+    private func overlayMessage(for completion: GestureOverlayCompletion) -> String? {
+        switch completion {
+        case let .recognized(gestureID, storedName),
+             let .targetNotFound(gestureID, storedName),
+             let .shortcutNotConfigured(gestureID, storedName),
+             let .deliveryFailed(gestureID, storedName),
+             let .executionFailed(gestureID, storedName):
+            return localization.localizedGestureDisplayName(id: gestureID, storedName: storedName)
+        case .unmatched:
+            return localization.string(.overlayUnmatchedGesture)
+        case .rejected:
+            return nil
+        }
     }
 
     var hasVisibleContent: Bool {
@@ -224,22 +295,6 @@ final class GestureOverlayView: NSView {
 }
 
 private extension GestureOverlayCompletion {
-    var overlayMessage: String? {
-        switch self {
-        case let .recognized(name):
-            return name
-        case .unmatched:
-            return GestureFeedbackCopy.unmatchedGesture
-        case .rejected:
-            return nil
-        case let .targetNotFound(gestureName),
-             let .shortcutNotConfigured(gestureName),
-             let .deliveryFailed(gestureName),
-             let .executionFailed(gestureName):
-            return gestureName
-        }
-    }
-
     var usesTrailColorText: Bool {
         switch self {
         case .recognized,

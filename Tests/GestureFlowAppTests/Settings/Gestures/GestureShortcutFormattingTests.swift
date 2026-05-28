@@ -15,7 +15,10 @@ final class GestureShortcutFormattingTests: XCTestCase {
         let shortcut = KeyboardShortcutAction(keyCode: 0, modifiers: [])
 
         XCTAssertFalse(shortcut.isRecorded)
-        XCTAssertEqual(GestureShortcutFormatting.displayString(for: shortcut), "点击录制")
+        XCTAssertEqual(
+            GestureShortcutFormatting.displayString(for: shortcut),
+            AppServices.localization.string(.shortcutClickToRecord)
+        )
     }
 
     func testCaptureShortcutUsesHardwareKeyCodeForCommandA() {

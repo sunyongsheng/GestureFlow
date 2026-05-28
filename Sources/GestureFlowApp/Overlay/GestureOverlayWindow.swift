@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import GestureFlowCore
 
 final class GestureOverlayWindow: GestureOverlayDisplaying {
@@ -6,8 +7,8 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
     private let overlayView: GestureOverlayView
     private var hideWorkItem: DispatchWorkItem?
 
-    init() {
-        self.overlayView = GestureOverlayView(frame: .zero)
+    init(localization: LocalizationManager) {
+        self.overlayView = GestureOverlayView(frame: .zero, localization: localization)
         self.panel = NSPanel(
             contentRect: .zero,
             styleMask: [.borderless, .nonactivatingPanel],

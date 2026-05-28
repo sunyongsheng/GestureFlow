@@ -1,10 +1,6 @@
 import Foundation
 import GestureFlowCore
 
-enum GestureFeedbackCopy {
-    static let unmatchedGesture = "未识别手势"
-}
-
 struct GestureTrailAppearance: Equatable {
     var colorHex: String
     var width: Double
@@ -37,6 +33,8 @@ struct GestureTrailAppearance: Equatable {
 
 struct LiveGestureOverlayFeedback: Equatable {
     var message: String?
+    var matchedGestureID: UUID?
+    var matchedGestureStoredName: String?
     var showsCard: Bool
     var usesTrailColor: Bool = false
 }
@@ -51,13 +49,13 @@ struct GestureOverlayMarker: Equatable {
 }
 
 enum GestureOverlayCompletion: Equatable {
-    case recognized(name: String)
+    case recognized(gestureID: UUID, storedName: String)
     case unmatched
     case rejected
-    case targetNotFound(gestureName: String)
-    case shortcutNotConfigured(gestureName: String)
-    case deliveryFailed(gestureName: String)
-    case executionFailed(gestureName: String)
+    case targetNotFound(gestureID: UUID, storedName: String)
+    case shortcutNotConfigured(gestureID: UUID, storedName: String)
+    case deliveryFailed(gestureID: UUID, storedName: String)
+    case executionFailed(gestureID: UUID, storedName: String)
 }
 
 protocol GestureOverlayDisplaying: AnyObject {

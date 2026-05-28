@@ -2,6 +2,7 @@ import SwiftUI
 import GestureFlowCore
 
 struct GestureSignatureRecordingView: View {
+    @EnvironmentObject private var l10n: LocalizationManager
     @Binding var recognizedSignature: GestureSignature?
 
     private let canvasSize = CGSize(width: 240, height: 240)
@@ -94,16 +95,14 @@ struct GestureSignatureRecordingView: View {
 
     private var statusText: String {
         if let recognizedSignature {
-            let directions = recordingDirectionDisplayName(for: recognizedSignature)
-            if recognizedSignature.tokens.count >= maxSegmentCount {
-                return "\(directions)（已达 \(maxSegmentCount) 段上限）"
-            }
-            return directions
+            return recordingDirectionDisplayName(for: recognizedSignature)
         }
-        return "使用左键在画布内绘制手势（最多 \(maxSegmentCount) 段）"
+        return l10n.format(.gesturesRecordingCanvasHint, maxSegmentCount)
     }
 
     private func recordingDirectionDisplayName(for signature: GestureSignature) -> String {
-        signature.tokens.map(\.chineseDisplayName).joined(separator: "→")
+        signature.tokens
+            .map { l10n.localizedDisplayName(for: $0) }
+            .joined(separator: "→")
     }
 }

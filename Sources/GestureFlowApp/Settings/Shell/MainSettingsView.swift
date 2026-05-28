@@ -4,6 +4,7 @@ import GestureFlowCore
 
 struct MainSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @State private var selectedSection: SettingsSection = .general
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
@@ -25,7 +26,7 @@ struct MainSettingsView: View {
     private var sidebarContent: some View {
         List(selection: $selectedSection) {
             ForEach(SettingsSection.allCases) { section in
-                Label(section.title, systemImage: section.symbolName)
+                Label(section.title(using: l10n), systemImage: section.symbolName)
                     .tag(section)
             }
         }
@@ -80,7 +81,7 @@ struct MainSettingsView: View {
 
     private func recoveryBanner(message: String, backupPath: String?) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("配置恢复")
+            Text(l10n.string(.settingsRecoveryTitle))
                 .font(.headline)
             Text(message)
                 .font(.caption)
@@ -102,7 +103,7 @@ struct MainSettingsView: View {
     }
 
     private func saveErrorBanner(message: String) -> some View {
-        Text("保存设置失败：\(message)")
+        Text(l10n.format(.settingsSaveFailed, message))
             .foregroundColor(.red)
             .font(.caption)
             .padding(12)

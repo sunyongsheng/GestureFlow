@@ -7,8 +7,9 @@ struct SettingsRootView: View {
         Group {
             if let viewModel = coordinator.viewModel {
                 MainSettingsView(viewModel: viewModel)
+                    .environmentObject(viewModel.localizationManager)
             } else {
-                ProgressView("正在加载 GestureFlow 设置…")
+                ProgressView(AppServices.localization.string(.settingsLoading))
                     .frame(minWidth: 700, minHeight: 480)
             }
         }

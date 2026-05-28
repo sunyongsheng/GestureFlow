@@ -175,10 +175,16 @@ final class GestureEngineTests: XCTestCase {
             ]
         )
 
+        let gesture = gestureConfiguration.gestures[0]
         XCTAssertTrue(actionExecutor.executedActions.isEmpty)
         XCTAssertEqual(
             overlay.events,
-            [.completed(.targetNotFound(gestureName: "Back"), GesturePoint(x: 20, y: 0))]
+            [
+                .completed(
+                    .targetNotFound(gestureID: gesture.id, storedName: gesture.name),
+                    GesturePoint(x: 20, y: 0)
+                )
+            ]
         )
         XCTAssertEqual(
             feedback,
@@ -382,9 +388,15 @@ final class GestureEngineTests: XCTestCase {
                 )
             ]
         )
+        let gesture = gestureConfiguration.gestures[0]
         XCTAssertEqual(
             overlay.events,
-            [.completed(.executionFailed(gestureName: "Close"), GesturePoint(x: 50, y: 0))]
+            [
+                .completed(
+                    .executionFailed(gestureID: gesture.id, storedName: gesture.name),
+                    GesturePoint(x: 50, y: 0)
+                )
+            ]
         )
         XCTAssertEqual(
             feedback,
@@ -431,6 +443,8 @@ final class GestureEngineTests: XCTestCase {
             feedbackHandler: { _ in }
         )
 
+        let gesture = gestureConfiguration.gestures[0]
+
         engine.start()
         tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100))
         tap.onGestureMoved?(GesturePoint(x: 80, y: 100))
@@ -459,7 +473,10 @@ final class GestureEngineTests: XCTestCase {
                     at: GesturePoint(x: 80, y: 100),
                     feedback: feedbackConfiguration
                 ),
-                .completed(.recognized(name: "Back"), GesturePoint(x: 20, y: 100))
+                .completed(
+                    .recognized(gestureID: gesture.id, storedName: gesture.name),
+                    GesturePoint(x: 20, y: 100)
+                )
             ]
         )
         XCTAssertEqual(
@@ -496,6 +513,8 @@ final class GestureEngineTests: XCTestCase {
             feedbackHandler: { _ in }
         )
 
+        let gesture = gestureConfiguration.gestures[0]
+
         engine.start()
         tap.onGestureEnded?(
             .rightMouse,
@@ -509,7 +528,10 @@ final class GestureEngineTests: XCTestCase {
         XCTAssertEqual(
             overlay.events,
             [
-                .completed(.recognized(name: "Back"), GesturePoint(x: 1442, y: 80))
+                .completed(
+                    .recognized(gestureID: gesture.id, storedName: gesture.name),
+                    GesturePoint(x: 1442, y: 80)
+                )
             ]
         )
         XCTAssertEqual(
@@ -611,14 +633,20 @@ final class GestureEngineTests: XCTestCase {
         tap.onGestureMoved?(GesturePoint(x: 100, y: 10))
 
         let lastLive = overlay.liveUpdates.last
-        XCTAssertEqual(lastLive?.feedback.message, GestureFeedbackCopy.unmatchedGesture)
+        XCTAssertEqual(
+            lastLive?.feedback.message,
+            LocalizationManager(language: .zhHans).string(.overlayUnmatchedGesture)
+        )
         XCTAssertTrue(lastLive?.feedback.showsCard ?? false)
         XCTAssertTrue(lastLive?.appearance.isHighlighted ?? false)
 
         tap.onGestureMoved?(GesturePoint(x: 40, y: 10))
 
         let brokenLive = overlay.liveUpdates.last
-        XCTAssertEqual(brokenLive?.feedback.message, GestureFeedbackCopy.unmatchedGesture)
+        XCTAssertEqual(
+            brokenLive?.feedback.message,
+            LocalizationManager(language: .zhHans).string(.overlayUnmatchedGesture)
+        )
         XCTAssertFalse(brokenLive?.appearance.isHighlighted ?? true)
     }
 
@@ -648,8 +676,11 @@ final class GestureEngineTests: XCTestCase {
         tap.onGestureMoved?(GesturePoint(x: 0, y: 0))
         tap.onGestureMoved?(GesturePoint(x: 70, y: 0))
 
+        let gesture = gestureConfiguration.gestures[0]
         let lastLive = overlay.liveUpdates.last
-        XCTAssertEqual(lastLive?.feedback.message, "Close Window")
+        XCTAssertEqual(lastLive?.feedback.matchedGestureID, gesture.id)
+        XCTAssertEqual(lastLive?.feedback.matchedGestureStoredName, "Close Window")
+        XCTAssertTrue(lastLive?.feedback.showsCard ?? false)
         XCTAssertTrue(lastLive?.appearance.isHighlighted ?? false)
     }
 

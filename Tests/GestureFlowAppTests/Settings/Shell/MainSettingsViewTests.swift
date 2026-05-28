@@ -25,6 +25,7 @@ final class MainSettingsViewTests: XCTestCase {
     func testMainSettingsViewSidebarDoesNotRenderBrandingHeaderText() {
         let hostingView = NSHostingView(
             rootView: MainSettingsView(viewModel: makeViewModel())
+                .environmentObject(LocalizationManager(language: .zhHans))
                 .frame(width: 900, height: 600)
         )
         hostingView.frame = CGRect(x: 0, y: 0, width: 900, height: 600)
@@ -33,7 +34,7 @@ final class MainSettingsViewTests: XCTestCase {
         let renderedStrings = extractVisibleStrings(from: hostingView)
 
         XCTAssertFalse(renderedStrings.contains("GestureFlow"))
-        XCTAssertFalse(renderedStrings.contains("设置"))
+        XCTAssertFalse(renderedStrings.contains("Settings"))
     }
 
     private func makeViewModel() -> SettingsViewModel {

@@ -38,7 +38,7 @@ private struct SettingsWindowCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appSettings) {
-            Button("设置…") {
+            Button(AppServices.localization.string(.settingsCommandSettings)) {
                 SettingsWindowFrontmostPresenter.activateExistingOrOpen {
                     openWindow(
                         id: SettingsWindowSceneIDs.settings,

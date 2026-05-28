@@ -5,7 +5,7 @@ import GestureFlowCore
 
 final class GestureOverlayWindowTests: XCTestCase {
     func testOverlayPanelDisablesWindowAnimations() throws {
-        let overlayWindow = GestureOverlayWindow()
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
         let panel = try XCTUnwrap(extractPanel(from: overlayWindow))
 
         XCTAssertEqual(panel.animationBehavior, .none)
@@ -53,7 +53,7 @@ final class GestureOverlayWindowTests: XCTestCase {
     }
 
     func testShowMarkerUsesWindowAndViewCoordinateConversion() {
-        let overlayWindow = GestureOverlayWindow()
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
 
         overlayWindow.showMarker(
             GestureOverlayMarker(
@@ -75,7 +75,7 @@ final class GestureOverlayWindowTests: XCTestCase {
     }
 
     func testCompletingGestureShowsDedicatedFeedbackCard() throws {
-        let overlayWindow = GestureOverlayWindow()
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
         let origin = GesturePoint(x: 250, y: 420)
 
         overlayWindow.beginGesture(
@@ -83,7 +83,10 @@ final class GestureOverlayWindowTests: XCTestCase {
             appearance: GestureTrailAppearance(feedback: .default)
         )
         overlayWindow.completeGesture(
-            with: .recognized(name: "关闭窗口"),
+            with: .recognized(
+                gestureID: GestureConfiguration.closeWindowGestureID,
+                storedName: "关闭窗口"
+            ),
             at: origin,
             hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
         )
@@ -97,7 +100,7 @@ final class GestureOverlayWindowTests: XCTestCase {
     }
 
     func testActionFailedCompletionShowsMatchedGestureName() throws {
-        let overlayWindow = GestureOverlayWindow()
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
         let origin = GesturePoint(x: 250, y: 420)
 
         overlayWindow.beginGesture(
@@ -105,7 +108,10 @@ final class GestureOverlayWindowTests: XCTestCase {
             appearance: GestureTrailAppearance(feedback: .default)
         )
         overlayWindow.completeGesture(
-            with: .deliveryFailed(gestureName: "关闭窗口"),
+            with: .deliveryFailed(
+                gestureID: GestureConfiguration.closeWindowGestureID,
+                storedName: "关闭窗口"
+            ),
             at: origin,
             hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
         )
@@ -125,7 +131,7 @@ final class GestureOverlayWindowTests: XCTestCase {
             trailOpacity: 0.85
         )
         let appearance = GestureTrailAppearance(feedback: feedback, isHighlighted: true)
-        let overlayWindow = GestureOverlayWindow()
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
         let origin = GesturePoint(x: 250, y: 420)
 
         overlayWindow.beginGesture(at: origin, appearance: appearance)
@@ -133,7 +139,9 @@ final class GestureOverlayWindowTests: XCTestCase {
             at: origin,
             appearance: appearance,
             feedback: LiveGestureOverlayFeedback(
-                message: "关闭窗口",
+                message: nil,
+                matchedGestureID: GestureConfiguration.closeWindowGestureID,
+                matchedGestureStoredName: "关闭窗口",
                 showsCard: true,
                 usesTrailColor: true
             )
@@ -154,13 +162,16 @@ final class GestureOverlayWindowTests: XCTestCase {
 
         let completionLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
         let completionTextColor = try XCTUnwrap(completionLabel.textColor)
-        XCTAssertEqual(completionLabel.stringValue, GestureFeedbackCopy.unmatchedGesture)
+        XCTAssertEqual(
+            completionLabel.stringValue,
+            LocalizationManager(language: .zhHans).string(.overlayUnmatchedGesture)
+        )
         XCTAssertTrue(completionTextColor.isEqual(NSColor.labelColor))
         XCTAssertFalse(completionTextColor.isEqual(trailColor))
     }
 
     func testUnderMouseTargetNotFoundWithoutMatchUsesUnmatchedOverlay() throws {
-        let overlayWindow = GestureOverlayWindow()
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
         let origin = GesturePoint(x: 250, y: 420)
         let appearance = GestureTrailAppearance(
             feedback: FeedbackConfiguration(
@@ -186,7 +197,7 @@ final class GestureOverlayWindowTests: XCTestCase {
     }
 
     func testFeedbackCardCentersMessageLabelWithinCard() throws {
-        let overlayWindow = GestureOverlayWindow()
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
         let origin = GesturePoint(x: 250, y: 420)
 
         overlayWindow.beginGesture(

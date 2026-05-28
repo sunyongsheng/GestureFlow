@@ -3,7 +3,7 @@ import XCTest
 
 final class StatusBarControllerTests: XCTestCase {
     func testMenuContainsSingleDynamicStartStopItem() {
-        let controller = StatusBarController(actions: .stub)
+        let controller = StatusBarController(actions: .stub, localization: LocalizationManager(language: .zhHans))
 
         XCTAssertEqual(
             controller.menuItemTitles,
@@ -25,6 +25,7 @@ final class StatusBarControllerTests: XCTestCase {
                 openSettings: {},
                 quit: {}
             ),
+            localization: LocalizationManager(language: .zhHans),
             scheduleOnMain: { $0() }
         )
 
@@ -48,6 +49,7 @@ final class StatusBarControllerTests: XCTestCase {
                 openSettings: { openedSettings = true },
                 quit: {}
             ),
+            localization: LocalizationManager(language: .zhHans),
             scheduleOnMain: { scheduledActions.append($0) }
         )
 
@@ -74,7 +76,7 @@ final class StatusBarControllerTests: XCTestCase {
     }
 
     func testSettingsMenuItemDoesNotUseSystemPreferencesSelector() {
-        let controller = StatusBarController(actions: .stub)
+        let controller = StatusBarController(actions: .stub, localization: LocalizationManager(language: .zhHans))
 
         XCTAssertEqual(
             controller.menuItemAction(tag: .settings),
@@ -91,6 +93,7 @@ final class StatusBarControllerTests: XCTestCase {
                 openSettings: {},
                 quit: { quitCount += 1 }
             ),
+            localization: LocalizationManager(language: .zhHans),
             scheduleOnMain: { $0() }
         )
 
@@ -100,7 +103,7 @@ final class StatusBarControllerTests: XCTestCase {
     }
 
     func testDynamicMenuItemTitleChangesWithRunningState() {
-        let controller = StatusBarController(actions: .stub)
+        let controller = StatusBarController(actions: .stub, localization: LocalizationManager(language: .zhHans))
 
         controller.update(
             state: StatusBarState(isRunning: false, isAccessibilityTrusted: true)

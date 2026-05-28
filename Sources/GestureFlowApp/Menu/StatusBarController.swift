@@ -1,19 +1,10 @@
 import AppKit
+import Combine
 
 enum StatusBarMenuItemTag: Int {
     case gestureFlow = 1001
     case settings = 1002
     case quit = 1003
-}
-
-private enum StatusBarMenuCopy {
-    static let startGestureFlow = "启动 GestureFlow"
-    static let stopGestureFlow = "停止 GestureFlow"
-    static let settings = "设置…"
-    static let quit = "退出"
-    static let statusItemTitle = "GF"
-    static let statusItemTitleRunning = "GF 开"
-    static let statusItemToolTip = "GestureFlow 手势控制"
 }
 
 struct StatusBarState: Equatable {
@@ -31,9 +22,11 @@ struct StatusBarActions {
 final class StatusBarController: NSObject, NSMenuDelegate {
     private let statusItem: NSStatusItem
     private let actions: StatusBarActions
+    private let localization: LocalizationManager
     private let scheduleOnMain: (@escaping () -> Void) -> Void
     private let menu = NSMenu()
     private var dismissMenuTracking: () -> Void
+    private var languageObserver: AnyCancellable?
     private(set) var menuState = StatusBarState(
         isRunning: false,
         isAccessibilityTrusted: false
@@ -46,15 +39,20 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     init(
         statusBar: NSStatusBar = .system,
         actions: StatusBarActions,
+        localization: LocalizationManager,
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }
     ) {
         self.statusItem = statusBar.statusItem(withLength: NSStatusItem.variableLength)
         self.actions = actions
+        self.localization = localization
         self.scheduleOnMain = scheduleOnMain
         self.dismissMenuTracking = {}
         super.init()
         configureStatusItem()
         configureMenu()
+        languageObserver = localization.objectWillChange.sink { [weak self] _ in
+            self?.refreshLocalizedStrings()
+        }
         self.dismissMenuTracking = { [weak menu = self.menu] in
             menu?.cancelTracking()
         }
@@ -78,14 +76,24 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         menuState = state
         if let gestureFlowItem = menu.item(withTag: StatusBarMenuItemTag.gestureFlow.rawValue) {
             gestureFlowItem.title = state.isRunning
-                ? StatusBarMenuCopy.stopGestureFlow
-                : StatusBarMenuCopy.startGestureFlow
+                ? localization.string(.statusBarStop)
+                : localization.string(.statusBarStart)
             gestureFlowItem.isEnabled = true
         }
         statusItem.button?.title = state.isRunning
-            ? StatusBarMenuCopy.statusItemTitleRunning
-            : StatusBarMenuCopy.statusItemTitle
-        statusItem.button?.toolTip = StatusBarMenuCopy.statusItemToolTip
+            ? localization.string(.statusBarTitleRunning)
+            : "GF"
+        statusItem.button?.toolTip = localization.string(.statusBarToolTip)
+    }
+
+    func refreshLocalizedStrings() {
+        if let settingsItem = menu.item(withTag: StatusBarMenuItemTag.settings.rawValue) {
+            settingsItem.title = localization.string(.statusBarSettings)
+        }
+        if let quitItem = menu.item(withTag: StatusBarMenuItemTag.quit.rawValue) {
+            quitItem.title = localization.string(.statusBarQuit)
+        }
+        update(state: menuState)
     }
 
     func isMenuItemEnabled(title: String) -> Bool {
@@ -105,26 +113,27 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     private func configureStatusItem() {
-        statusItem.button?.title = StatusBarMenuCopy.statusItemTitle
-        statusItem.button?.toolTip = StatusBarMenuCopy.statusItemToolTip
+        statusItem.button?.title = "GF"
+        statusItem.button?.toolTip = localization.string(.statusBarToolTip)
         statusItem.menu = menu
     }
 
     private func configureMenu() {
         menu.delegate = self
+        menu.removeAllItems()
         addItem(
-            title: StatusBarMenuCopy.startGestureFlow,
+            title: localization.string(.statusBarStart),
             action: #selector(toggleGestureFlow),
             tag: StatusBarMenuItemTag.gestureFlow.rawValue
         )
         addItem(
-            title: StatusBarMenuCopy.settings,
+            title: localization.string(.statusBarSettings),
             action: #selector(openSettingsMenuItem),
             tag: StatusBarMenuItemTag.settings.rawValue
         )
         menu.addItem(.separator())
         addItem(
-            title: StatusBarMenuCopy.quit,
+            title: localization.string(.statusBarQuit),
             action: #selector(quit),
             tag: StatusBarMenuItemTag.quit.rawValue
         )

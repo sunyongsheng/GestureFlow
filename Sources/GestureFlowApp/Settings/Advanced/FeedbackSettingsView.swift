@@ -4,12 +4,13 @@ import GestureFlowCore
 
 struct FeedbackSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @FocusState.Binding var isSliderValueFieldFocused: Bool
 
     var body: some View {
         SettingsCard(
-            title: "手势反馈",
-            description: "控制手势轨迹的颜色、粗细与透明度，让反馈更自然。"
+            title: l10n.string(.feedbackTrailTitle),
+            description: l10n.string(.feedbackTrailDescription)
         ) {
             SettingsGroupedRows {
                 GestureTrailPreview(feedback: viewModel.configuration.feedback)
@@ -17,8 +18,8 @@ struct FeedbackSettingsView: View {
                 SettingsRowDivider()
 
                 SettingsValueRow(
-                    title: "轨迹颜色",
-                    description: "绘制手势路径时使用的主色调。",
+                    title: l10n.string(.feedbackTrailColorTitle),
+                    description: l10n.string(.feedbackTrailColorDescription),
                     statusText: nil
                 ) {
                     TrailColorPickerControl(color: trailColorBinding)
@@ -27,8 +28,8 @@ struct FeedbackSettingsView: View {
                 SettingsRowDivider()
 
                 SettingsSliderRow(
-                    title: "轨迹粗细",
-                    description: "控制手势轨迹线条的宽度。",
+                    title: l10n.string(.feedbackTrailWidthTitle),
+                    description: l10n.string(.feedbackTrailWidthDescription),
                     value: feedbackBinding(\.trailWidth),
                     range: 1...12,
                     step: 0.5,
@@ -39,8 +40,8 @@ struct FeedbackSettingsView: View {
                 SettingsRowDivider()
 
                 SettingsSliderRow(
-                    title: "轨迹透明度",
-                    description: "控制手势轨迹的不透明度，描边不受此项影响。",
+                    title: l10n.string(.feedbackTrailOpacityTitle),
+                    description: l10n.string(.feedbackTrailOpacityDescription),
                     value: feedbackBinding(\.trailOpacity),
                     range: 0.1...1,
                     step: 0.05,
@@ -51,8 +52,8 @@ struct FeedbackSettingsView: View {
                 SettingsRowDivider()
 
                 SettingsValueRow(
-                    title: "启用轨迹描边",
-                    description: "在轨迹外侧绘制一圈对比色描边。",
+                    title: l10n.string(.feedbackTrailStrokeEnabledTitle),
+                    description: l10n.string(.feedbackTrailStrokeEnabledDescription),
                     statusText: nil
                 ) {
                     Toggle("", isOn: feedbackBinding(\.trailStrokeEnabled))
@@ -64,18 +65,21 @@ struct FeedbackSettingsView: View {
                     SettingsRowDivider()
 
                     SettingsValueRow(
-                        title: "描边颜色",
-                        description: "轨迹外侧描边使用的颜色。",
+                        title: l10n.string(.feedbackTrailStrokeColorTitle),
+                        description: l10n.string(.feedbackTrailStrokeColorDescription),
                         statusText: nil
                     ) {
-                        TrailColorPickerControl(color: strokeColorBinding, help: "选择描边颜色")
+                        TrailColorPickerControl(
+                            color: strokeColorBinding,
+                            help: l10n.string(.feedbackTrailStrokeColorPickerHelp)
+                        )
                     }
 
                     SettingsRowDivider()
 
                     SettingsSliderRow(
-                        title: "描边粗细",
-                        description: "控制轨迹外侧描边线条的宽度。",
+                        title: l10n.string(.feedbackTrailStrokeWidthTitle),
+                        description: l10n.string(.feedbackTrailStrokeWidthDescription),
                         value: feedbackBinding(\.trailStrokeWidth),
                         range: 0.5...8,
                         step: 0.1,
@@ -134,8 +138,9 @@ struct FeedbackSettingsView: View {
 }
 
 private struct TrailColorPickerControl: View {
+    @EnvironmentObject private var l10n: LocalizationManager
     @Binding var color: Color
-    var help: String = "选择轨迹颜色"
+    var help: String?
     @State private var panelCoordinator = TrailColorPanelCoordinator()
     @State private var anchorCoordinator = ScreenAnchorCoordinator()
 
@@ -158,7 +163,7 @@ private struct TrailColorPickerControl: View {
         .background {
             ScreenAnchorReader(coordinator: anchorCoordinator)
         }
-        .help(help)
+        .help(help ?? l10n.string(.feedbackTrailColorPickerHelp))
     }
 
     private var trailColorDisplay: some View {

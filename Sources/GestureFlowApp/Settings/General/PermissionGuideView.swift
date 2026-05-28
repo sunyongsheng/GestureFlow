@@ -2,19 +2,22 @@ import SwiftUI
 
 struct PermissionGuideView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("辅助功能")
+            Text(l10n.string(.permissionGuideTitle))
                 .font(.headline)
 
-            Text(viewModel.isAccessibilityTrusted
-                ? "GestureFlow 可以正常监听鼠标手势。"
-                : "请开启辅助功能权限，GestureFlow 才能接收手势输入。")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Text(
+                viewModel.isAccessibilityTrusted
+                    ? l10n.string(.permissionGuideTrustedDescription)
+                    : l10n.string(.permissionGuideUntrustedDescription)
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
 
-            Button("请求权限") {
+            Button(l10n.string(.permissionGuideRequestButton)) {
                 viewModel.requestAccessibilityPermission()
             }
             .disabled(viewModel.isAccessibilityTrusted)

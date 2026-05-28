@@ -1,3 +1,4 @@
+import GestureFlowCore
 import SwiftUI
 
 enum GeneralSettingsContent {
@@ -13,6 +14,7 @@ enum GeneralSettingsContent {
 
 struct GeneralSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
 
     var body: some View {
         SettingsPage {
@@ -22,8 +24,8 @@ struct GeneralSettingsView: View {
             ) {
                 VStack(alignment: .leading, spacing: 18) {
                     SettingsValueRow(
-                        title: "登录时打开",
-                        description: "系统登录后自动启动 GestureFlow。",
+                        title: l10n.string(.generalLaunchAtLoginTitle),
+                        description: l10n.string(.generalLaunchAtLoginDescription),
                         statusText: nil
                     ) {
                         Toggle("", isOn: launchAtLoginBinding)
@@ -40,8 +42,8 @@ struct GeneralSettingsView: View {
                     Divider()
 
                     SettingsValueRow(
-                        title: "手势识别",
-                        description: "开启后，GestureFlow 会开始监听并识别配置的鼠标手势。",
+                        title: l10n.string(.generalGestureRecognitionTitle),
+                        description: l10n.string(.generalGestureRecognitionDescription),
                         statusText: GeneralSettingsContent.gestureRecognitionStatusText(
                             isRunning: viewModel.isRunning
                         )
@@ -53,22 +55,40 @@ struct GeneralSettingsView: View {
 
                     Divider()
 
+                    SettingsValueRow(
+                        title: l10n.string(.generalAppLanguageTitle),
+                        description: l10n.string(.generalAppLanguageDescription),
+                        statusText: nil
+                    ) {
+                        Picker("", selection: appLanguageBinding) {
+                            Text("中文（简体）").tag(AppLanguage.zhHans)
+                            Text("English").tag(AppLanguage.en)
+                        }
+                        .labelsHidden()
+                        .frame(maxWidth: 220, alignment: .trailing)
+                    }
+
+                    Divider()
+
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("配置目录")
+                        Text(l10n.string(.generalConfigDirectoryTitle))
                             .font(.body.weight(.medium))
 
-                        Text("自定义配置目录以实现配置同步")
+                        Text(l10n.string(.generalConfigDirectoryDescription))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
 
                         HStack(spacing: 12) {
-                            TextField("配置目录路径", text: $viewModel.draftConfigurationDirectoryPath)
-                                .textFieldStyle(.roundedBorder)
-                                .disabled(viewModel.isRelocatingConfigurationDirectory)
+                            TextField(
+                                l10n.string(.generalConfigDirectoryPathPlaceholder),
+                                text: $viewModel.draftConfigurationDirectoryPath
+                            )
+                            .textFieldStyle(.roundedBorder)
+                            .disabled(viewModel.isRelocatingConfigurationDirectory)
 
                             configurationDirectoryIconButton(
                                 systemImage: "arrow.counterclockwise",
-                                help: "恢复默认"
+                                help: l10n.string(.generalConfigDirectoryResetHelp)
                             ) {
                                 viewModel.prefillDefaultConfigurationDirectory()
                             }
@@ -76,7 +96,7 @@ struct GeneralSettingsView: View {
 
                             configurationDirectoryIconButton(
                                 systemImage: "folder.badge.gearshape",
-                                help: "XDG（~/.config/gestureflow）"
+                                help: l10n.string(.generalConfigDirectoryXDGHelp)
                             ) {
                                 viewModel.prefillXDGConfigurationDirectory()
                             }
@@ -84,7 +104,7 @@ struct GeneralSettingsView: View {
 
                             configurationDirectoryIconButton(
                                 systemImage: "checkmark.circle.fill",
-                                help: "确认"
+                                help: l10n.string(.generalConfigDirectoryConfirmHelp)
                             ) {
                                 viewModel.confirmConfigurationDirectoryChange()
                             }
@@ -104,13 +124,13 @@ struct GeneralSettingsView: View {
                     Divider()
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("辅助功能")
+                        Text(l10n.string(.generalAccessibilityTitle))
                             .font(.body.weight(.medium))
 
                         Text(
                             viewModel.isAccessibilityTrusted
-                                ? "辅助功能权限已满足，GestureFlow 可以正常监听鼠标手势。"
-                                : "请先授予辅助功能权限，GestureFlow 才能接收手势输入。"
+                                ? l10n.string(.generalAccessibilityTrustedDescription)
+                                : l10n.string(.generalAccessibilityUntrustedDescription)
                         )
                         .font(.subheadline)
                         .foregroundColor(.secondary)
@@ -119,13 +139,17 @@ struct GeneralSettingsView: View {
                             viewModel.requestAccessibilityPermission()
                         }) {
                             HStack {
-                                Text(viewModel.isAccessibilityTrusted ? "辅助功能已启用" : "开启辅助功能权限")
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(
-                                        viewModel.isAccessibilityTrusted
-                                            ? Color(nsColor: .systemGreen)
-                                            : .primary
-                                    )
+                                Text(
+                                    viewModel.isAccessibilityTrusted
+                                        ? l10n.string(.generalAccessibilityTrustedButton)
+                                        : l10n.string(.generalAccessibilityRequestButton)
+                                )
+                                .fontWeight(.semibold)
+                                .foregroundColor(
+                                    viewModel.isAccessibilityTrusted
+                                        ? Color(nsColor: .systemGreen)
+                                        : .primary
+                                )
 
                                 Spacer()
 
@@ -172,7 +196,7 @@ struct GeneralSettingsView: View {
                         Button(action: {
                             viewModel.quitApplication()
                         }) {
-                            Text("退出 GestureFlow")
+                            Text(l10n.string(.generalQuitApplication))
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -186,17 +210,17 @@ struct GeneralSettingsView: View {
             }
         }
         .alert(
-            "检测到目标目录已有配置文件，是否覆盖当前配置？",
+            l10n.string(.generalConfigAdoptionAlertTitle),
             isPresented: $viewModel.isConfigurationDirectoryAdoptionAlertPresented
         ) {
-            Button("否", role: .cancel) {
+            Button(l10n.string(.generalConfigAdoptionAlertNo), role: .cancel) {
                 viewModel.cancelConfigurationDirectoryAdoption()
             }
-            Button("是") {
+            Button(l10n.string(.generalConfigAdoptionAlertYes)) {
                 viewModel.confirmConfigurationDirectoryAdoption()
             }
         } message: {
-            Text("将改用目标目录中的配置，当前目录中的配置文件将不再使用。")
+            Text(l10n.string(.generalConfigAdoptionAlertMessage))
         }
     }
 
@@ -204,6 +228,13 @@ struct GeneralSettingsView: View {
         Binding(
             get: { viewModel.isLaunchAtLoginEnabled },
             set: { viewModel.setLaunchAtLoginEnabled($0) }
+        )
+    }
+
+    private var appLanguageBinding: Binding<AppLanguage> {
+        Binding(
+            get: { viewModel.configuration.general.language },
+            set: { viewModel.setAppLanguage($0) }
         )
     }
 

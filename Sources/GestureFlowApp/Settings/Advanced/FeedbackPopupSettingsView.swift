@@ -3,13 +3,14 @@ import GestureFlowCore
 
 struct FeedbackPopupSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @FocusState.Binding var isSliderValueFieldFocused: Bool
 
     var body: some View {
         if #available(macOS 26.0, *) {
             SettingsCard(
-                title: "反馈弹窗",
-                description: "手势识别时的反馈弹窗设置"
+                title: l10n.string(.feedbackCardTitle),
+                description: l10n.string(.feedbackCardDescription)
             ) {
                 SettingsGroupedRows {
                     liquidGlassSettingRow
@@ -26,8 +27,8 @@ struct FeedbackPopupSettingsView: View {
     @available(macOS 26.0, *)
     private var liquidGlassSettingRow: some View {
         SettingsValueRow(
-            title: "液态玻璃",
-            description: "手势识别弹窗使用液态玻璃效果",
+            title: l10n.string(.feedbackLiquidGlassTitle),
+            description: l10n.string(.feedbackLiquidGlassDescription),
             statusText: nil
         ) {
             Toggle("", isOn: feedbackBinding(\.feedbackCardLiquidGlassEnabled))
