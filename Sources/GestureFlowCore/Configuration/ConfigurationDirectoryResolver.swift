@@ -115,8 +115,8 @@ public struct ConfigurationDirectoryResolver {
         configurationDirectoryURL = configurationDirectory.standardizedFileURL
     }
 
-    public func makeConfigurationStore() -> ConfigurationStore {
-        ConfigurationStore(fileURL: configFileURL)
+    public func makeAppConfigurationStore() -> AppConfigurationStore {
+        AppConfigurationStore(fileURL: configFileURL)
     }
 
     public func makeBuiltinGestureConfigurationStore() -> GestureConfigurationStore {

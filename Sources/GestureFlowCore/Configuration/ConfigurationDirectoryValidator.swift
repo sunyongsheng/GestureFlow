@@ -21,7 +21,7 @@ public enum ConfigurationDirectoryValidator {
     private static func loadConfiguration(fileName: String, fileURL: URL) throws {
         switch fileName {
         case ConfigurationFileNames.config:
-            _ = try ConfigurationStore(fileURL: fileURL).load()
+            _ = try AppConfigurationStore(fileURL: fileURL).load()
         case ConfigurationFileNames.gesturesBuiltin, ConfigurationFileNames.gesturesCustom:
             _ = try GestureConfigurationStore(fileURL: fileURL).load()
         default:

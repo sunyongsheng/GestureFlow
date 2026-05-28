@@ -1,10 +1,10 @@
 import XCTest
 @testable import GestureFlowCore
 
-final class ConfigurationStoreTests: XCTestCase {
+final class AppConfigurationStoreTests: XCTestCase {
     func testSavesAndLoadsConfigurationFromInjectedURL() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let configuration = AppConfiguration(
             isEnabled: true,
             feedback: FeedbackConfiguration(
@@ -28,7 +28,7 @@ final class ConfigurationStoreTests: XCTestCase {
     func testLoadRecoveringBacksUpCorruptConfigurationAndReturnsDefaults() throws {
         let fileURL = try makeTemporaryConfigURL()
         try "not: valid: yaml: [[[".write(to: fileURL, atomically: true, encoding: .utf8)
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
 
         let result = store.loadRecovering()
 
@@ -52,7 +52,7 @@ final class ConfigurationStoreTests: XCTestCase {
           trailWidth: 4
         """
         try partialConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
 
         let configuration = try store.load()
 
@@ -71,7 +71,7 @@ final class ConfigurationStoreTests: XCTestCase {
           maximumSampleDistance: 120
         """
         try partialConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
 
         let configuration = try store.load()
 

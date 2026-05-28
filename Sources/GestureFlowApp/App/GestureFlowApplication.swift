@@ -26,7 +26,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
     private let application: NSApplication
     private var configurationDirectoryResolver: ConfigurationDirectoryResolver
-    private var configurationStore: ConfigurationStore
+    private var appConfigurationStore: AppConfigurationStore
     private let configurationDirectoryRelocator: ConfigurationDirectoryRelocator
     private let runtimeState: RuntimeState
     private let permissionService: PermissionService
@@ -54,7 +54,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     init(
         application: NSApplication = .shared,
         configurationDirectoryResolver: ConfigurationDirectoryResolver? = nil,
-        configurationStore: ConfigurationStore? = nil,
+        appConfigurationStore: AppConfigurationStore? = nil,
         gestureConfigurationService: GestureConfigurationService? = nil,
         configurationDirectoryRelocator: ConfigurationDirectoryRelocator? = nil,
         permissionService: PermissionService = PermissionService(),
@@ -69,14 +69,14 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     ) {
         self.application = application
         let resolvedResolver = configurationDirectoryResolver ?? ConfigurationDirectoryResolver.bootstrap()
-        let resolvedConfigurationStore = configurationStore ?? resolvedResolver.makeConfigurationStore()
+        let resolvedAppConfigurationStore = appConfigurationStore ?? resolvedResolver.makeAppConfigurationStore()
         let resolvedGestureService = gestureConfigurationService
             ?? GestureConfigurationService(
                 builtinStore: resolvedResolver.makeBuiltinGestureConfigurationStore(),
                 customStore: resolvedResolver.makeCustomGestureConfigurationStore()
             )
         self.configurationDirectoryResolver = resolvedResolver
-        self.configurationStore = resolvedConfigurationStore
+        self.appConfigurationStore = resolvedAppConfigurationStore
         self.configurationDirectoryRelocator = configurationDirectoryRelocator
             ?? ConfigurationDirectoryRelocator(
                 configurationDirectoryStore: resolvedResolver.configurationDirectoryStore
@@ -89,7 +89,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.terminateApplication = terminateApplication
         self.showSettingsHandler = showSettings
         self.scheduleOnMain = scheduleOnMain
-        self.initialLoadResult = resolvedConfigurationStore.loadRecovering()
+        self.initialLoadResult = resolvedAppConfigurationStore.loadRecovering()
         self.runtimeState = RuntimeState(
             appConfiguration: initialLoadResult.configuration,
             gestureConfigurationService: resolvedGestureService
@@ -266,7 +266,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         mode: ConfigurationDirectoryRelocationMode = .copyCurrentToEmptyTarget
     ) throws {
         if mode == .copyCurrentToEmptyTarget {
-            try configurationStore.save(configuration)
+            try appConfigurationStore.save(configuration)
             try runtimeState.gestureConfigurationService.save()
         }
 
@@ -278,13 +278,13 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         )
 
         configurationDirectoryResolver.apply(configurationDirectory: newDirectory)
-        configurationStore = configurationDirectoryResolver.makeConfigurationStore()
+        appConfigurationStore = configurationDirectoryResolver.makeAppConfigurationStore()
         runtimeState.gestureConfigurationService.replaceStores(
             builtinStore: configurationDirectoryResolver.makeBuiltinGestureConfigurationStore(),
             customStore: configurationDirectoryResolver.makeCustomGestureConfigurationStore()
         )
 
-        let loadResult = configurationStore.loadRecovering()
+        let loadResult = appConfigurationStore.loadRecovering()
         configuration = loadResult.configuration
         localizationManager.setLanguage(configuration.general.language)
         runtimeState.appConfiguration = configuration
@@ -311,7 +311,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         let previousLanguage = configuration.general.language
         configuration = newConfiguration
         runtimeState.appConfiguration = newConfiguration
-        try configurationStore.save(configuration)
+        try appConfigurationStore.save(configuration)
         if configuration.general.language != previousLanguage {
             localizationManager.setLanguage(configuration.general.language)
             statusBarController?.refreshLocalizedStrings()
@@ -344,7 +344,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         configuration.isEnabled = isEnabled
         runtimeState.appConfiguration.isEnabled = isEnabled
         do {
-            try configurationStore.save(configuration)
+            try appConfigurationStore.save(configuration)
             syncRuntimePresentation()
         } catch {
             showPlaceholder(title: "GestureFlow", message: "Failed to save configuration: \(error)")

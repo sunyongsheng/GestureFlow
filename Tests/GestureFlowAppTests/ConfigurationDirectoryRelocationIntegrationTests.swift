@@ -13,10 +13,10 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
         try isolated.store.save(configurationDirectory: oldDirectory.path)
 
         let configuration = AppConfiguration(isEnabled: true)
-        let configurationStore = ConfigurationStore(
+        let appConfigurationStore = AppConfigurationStore(
             fileURL: oldDirectory.appendingPathComponent("config.yaml")
         )
-        try configurationStore.save(configuration)
+        try appConfigurationStore.save(configuration)
 
         let gestureService = GestureConfigurationService(
             builtinStore: GestureConfigurationStore(
@@ -35,7 +35,7 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
 
         let application = GestureFlowApplication(
             configurationDirectoryResolver: resolver,
-            configurationStore: configurationStore,
+            appConfigurationStore: appConfigurationStore,
             gestureConfigurationService: gestureService,
             configurationDirectoryRelocator: ConfigurationDirectoryRelocator(
                 configurationDirectoryStore: isolated.store
@@ -52,7 +52,7 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
             resolver.configurationDirectoryURL.standardizedFileURL,
             newDirectory.standardizedFileURL
         )
-        XCTAssertEqual(try resolver.makeConfigurationStore().load(), configuration)
+        XCTAssertEqual(try resolver.makeAppConfigurationStore().load(), configuration)
         XCTAssertFalse(
             FileManager.default.fileExists(
                 atPath: oldDirectory.appendingPathComponent("config.yaml").path

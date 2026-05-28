@@ -209,7 +209,7 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testUpdatingFeedbackPersistsConfiguration() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         try store.save(AppConfiguration())
         let viewModel = makeViewModel(
             loadResult: ConfigurationLoadResult(
@@ -234,7 +234,7 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testUpdatingTriggerConfigurationPersistsConfiguration() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         try store.save(AppConfiguration())
         let viewModel = makeViewModel(
             loadResult: ConfigurationLoadResult(
@@ -259,7 +259,7 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testRestoreDefaultAdvancedSettingsResetsAndPersists() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         var configuration = AppConfiguration()
         configuration.feedback.trailColorHex = "#FFAA00"
         configuration.feedback.trailWidth = 7
@@ -294,7 +294,7 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testRestoreDefaultAdvancedSettingsPreservesIsEnabled() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         try store.save(AppConfiguration(isEnabled: true))
 
         let viewModel = makeViewModel(
@@ -315,7 +315,7 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testUpdatingGestureTargetApplicationPersistsConfiguration() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         try store.save(AppConfiguration())
         let viewModel = makeViewModel(
             loadResult: ConfigurationLoadResult(

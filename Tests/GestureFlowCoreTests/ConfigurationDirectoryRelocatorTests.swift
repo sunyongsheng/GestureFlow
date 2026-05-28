@@ -95,7 +95,7 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            try ConfigurationStore(
+            try AppConfigurationStore(
                 fileURL: newDirectory.appendingPathComponent("config.yaml")
             ).load(),
             targetConfig

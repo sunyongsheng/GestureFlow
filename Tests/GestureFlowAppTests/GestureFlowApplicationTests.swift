@@ -5,7 +5,7 @@ import GestureFlowCore
 final class GestureFlowApplicationTests: XCTestCase {
     func testLaunchAlwaysOpensSettingsOnLaunch() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -20,7 +20,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let notificationCenter = NotificationCenter()
         var showSettingsCount = 0
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             notificationCenter: notificationCenter,
@@ -34,7 +34,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testLaunchKeepsExistingStatusBarControllerAlive() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -47,7 +47,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in }
@@ -61,7 +61,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testLaunchPromptsForAccessibilityPermissionWhenMissing() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         var promptCount = 0
         var scheduledPrompt: (() -> Void)?
         let permissionService = PermissionService(
@@ -76,7 +76,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in },
@@ -95,7 +95,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testLaunchSchedulesPermissionPromptAfterOpeningSettings() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         var events: [String] = []
         var scheduledPrompt: (() -> Void)?
         let permissionService = PermissionService(
@@ -110,7 +110,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in events.append("settings") },
@@ -126,7 +126,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testActivationRefreshUpdatesVisibleRuntimeStateAfterLaunch() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         var isTrusted = false
         let permissionService = PermissionService(
             trustCheck: { isTrusted },
@@ -142,7 +142,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         let notificationCenter = NotificationCenter()
         var capturedSettingsViewModel: SettingsViewModel?
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             notificationCenter: notificationCenter,
@@ -168,7 +168,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testStartGestureFlowRefreshesCapturedSettingsViewModelRuntimeStateAfterLaunch() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -182,7 +182,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         var capturedSettingsViewModel: SettingsViewModel?
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
@@ -197,7 +197,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testSettingsViewModelCanStartGestureFlowThroughInjectedAction() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -211,7 +211,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         var capturedSettingsViewModel: SettingsViewModel?
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
@@ -227,7 +227,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testSettingsViewModelCanStopGestureFlowThroughInjectedAction() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -241,7 +241,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         var capturedSettingsViewModel: SettingsViewModel?
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { capturedSettingsViewModel = $0; _ = $1 }
@@ -258,7 +258,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testSettingsViewModelCanQuitApplicationThroughInjectedAction() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -273,7 +273,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         var terminateCallCount = 0
         var capturedSettingsViewModel: SettingsViewModel?
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             terminateApplication: { _ in terminateCallCount += 1 },
@@ -291,7 +291,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testLaunchCanInstallSettingsViewModelIntoBridgeAndOpenSettingsWindow() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -311,7 +311,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             }
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
@@ -328,7 +328,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testStartWithoutAccessibilityPermissionPromptsAndKeepsGestureFlowStopped() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         var promptCount = 0
         let permissionService = PermissionService(
             trustCheck: { false },
@@ -342,7 +342,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine
         )
@@ -361,7 +361,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testStartWithAccessibilityPermissionEnablesGestureFlowAndUpdatesMenuState() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -374,7 +374,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine
         )
@@ -392,7 +392,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testStartWithAccessibilityPermissionButEngineFailureKeepsGestureFlowStopped() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -405,7 +405,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             eventTap: eventTap
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine
         )
@@ -423,7 +423,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testPersistedEnabledStateThatFailsToAutoStartIsResetToStopped() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         try store.save(AppConfiguration(isEnabled: true))
         let permissionService = PermissionService(
             trustCheck: { true },
@@ -438,7 +438,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
 
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine
         )
@@ -454,7 +454,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testQuitMenuItemStopsGestureFlowBeforeTerminatingApplication() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -469,7 +469,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         var terminateCallCount = 0
         var wasStoppedBeforeTerminate = false
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             terminateApplication: { _ in
@@ -491,7 +491,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testTerminationNotificationStopsGestureFlow() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -505,7 +505,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         let notificationCenter = NotificationCenter()
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             notificationCenter: notificationCenter,
@@ -525,7 +525,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testQuitAfterManualStopKeepsDisabledPreference() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -539,7 +539,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         var capturedSettingsViewModel: SettingsViewModel?
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             terminateApplication: { _ in },
@@ -556,7 +556,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testClosingSettingsDoesNotStopGestureRecognition() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -590,7 +590,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             }
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
@@ -613,7 +613,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testPreferencesMenuItemSchedulesSettingsPresentationAsynchronously() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -628,7 +628,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         var showSettingsCount = 0
         var scheduledOpenSettings: [() -> Void] = []
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in showSettingsCount += 1 },
@@ -647,7 +647,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testQuitStopsGestureRecognitionUnderPresentationAwareSettingsFlow() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -682,7 +682,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         var terminateCallCount = 0
         var wasStoppedBeforeTerminate = false
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             terminateApplication: { _ in
@@ -711,7 +711,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testPreferencesMenuItemRoutesThroughSettingsWindowOpenDriver() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -732,7 +732,7 @@ final class GestureFlowApplicationTests: XCTestCase {
             }
         )
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { viewModel, _ in
@@ -758,7 +758,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
     func testReopeningSettingsReusesExistingViewModel() throws {
         let fileURL = try makeTemporaryConfigURL()
-        let store = ConfigurationStore(fileURL: fileURL)
+        let store = AppConfigurationStore(fileURL: fileURL)
         let permissionService = PermissionService(
             trustCheck: { true },
             permissionPrompt: {}
@@ -773,7 +773,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         var shownViewModels: [SettingsViewModel] = []
         var scheduledOpenSettings: [() -> Void] = []
         let application = GestureFlowApplication(
-            configurationStore: store,
+            appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { shownViewModels.append($0); _ = $1 },

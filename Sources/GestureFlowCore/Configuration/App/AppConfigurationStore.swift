@@ -16,10 +16,10 @@ public struct ConfigurationLoadResult: Equatable {
     }
 }
 
-public struct ConfigurationStore {
+public struct AppConfigurationStore {
     public var fileURL: URL
 
-    public init(fileURL: URL = ConfigurationStore.defaultFileURL()) {
+    public init(fileURL: URL = AppConfigurationStore.defaultFileURL()) {
         self.fileURL = fileURL
     }
 
