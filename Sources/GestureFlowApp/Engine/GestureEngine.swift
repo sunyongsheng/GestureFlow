@@ -248,7 +248,12 @@ final class GestureEngine {
             at: completionPoint,
             hideAfter: hideAfter
         )
-        feedbackHandler(.recognized(trigger: trigger, name: gesture.name))
+        feedbackHandler(
+            .recognized(
+                trigger: trigger,
+                name: AppServices.localization.localizedGestureDisplayName(gesture)
+            )
+        )
     }
 
     private func overlayHideDelay() -> TimeInterval {

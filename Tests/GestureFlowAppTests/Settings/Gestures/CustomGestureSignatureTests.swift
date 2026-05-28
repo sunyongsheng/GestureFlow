@@ -22,7 +22,7 @@ final class CustomGestureSignatureTests: XCTestCase {
         var savedConfiguration: GestureConfiguration?
         let viewModel = makeViewModel(
             gestureConfiguration: GestureConfiguration(
-                gestures: [GestureDefinition.builtInCloseWindow],
+                gestures: BuiltInGestureSeeds.factoryGestures(),
                 customGestureSignatures: [GestureSignature(tokens: [.up, .left])]
             ),
             saveGestureConfiguration: { savedConfiguration = $0 }

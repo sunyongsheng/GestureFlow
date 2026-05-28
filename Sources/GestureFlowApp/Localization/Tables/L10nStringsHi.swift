@@ -137,6 +137,7 @@ enum L10nStringsHi {
         .recoveryWithoutBackup: "क्षतिग्रस्त कॉन्फ़िगरेशन से पुनर्स्थापित, लेकिन फ़ाइल का बैकअप नहीं हो सका।",
 
         .errorGestureDuplicate: "डुप्लिकेट जेस्चर: प्रति ऐप, पथ और ट्रिगर बटन केवल एक।",
+        .errorGestureMergeConflict: "बिल्ट-इन और कस्टम कॉन्फ़िगरेशन फ़ाइलों में समान जेस्चर ID है। gestures-custom.yaml से डुप्लिकेट हटाएँ।",
         .errorRecordShortcut: "कीबोर्ड शॉर्टकट रिकॉर्ड करें।",
         .errorBundleIdentifierUnreadable: "चयनित ऐप का Bundle ID पढ़ नहीं सका।",
         .errorConfigDirectoryInvalidPath: "मान्य पथ दर्ज करें।",

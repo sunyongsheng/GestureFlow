@@ -137,6 +137,7 @@ enum L10nStringsJa {
         .recoveryWithoutBackup: "破損した設定から復元しましたが、破損ファイルをバックアップできませんでした。",
 
         .errorGestureDuplicate: "ジェスチャが重複しています。同じアプリ・パス・トリガーボタンには 1 つだけ設定できます。",
+        .errorGestureMergeConflict: "組み込みとカスタムの設定ファイルに同じジェスチャ ID があります。gestures-custom.yaml から重複を削除してください。",
         .errorRecordShortcut: "キーボードショートカットを録画してください。",
         .errorBundleIdentifierUnreadable: "選択したアプリの Bundle ID を読み取れませんでした。",
         .errorConfigDirectoryInvalidPath: "有効なパスを入力してください。",

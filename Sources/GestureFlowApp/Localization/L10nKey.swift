@@ -136,6 +136,7 @@ enum L10nKey: String, CaseIterable {
     case recoveryWithoutBackup
 
     case errorGestureDuplicate
+    case errorGestureMergeConflict
     case errorRecordShortcut
     case errorBundleIdentifierUnreadable
     case errorConfigDirectoryInvalidPath

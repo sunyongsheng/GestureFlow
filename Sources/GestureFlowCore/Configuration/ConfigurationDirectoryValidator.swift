@@ -22,7 +22,7 @@ public enum ConfigurationDirectoryValidator {
         switch fileName {
         case ConfigurationFileNames.config:
             _ = try ConfigurationStore(fileURL: fileURL).load()
-        case ConfigurationFileNames.gestures:
+        case ConfigurationFileNames.gesturesBuiltin, ConfigurationFileNames.gesturesCustom:
             _ = try GestureConfigurationStore(fileURL: fileURL).load()
         default:
             break

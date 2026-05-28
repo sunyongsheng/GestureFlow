@@ -3,20 +3,32 @@ import Foundation
 public struct GestureDefinition: Codable, Equatable, Identifiable {
     public var id: UUID
     public var targetBundleIdentifier: String?
-    public var name: String
+    public var name: String?
     public var isEnabled: Bool
     public var trigger: GestureTrigger
     public var signature: GestureSignature
     public var shortcut: KeyboardShortcutAction
+    public var source: GestureSource
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case targetBundleIdentifier
+        case name
+        case isEnabled
+        case trigger
+        case signature
+        case shortcut
+    }
 
     public init(
         id: UUID = UUID(),
         targetBundleIdentifier: String? = nil,
-        name: String,
+        name: String? = nil,
         isEnabled: Bool = true,
         trigger: GestureTrigger,
         signature: GestureSignature,
-        shortcut: KeyboardShortcutAction
+        shortcut: KeyboardShortcutAction,
+        source: GestureSource = .custom
     ) {
         self.id = id
         self.targetBundleIdentifier = targetBundleIdentifier
@@ -25,6 +37,33 @@ public struct GestureDefinition: Codable, Equatable, Identifiable {
         self.trigger = trigger
         self.signature = signature
         self.shortcut = shortcut
+        self.source = source
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        targetBundleIdentifier = try container.decodeIfPresent(String.self, forKey: .targetBundleIdentifier)
+        let decodedName = try container.decodeIfPresent(String.self, forKey: .name)
+        name = decodedName.flatMap { $0.isEmpty ? nil : $0 }
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        trigger = try container.decode(GestureTrigger.self, forKey: .trigger)
+        signature = try container.decode(GestureSignature.self, forKey: .signature)
+        shortcut = try container.decode(KeyboardShortcutAction.self, forKey: .shortcut)
+        source = .custom
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(targetBundleIdentifier, forKey: .targetBundleIdentifier)
+        if let name, !name.isEmpty {
+            try container.encode(name, forKey: .name)
+        }
+        try container.encode(isEnabled, forKey: .isEnabled)
+        try container.encode(trigger, forKey: .trigger)
+        try container.encode(signature, forKey: .signature)
+        try container.encode(shortcut, forKey: .shortcut)
     }
 }
 
@@ -117,15 +156,3 @@ public enum SystemCommandAction: String, Codable, Equatable {
     case lockScreen
 }
 
-public extension GestureDefinition {
-    static var builtInCloseWindow: GestureDefinition {
-        GestureDefinition(
-            id: GestureConfiguration.closeWindowGestureID,
-            targetBundleIdentifier: nil,
-            name: "关闭窗口",
-            trigger: .rightMouse,
-            signature: GestureSignature(tokens: [.down, .right]),
-            shortcut: KeyboardShortcutAction(keyCode: 13, modifiers: [.command])
-        )
-    }
-}

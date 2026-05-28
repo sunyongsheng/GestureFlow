@@ -19,8 +19,11 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
         try configurationStore.save(configuration)
 
         let gestureService = GestureConfigurationService(
-            store: GestureConfigurationStore(
-                fileURL: oldDirectory.appendingPathComponent("gestures.yaml")
+            builtinStore: GestureConfigurationStore(
+                fileURL: oldDirectory.appendingPathComponent(ConfigurationFileNames.gesturesBuiltin)
+            ),
+            customStore: GestureConfigurationStore(
+                fileURL: oldDirectory.appendingPathComponent(ConfigurationFileNames.gesturesCustom)
             )
         )
         gestureService.load()

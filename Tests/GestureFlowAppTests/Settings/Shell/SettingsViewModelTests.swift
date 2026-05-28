@@ -29,10 +29,8 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testRestoreDefaultGestureConfigurationResetsAndPersists() throws {
         let directory = try makeTemporaryDirectory()
-        let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.yaml")
-        )
-        var configuration = GestureConfiguration.defaultTemplate
+        let (service, saveGestureConfiguration) = try makeGesturePersistence(in: directory)
+        var configuration = service.configuration
         configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
         configuration.gestures.append(
             GestureDefinition(
@@ -40,14 +38,16 @@ final class SettingsViewModelTests: XCTestCase {
                 name: "Safari Back",
                 trigger: .rightMouse,
                 signature: GestureSignature(tokens: [.left]),
-                shortcut: KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+                shortcut: KeyboardShortcutAction(keyCode: 123, modifiers: [.command]),
+                source: .custom
             )
         )
-        try gestureStore.save(configuration)
+        service.configuration = configuration
+        try service.save()
 
         let viewModel = makeViewModel(
-            gestureConfiguration: try gestureStore.load(),
-            saveGestureConfiguration: { try gestureStore.save($0) }
+            gestureConfiguration: service.configuration,
+            saveGestureConfiguration: saveGestureConfiguration
         )
         viewModel.selectedApplicationScope = .application(bundleIdentifier: "com.apple.Safari")
         _ = viewModel.addGesture()
@@ -58,7 +58,8 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.selectedApplicationScope, .global)
         XCTAssertTrue(viewModel.registeredApplicationBundleIdentifiers.isEmpty)
         XCTAssertNil(viewModel.gestureSaveErrorMessage)
-        XCTAssertEqual(try gestureStore.load(), GestureConfiguration.defaultTemplate)
+        XCTAssertTrue(try service.customStore.load().gestures.isEmpty)
+        XCTAssertEqual(try service.builtinStore.load().gestures.count, 1)
     }
 
     func testCommitGestureShowsErrorWhenShortcutIsMissing() throws {
@@ -73,20 +74,19 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testCommitGestureKeepsPendingStateWhenValidationFails() throws {
         let directory = try makeTemporaryDirectory()
-        let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.yaml")
-        )
+        let (service, saveGestureConfiguration) = try makeGesturePersistence(in: directory)
         let duplicate = GestureDefinition(
             name: "Duplicate",
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.down, .right]),
             shortcut: KeyboardShortcutAction(keyCode: 1, modifiers: [])
         )
-        try gestureStore.save(GestureConfiguration(gestures: [duplicate]))
+        try service.customStore.save(GestureConfiguration(gestures: [duplicate]))
+        service.load()
 
         let viewModel = makeViewModel(
-            gestureConfiguration: try gestureStore.load(),
-            saveGestureConfiguration: { try gestureStore.save($0) }
+            gestureConfiguration: service.configuration,
+            saveGestureConfiguration: saveGestureConfiguration
         )
         let newGestureID = viewModel.addGesture()
         viewModel.stageGestureUpdate(id: newGestureID) { gesture in
@@ -98,18 +98,16 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertNotNil(viewModel.gestureSaveErrorMessage)
         XCTAssertTrue(viewModel.isGesturePendingSave(id: newGestureID))
-        XCTAssertEqual(try gestureStore.load().gestures.count, 1)
+        XCTAssertEqual(try service.customStore.load().gestures.count, 1)
     }
 
     func testAddGestureDoesNotPersistUntilCommitted() throws {
         let directory = try makeTemporaryDirectory()
-        let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.yaml")
-        )
-        let initialCount = try gestureStore.load().gestures.count
+        let (service, saveGestureConfiguration) = try makeGesturePersistence(in: directory)
+        let initialCustomCount = try service.customStore.load().gestures.count
         let viewModel = makeViewModel(
-            gestureConfiguration: try gestureStore.load(),
-            saveGestureConfiguration: { try gestureStore.save($0) }
+            gestureConfiguration: service.configuration,
+            saveGestureConfiguration: saveGestureConfiguration
         )
 
         let newGestureID = viewModel.addGesture()
@@ -118,21 +116,19 @@ final class SettingsViewModelTests: XCTestCase {
             gesture.shortcut = KeyboardShortcutAction(keyCode: 0, modifiers: [.command])
         }
 
-        XCTAssertEqual(try gestureStore.load().gestures.count, initialCount)
+        XCTAssertEqual(try service.customStore.load().gestures.count, initialCustomCount)
         XCTAssertTrue(viewModel.isGesturePendingSave(id: newGestureID))
 
         viewModel.commitGesture(id: newGestureID)
 
         XCTAssertNil(viewModel.gestureSaveErrorMessage)
-        XCTAssertEqual(try gestureStore.load().gestures.count, initialCount + 1)
+        XCTAssertEqual(try service.customStore.load().gestures.count, initialCustomCount + 1)
         XCTAssertFalse(viewModel.isGesturePendingSave(id: newGestureID))
     }
 
     func testUpdatingGesturePersistsGestureConfiguration() throws {
         let directory = try makeTemporaryDirectory()
-        let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.yaml")
-        )
+        let (service, saveGestureConfiguration) = try makeGesturePersistence(in: directory)
         let gesture = GestureDefinition(
             id: UUID(uuidString: "4A3BB501-27B8-4A3B-9EE4-344D823F3515")!,
             name: "Back",
@@ -140,10 +136,11 @@ final class SettingsViewModelTests: XCTestCase {
             signature: GestureSignature(tokens: [.left]),
             shortcut: KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
         )
-        try gestureStore.save(GestureConfiguration(gestures: [gesture]))
+        try service.customStore.save(GestureConfiguration(gestures: [gesture]))
+        service.load()
         let viewModel = makeViewModel(
-            gestureConfiguration: try gestureStore.load(),
-            saveGestureConfiguration: { try gestureStore.save($0) }
+            gestureConfiguration: service.configuration,
+            saveGestureConfiguration: saveGestureConfiguration
         )
 
         viewModel.stageGestureUpdate(id: gesture.id) { updatedGesture in
@@ -157,7 +154,7 @@ final class SettingsViewModelTests: XCTestCase {
 
         viewModel.commitGesture(id: gesture.id)
 
-        let persistedGesture = try XCTUnwrap(try gestureStore.load().gestures.first)
+        let persistedGesture = try XCTUnwrap(try service.customStore.load().gestures.first)
         XCTAssertEqual(persistedGesture.name, "Lock")
         XCTAssertFalse(persistedGesture.isEnabled)
         XCTAssertEqual(persistedGesture.trigger, .middleMouse)
@@ -179,10 +176,8 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testRemoveApplicationDeletesScopedGestures() throws {
         let directory = try makeTemporaryDirectory()
-        let gestureStore = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.yaml")
-        )
-        var configuration = GestureConfiguration.defaultTemplate
+        let (service, saveGestureConfiguration) = try makeGesturePersistence(in: directory)
+        var configuration = service.configuration
         configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
         configuration.gestures.append(
             GestureDefinition(
@@ -190,21 +185,25 @@ final class SettingsViewModelTests: XCTestCase {
                 name: "Safari Close",
                 trigger: .rightMouse,
                 signature: GestureSignature(tokens: [.left]),
-                shortcut: KeyboardShortcutAction(keyCode: 13, modifiers: [.command])
+                shortcut: KeyboardShortcutAction(keyCode: 13, modifiers: [.command]),
+                source: .custom
             )
         )
-        try gestureStore.save(configuration)
+        service.configuration = configuration
+        try service.save()
 
         let viewModel = makeViewModel(
-            gestureConfiguration: try gestureStore.load(),
-            saveGestureConfiguration: { try gestureStore.save($0) }
+            gestureConfiguration: service.configuration,
+            saveGestureConfiguration: saveGestureConfiguration
         )
         viewModel.removeApplication(bundleIdentifier: "com.apple.Safari")
 
-        let loaded = try gestureStore.load()
-        XCTAssertTrue(loaded.applicationBundleIdentifiers.isEmpty)
-        XCTAssertEqual(loaded.gestures.count, 1)
-        XCTAssertNil(loaded.gestures[0].targetBundleIdentifier)
+        service.configuration = viewModel.gestureConfiguration
+        try service.save()
+        XCTAssertTrue(try service.customStore.load().applicationBundleIdentifiers.isEmpty)
+        XCTAssertTrue(try service.customStore.load().gestures.isEmpty)
+        XCTAssertEqual(service.configuration.gestures.count, 1)
+        XCTAssertEqual(service.configuration.gestures[0].source, .builtin)
         XCTAssertEqual(viewModel.selectedApplicationScope, .global)
     }
 
@@ -460,6 +459,24 @@ final class SettingsViewModelTests: XCTestCase {
             pauseGestureRecognition: {},
             resumeGestureRecognition: {}
         )
+    }
+
+    private func makeGesturePersistence(
+        in directory: URL
+    ) throws -> (GestureConfigurationService, (GestureConfiguration) throws -> Void) {
+        let service = GestureConfigurationService(
+            builtinStore: GestureConfigurationStore(
+                fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesBuiltin)
+            ),
+            customStore: GestureConfigurationStore(
+                fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesCustom)
+            )
+        )
+        let save: (GestureConfiguration) throws -> Void = { configuration in
+            service.configuration = configuration
+            try service.save()
+        }
+        return (service, save)
     }
 
     private func makeTemporaryConfigURL() throws -> URL {

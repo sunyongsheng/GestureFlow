@@ -137,6 +137,7 @@ enum L10nStringsKo {
         .recoveryWithoutBackup: "손상된 구성에서 복구했지만 손상된 파일을 백업할 수 없었습니다.",
 
         .errorGestureDuplicate: "중복 제스처: 앱, 경로, 트리거 버튼당 하나만 허용됩니다.",
+        .errorGestureMergeConflict: "내장 및 사용자 지정 구성 파일에 동일한 제스처 ID가 있습니다. gestures-custom.yaml에서 중복 항목을 제거하세요.",
         .errorRecordShortcut: "키보드 단축키를 녹화하세요.",
         .errorBundleIdentifierUnreadable: "선택한 앱의 Bundle ID를 읽을 수 없습니다.",
         .errorConfigDirectoryInvalidPath: "유효한 경로를 입력하세요.",

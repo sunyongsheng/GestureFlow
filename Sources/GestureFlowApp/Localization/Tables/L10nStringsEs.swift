@@ -137,6 +137,7 @@ enum L10nStringsEs {
         .recoveryWithoutBackup: "Recuperado de una configuración dañada, pero no se pudo hacer copia de seguridad del archivo dañado.",
 
         .errorGestureDuplicate: "Gesto duplicado: solo se permite uno por aplicación, ruta y botón de activación.",
+        .errorGestureMergeConflict: "El mismo ID de gesto existe en los archivos integrado y personalizado. Elimina el duplicado de gestures-custom.yaml.",
         .errorRecordShortcut: "Graba un atajo de teclado.",
         .errorBundleIdentifierUnreadable: "No se pudo leer el Bundle ID de la aplicación seleccionada.",
         .errorConfigDirectoryInvalidPath: "Introduce una ruta válida.",

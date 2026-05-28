@@ -54,7 +54,7 @@ final class GestureRecognizerTests: XCTestCase {
     func testDefaultGestureTemplateIncludesCloseWindowGesture() {
         let configuration = GestureConfiguration.defaultTemplate
 
-        XCTAssertEqual(configuration.gestures.map(\.name), ["关闭窗口"])
+        XCTAssertEqual(configuration.gestures.map(\.name), [nil])
         XCTAssertEqual(configuration.gestures.map(\.signature.tokens), [[.down, .right]])
     }
 }

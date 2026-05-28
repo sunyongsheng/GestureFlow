@@ -75,8 +75,12 @@ public struct ConfigurationDirectoryResolver {
         configurationDirectoryURL.appendingPathComponent(ConfigurationFileNames.config)
     }
 
-    public var gesturesFileURL: URL {
-        configurationDirectoryURL.appendingPathComponent(ConfigurationFileNames.gestures)
+    public var gesturesBuiltinFileURL: URL {
+        configurationDirectoryURL.appendingPathComponent(ConfigurationFileNames.gesturesBuiltin)
+    }
+
+    public var gesturesCustomFileURL: URL {
+        configurationDirectoryURL.appendingPathComponent(ConfigurationFileNames.gesturesCustom)
     }
 
     public static func bootstrap(
@@ -115,8 +119,12 @@ public struct ConfigurationDirectoryResolver {
         ConfigurationStore(fileURL: configFileURL)
     }
 
-    public func makeGestureConfigurationStore() -> GestureConfigurationStore {
-        GestureConfigurationStore(fileURL: gesturesFileURL)
+    public func makeBuiltinGestureConfigurationStore() -> GestureConfigurationStore {
+        GestureConfigurationStore(fileURL: gesturesBuiltinFileURL)
+    }
+
+    public func makeCustomGestureConfigurationStore() -> GestureConfigurationStore {
+        GestureConfigurationStore(fileURL: gesturesCustomFileURL)
     }
 
     public func displayPath() -> String {

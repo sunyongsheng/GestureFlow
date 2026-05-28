@@ -84,7 +84,7 @@ final class GestureOverlayWindowTests: XCTestCase {
         )
         overlayWindow.completeGesture(
             with: .recognized(
-                gestureID: GestureConfiguration.closeWindowGestureID,
+                gestureID: BuiltInGestureSeeds.closeWindowID,
                 storedName: "关闭窗口"
             ),
             at: origin,
@@ -109,7 +109,7 @@ final class GestureOverlayWindowTests: XCTestCase {
         )
         overlayWindow.completeGesture(
             with: .deliveryFailed(
-                gestureID: GestureConfiguration.closeWindowGestureID,
+                gestureID: BuiltInGestureSeeds.closeWindowID,
                 storedName: "关闭窗口"
             ),
             at: origin,
@@ -140,7 +140,7 @@ final class GestureOverlayWindowTests: XCTestCase {
             appearance: appearance,
             feedback: LiveGestureOverlayFeedback(
                 message: nil,
-                matchedGestureID: GestureConfiguration.closeWindowGestureID,
+                matchedGestureID: BuiltInGestureSeeds.closeWindowID,
                 matchedGestureStoredName: "关闭窗口",
                 showsCard: true,
                 usesTrailColor: true

@@ -137,6 +137,7 @@ enum L10nStringsZhHant {
         .recoveryWithoutBackup: "已從損壞的設定中還原，但無法備份損壞的檔案。",
 
         .errorGestureDuplicate: "手勢重複：同一應用程式、路徑與觸發鍵只能設定一條。",
+        .errorGestureMergeConflict: "內建與自訂手勢設定中存在相同的手勢 ID，請從 gestures-custom.yaml 中移除重複項。",
         .errorRecordShortcut: "請錄製快捷鍵。",
         .errorBundleIdentifierUnreadable: "無法讀取所選應用程式的 Bundle ID。",
         .errorConfigDirectoryInvalidPath: "請輸入有效路徑。",

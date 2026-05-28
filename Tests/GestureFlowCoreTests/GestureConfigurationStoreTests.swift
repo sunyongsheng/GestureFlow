@@ -9,12 +9,12 @@ final class GestureConfigurationStoreTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
 
         let store = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.yaml")
+            fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesCustom)
         )
 
         let configuration = try store.load()
 
-        XCTAssertEqual(configuration, GestureConfiguration.defaultTemplate)
+        XCTAssertEqual(configuration, GestureConfiguration.emptyCustomTemplate)
     }
 
     func testSaveAndLoadRoundTrip() throws {
@@ -24,9 +24,9 @@ final class GestureConfigurationStoreTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
 
         let store = GestureConfigurationStore(
-            fileURL: directory.appendingPathComponent("gestures.yaml")
+            fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesCustom)
         )
-        var configuration = GestureConfiguration.defaultTemplate
+        var configuration = GestureConfiguration.emptyCustomTemplate
         configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
 
         try store.save(configuration)

@@ -28,6 +28,28 @@ final class LocalizationManagerTests: XCTestCase {
         XCTAssertEqual(manager.string(.builtInCloseWindowGestureName), "ウィンドウを閉じる")
     }
 
+    func testLocalizedGestureDisplayNameUsesStoredNameWhenPresent() {
+        let manager = LocalizationManager(language: .en)
+        XCTAssertEqual(
+            manager.localizedGestureDisplayName(
+                id: BuiltInGestureSeeds.closeWindowID,
+                storedName: "Custom Close"
+            ),
+            "Custom Close"
+        )
+    }
+
+    func testLocalizedGestureDisplayNameFallsBackWhenStoredNameMissing() {
+        let manager = LocalizationManager(language: .en)
+        XCTAssertEqual(
+            manager.localizedGestureDisplayName(
+                id: BuiltInGestureSeeds.closeWindowID,
+                storedName: nil
+            ),
+            "Close Window"
+        )
+    }
+
     func testGestureSignatureUsesIdeographicSeparatorForJapanese() {
         let manager = LocalizationManager(language: .ja)
         let signature = GestureSignature(tokens: [.up, .left])

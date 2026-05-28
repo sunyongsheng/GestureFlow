@@ -257,6 +257,7 @@ struct GestureSettingsView: View {
                 TapGesture(count: 2).onEnded {
                     activateGestureEditing(gesture.id)
                     nameEditDrafts[gesture.id] = storedGestureName(for: gesture)
+                        ?? viewModel.localizedGestureName(gesture)
                     focusedNameGestureID = gesture.id
                 }
             )
@@ -266,7 +267,9 @@ struct GestureSettingsView: View {
         Binding(
             get: {
                 if focusedNameGestureID == gesture.id {
-                    return nameEditDrafts[gesture.id] ?? storedGestureName(for: gesture)
+                    return nameEditDrafts[gesture.id]
+                        ?? storedGestureName(for: gesture)
+                        ?? viewModel.localizedGestureName(gesture)
                 }
                 return viewModel.localizedGestureName(gesture)
             },
@@ -276,7 +279,7 @@ struct GestureSettingsView: View {
         )
     }
 
-    private func storedGestureName(for gesture: GestureDefinition) -> String {
+    private func storedGestureName(for gesture: GestureDefinition) -> String? {
         storedGestureName(forGestureID: gesture.id) ?? gesture.name
     }
 
@@ -359,11 +362,21 @@ struct GestureSettingsView: View {
             return
         }
 
-        let draft = nameEditDrafts[gestureID] ?? storedGestureName(for: gesture)
+        let draft = nameEditDrafts[gestureID]
+            ?? storedGestureName(for: gesture)
+            ?? viewModel.localizedGestureName(gesture)
         let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        let resolvedName = trimmed.isEmpty ? storedGestureName(for: gesture) : trimmed
+        let localizedDefault = viewModel.localizedGestureName(gesture)
+        let resolvedName: String?
+        if trimmed.isEmpty {
+            resolvedName = nil
+        } else if trimmed == localizedDefault, gesture.name == nil {
+            resolvedName = nil
+        } else {
+            resolvedName = trimmed
+        }
 
-        if resolvedName != storedGestureName(for: gesture) {
+        if resolvedName != gesture.name {
             viewModel.stageGestureUpdate(id: gesture.id) { $0.name = resolvedName }
         }
 

@@ -137,6 +137,7 @@ enum L10nStringsFr {
         .recoveryWithoutBackup: "Récupéré à partir d’une configuration endommagée, mais la sauvegarde du fichier endommagé a échoué.",
 
         .errorGestureDuplicate: "Geste en double : un seul geste par application, chemin et bouton de déclenchement.",
+        .errorGestureMergeConflict: "Le même ID de geste existe dans les fichiers intégré et personnalisé. Supprimez le doublon dans gestures-custom.yaml.",
         .errorRecordShortcut: "Enregistrez un raccourci clavier.",
         .errorBundleIdentifierUnreadable: "Impossible de lire le Bundle ID de l’application sélectionnée.",
         .errorConfigDirectoryInvalidPath: "Saisissez un chemin valide.",

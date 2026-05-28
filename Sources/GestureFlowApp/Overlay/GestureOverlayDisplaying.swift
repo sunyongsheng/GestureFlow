@@ -49,13 +49,13 @@ struct GestureOverlayMarker: Equatable {
 }
 
 enum GestureOverlayCompletion: Equatable {
-    case recognized(gestureID: UUID, storedName: String)
+    case recognized(gestureID: UUID, storedName: String?)
     case unmatched
     case rejected
-    case targetNotFound(gestureID: UUID, storedName: String)
-    case shortcutNotConfigured(gestureID: UUID, storedName: String)
-    case deliveryFailed(gestureID: UUID, storedName: String)
-    case executionFailed(gestureID: UUID, storedName: String)
+    case targetNotFound(gestureID: UUID, storedName: String?)
+    case shortcutNotConfigured(gestureID: UUID, storedName: String?)
+    case deliveryFailed(gestureID: UUID, storedName: String?)
+    case executionFailed(gestureID: UUID, storedName: String?)
 }
 
 protocol GestureOverlayDisplaying: AnyObject {

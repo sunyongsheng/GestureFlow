@@ -71,7 +71,10 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         let resolvedResolver = configurationDirectoryResolver ?? ConfigurationDirectoryResolver.bootstrap()
         let resolvedConfigurationStore = configurationStore ?? resolvedResolver.makeConfigurationStore()
         let resolvedGestureService = gestureConfigurationService
-            ?? GestureConfigurationService(store: resolvedResolver.makeGestureConfigurationStore())
+            ?? GestureConfigurationService(
+                builtinStore: resolvedResolver.makeBuiltinGestureConfigurationStore(),
+                customStore: resolvedResolver.makeCustomGestureConfigurationStore()
+            )
         self.configurationDirectoryResolver = resolvedResolver
         self.configurationStore = resolvedConfigurationStore
         self.configurationDirectoryRelocator = configurationDirectoryRelocator
@@ -205,6 +208,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
                 backupURL: initialLoadResult.backupURL
             ),
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
+            conflictingGestureIDs: runtimeState.gestureConfigurationService.conflictingGestureIDs,
             configurationDirectoryPath: configurationDirectoryResolver.displayPath(),
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
@@ -275,8 +279,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
         configurationDirectoryResolver.apply(configurationDirectory: newDirectory)
         configurationStore = configurationDirectoryResolver.makeConfigurationStore()
-        runtimeState.gestureConfigurationService.replaceStore(
-            with: configurationDirectoryResolver.makeGestureConfigurationStore()
+        runtimeState.gestureConfigurationService.replaceStores(
+            builtinStore: configurationDirectoryResolver.makeBuiltinGestureConfigurationStore(),
+            customStore: configurationDirectoryResolver.makeCustomGestureConfigurationStore()
         )
 
         let loadResult = configurationStore.loadRecovering()
@@ -291,6 +296,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         }
 
         syncRuntimePresentation()
+        settingsViewModel?.syncGestureConfiguration(runtimeState.gestureConfigurationService.configuration)
+        settingsViewModel?.syncGestureMergeConflicts(runtimeState.gestureConfigurationService.conflictingGestureIDs)
         settingsViewModel?.updateRuntimeStatus(
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,
@@ -323,6 +330,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         runtimeState.gestureConfigurationService.configuration = newGestureConfiguration
         try runtimeState.gestureConfigurationService.save()
         settingsViewModel?.syncGestureConfiguration(runtimeState.gestureConfigurationService.configuration)
+        settingsViewModel?.syncGestureMergeConflicts(runtimeState.gestureConfigurationService.conflictingGestureIDs)
         settingsViewModel?.updateRuntimeStatus(
             configuration: configuration,
             gestureConfiguration: runtimeState.gestureConfigurationService.configuration,

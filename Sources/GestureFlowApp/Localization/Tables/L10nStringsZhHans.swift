@@ -137,6 +137,7 @@ enum L10nStringsZhHans {
         .recoveryWithoutBackup: "已从损坏的配置中恢复，但无法备份损坏的文件。",
 
         .errorGestureDuplicate: "存在重复的手势：同一应用、轨迹与触发键只能配置一条。",
+        .errorGestureMergeConflict: "内置与自定义手势配置中存在相同的手势 ID，请从 gestures-custom.yaml 中移除重复项。",
         .errorRecordShortcut: "请录制快捷键。",
         .errorBundleIdentifierUnreadable: "无法读取所选应用的 Bundle ID。",
         .errorConfigDirectoryInvalidPath: "请输入有效路径。",

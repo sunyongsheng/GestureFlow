@@ -1,15 +1,13 @@
 import Foundation
 
 public struct GestureConfiguration: Codable, Equatable {
-    public static let closeWindowGestureID = UUID(uuidString: "A7C4E1B2-3D5F-4A89-9C0E-1F2A3B4C5D6E")!
-
     public var applicationBundleIdentifiers: [String]
     public var gestures: [GestureDefinition]
     public var customGestureSignatures: [GestureSignature]
 
     public init(
         applicationBundleIdentifiers: [String] = [],
-        gestures: [GestureDefinition] = [GestureDefinition.builtInCloseWindow],
+        gestures: [GestureDefinition] = [],
         customGestureSignatures: [GestureSignature] = []
     ) {
         self.applicationBundleIdentifiers = applicationBundleIdentifiers
@@ -17,11 +15,15 @@ public struct GestureConfiguration: Codable, Equatable {
         self.customGestureSignatures = customGestureSignatures
     }
 
+    public static var emptyCustomTemplate: GestureConfiguration {
+        GestureConfiguration()
+    }
+
     public static var defaultTemplate: GestureConfiguration {
-        GestureConfiguration(
-            applicationBundleIdentifiers: [],
-            gestures: [GestureDefinition.builtInCloseWindow]
-        )
+        SplitGestureConfigurationLoader.merge(
+            builtin: BuiltInGestureSeeds.factoryBuiltinConfiguration(),
+            custom: .emptyCustomTemplate
+        ).configuration
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -36,8 +38,7 @@ public struct GestureConfiguration: Codable, Equatable {
             [String].self,
             forKey: .applicationBundleIdentifiers
         ) ?? []
-        gestures = try container.decodeIfPresent([GestureDefinition].self, forKey: .gestures)
-            ?? [GestureDefinition.builtInCloseWindow]
+        gestures = try container.decodeIfPresent([GestureDefinition].self, forKey: .gestures) ?? []
         customGestureSignatures = try container.decodeIfPresent(
             [GestureSignature].self,
             forKey: .customGestureSignatures

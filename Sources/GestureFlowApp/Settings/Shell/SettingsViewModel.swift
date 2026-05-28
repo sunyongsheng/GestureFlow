@@ -9,6 +9,7 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var recoveryBackupPath: String?
     @Published private(set) var saveErrorMessage: String?
     @Published private(set) var gestureSaveErrorMessage: String?
+    private var gestureMergeConflictIDs: [UUID] = []
     @Published private(set) var isRunning: Bool
     @Published private(set) var isAccessibilityTrusted: Bool
     @Published private(set) var isLaunchAtLoginEnabled: Bool
@@ -44,6 +45,7 @@ final class SettingsViewModel: ObservableObject {
     init(
         loadResult: ConfigurationLoadResult,
         gestureConfiguration: GestureConfiguration,
+        conflictingGestureIDs: [UUID] = [],
         configurationDirectoryPath: String = "~",
         isRunning: Bool,
         isAccessibilityTrusted: Bool,
@@ -86,6 +88,7 @@ final class SettingsViewModel: ObservableObject {
         self.openApplicationPanel = openApplicationPanel
         self.pauseGestureRecognition = pauseGestureRecognition
         self.resumeGestureRecognition = resumeGestureRecognition
+        syncGestureMergeConflicts(conflictingGestureIDs)
     }
 
     var recoveryNoticeMessage: String? {
@@ -173,7 +176,8 @@ final class SettingsViewModel: ObservableObject {
             name: localizationManager.string(.gesturesNewGestureName),
             trigger: .rightMouse,
             signature: GestureSignature(tokens: [.down, .right]),
-            shortcut: KeyboardShortcutAction(keyCode: 0, modifiers: [])
+            shortcut: KeyboardShortcutAction(keyCode: 0, modifiers: []),
+            source: .custom
         )
         var updatedConfiguration = gestureConfiguration
         updatedConfiguration.gestures.append(gesture)
@@ -375,6 +379,13 @@ final class SettingsViewModel: ObservableObject {
         unsavedGestureIDs.removeAll()
     }
 
+    func syncGestureMergeConflicts(_ conflictingGestureIDs: [UUID]) {
+        gestureMergeConflictIDs = conflictingGestureIDs
+        if !conflictingGestureIDs.isEmpty {
+            gestureSaveErrorMessage = localizationManager.string(.errorGestureMergeConflict)
+        }
+    }
+
     func restoreDefaultGestureConfiguration() {
         gestureConfiguration = GestureConfiguration.defaultTemplate
         selectedApplicationScope = .global
@@ -394,6 +405,11 @@ final class SettingsViewModel: ObservableObject {
     }
 
     private func persistGestureConfiguration() {
+        if !gestureMergeConflictIDs.isEmpty {
+            gestureSaveErrorMessage = localizationManager.string(.errorGestureMergeConflict)
+            return
+        }
+
         let conflicts = ConflictDetector().detect(in: gestureConfiguration.gestures)
         guard conflicts.isEmpty else {
             gestureSaveErrorMessage = localizationManager.string(.errorGestureDuplicate)

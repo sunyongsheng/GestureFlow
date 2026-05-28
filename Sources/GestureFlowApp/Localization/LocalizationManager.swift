@@ -78,11 +78,14 @@ final class LocalizationManager: ObservableObject {
         }
     }
 
-    func localizedGestureDisplayName(id: UUID, storedName: String) -> String {
-        if id == GestureConfiguration.closeWindowGestureID {
+    func localizedGestureDisplayName(id: UUID, storedName: String?) -> String {
+        if let storedName, !storedName.isEmpty {
+            return storedName
+        }
+        if id == BuiltInGestureSeeds.closeWindowID {
             return string(.builtInCloseWindowGestureName)
         }
-        return storedName
+        return storedName ?? ""
     }
 
     func localizedGestureDisplayName(_ gesture: GestureDefinition) -> String {

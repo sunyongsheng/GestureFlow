@@ -30,7 +30,7 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
 
         try writeValidAppConfiguration(to: oldDirectory.appendingPathComponent("config.yaml"))
-        try writeValidGestureConfiguration(to: oldDirectory.appendingPathComponent("gestures.yaml"))
+        try writeValidSplitGestureConfiguration(in: oldDirectory)
 
         let isolated = makeIsolatedStore()
         let relocator = ConfigurationDirectoryRelocator(
@@ -45,9 +45,27 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
 
         XCTAssertEqual(resolvedNewDirectory.standardizedFileURL, newDirectory.standardizedFileURL)
         XCTAssertTrue(FileManager.default.fileExists(atPath: newDirectory.appendingPathComponent("config.yaml").path))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: newDirectory.appendingPathComponent("gestures.yaml").path))
+        XCTAssertTrue(
+            FileManager.default.fileExists(
+                atPath: newDirectory.appendingPathComponent(ConfigurationFileNames.gesturesBuiltin).path
+            )
+        )
+        XCTAssertTrue(
+            FileManager.default.fileExists(
+                atPath: newDirectory.appendingPathComponent(ConfigurationFileNames.gesturesCustom).path
+            )
+        )
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("config.yaml").path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("gestures.yaml").path))
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: oldDirectory.appendingPathComponent(ConfigurationFileNames.gesturesBuiltin).path
+            )
+        )
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: oldDirectory.appendingPathComponent(ConfigurationFileNames.gesturesCustom).path
+            )
+        )
         XCTAssertEqual(isolated.store.load(), newDirectory.path)
     }
 
@@ -63,7 +81,7 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
             to: newDirectory.appendingPathComponent("config.yaml"),
             configuration: targetConfig
         )
-        try writeValidGestureConfiguration(to: oldDirectory.appendingPathComponent("gestures.yaml"))
+        try writeValidSplitGestureConfiguration(in: oldDirectory)
 
         let isolated = makeIsolatedStore()
         let relocator = ConfigurationDirectoryRelocator(
@@ -84,11 +102,13 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         )
         XCTAssertTrue(
             FileManager.default.fileExists(
-                atPath: newDirectory.appendingPathComponent("gestures.yaml").path
+                atPath: newDirectory.appendingPathComponent(ConfigurationFileNames.gesturesCustom).path
             )
         )
         XCTAssertFalse(
-            FileManager.default.fileExists(atPath: oldDirectory.appendingPathComponent("gestures.yaml").path)
+            FileManager.default.fileExists(
+                atPath: oldDirectory.appendingPathComponent(ConfigurationFileNames.gesturesCustom).path
+            )
         )
     }
 
@@ -99,7 +119,7 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: newDirectory, withIntermediateDirectories: true)
 
-        try writeValidGestureConfiguration(to: oldDirectory.appendingPathComponent("gestures.yaml"))
+        try writeValidSplitGestureConfiguration(in: oldDirectory)
         try "not: valid: yaml".write(
             to: newDirectory.appendingPathComponent("config.yaml"),
             atomically: true,
@@ -127,12 +147,12 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         XCTAssertNil(isolated.store.load())
         XCTAssertTrue(
             FileManager.default.fileExists(
-                atPath: oldDirectory.appendingPathComponent("gestures.yaml").path
+                atPath: oldDirectory.appendingPathComponent(ConfigurationFileNames.gesturesCustom).path
             )
         )
         XCTAssertFalse(
             FileManager.default.fileExists(
-                atPath: newDirectory.appendingPathComponent("gestures.yaml").path
+                atPath: newDirectory.appendingPathComponent(ConfigurationFileNames.gesturesCustom).path
             )
         )
     }
@@ -145,9 +165,16 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         try data.write(to: url, options: .atomic)
     }
 
-    private func writeValidGestureConfiguration(to url: URL) throws {
-        let data = try YAMLConfigurationCoder.encode(GestureConfiguration.defaultTemplate)
-        try data.write(to: url, options: .atomic)
+    private func writeValidSplitGestureConfiguration(
+        in directory: URL,
+        custom: GestureConfiguration = .emptyCustomTemplate
+    ) throws {
+        try GestureConfigurationStore(
+            fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesBuiltin)
+        ).save(BuiltInGestureSeeds.factoryBuiltinConfiguration())
+        try GestureConfigurationStore(
+            fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesCustom)
+        ).save(custom)
     }
 
     private func makeIsolatedStore() -> (store: ConfigurationDirectoryStore, suiteName: String) {

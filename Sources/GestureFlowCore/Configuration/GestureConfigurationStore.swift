@@ -3,13 +3,13 @@ import Foundation
 public struct GestureConfigurationStore {
     public var fileURL: URL
 
-    public init(fileURL: URL = GestureConfigurationStore.defaultFileURL()) {
+    public init(fileURL: URL = GestureConfigurationStore.defaultCustomFileURL()) {
         self.fileURL = fileURL
     }
 
     public func load() throws -> GestureConfiguration {
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            return GestureConfiguration.defaultTemplate
+            return GestureConfiguration.emptyCustomTemplate
         }
 
         let data = try Data(contentsOf: fileURL)
@@ -27,7 +27,7 @@ public struct GestureConfigurationStore {
         try data.write(to: fileURL, options: .atomic)
     }
 
-    public static func defaultFileURL() -> URL {
-        ConfigurationDirectoryResolver.bootstrap().gesturesFileURL
+    public static func defaultCustomFileURL() -> URL {
+        ConfigurationDirectoryResolver.bootstrap().gesturesCustomFileURL
     }
 }

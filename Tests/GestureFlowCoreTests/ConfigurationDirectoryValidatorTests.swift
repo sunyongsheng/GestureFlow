@@ -48,7 +48,7 @@ final class ConfigurationDirectoryValidatorTests: XCTestCase {
         try FileManager.default.createDirectory(at: old, withIntermediateDirectories: true)
 
         try writeValidAppConfiguration(to: target.appendingPathComponent("config.yaml"))
-        try writeValidGestureConfiguration(to: old.appendingPathComponent("gestures.yaml"))
+        try writeValidSplitGestureConfiguration(in: old)
 
         XCTAssertNoThrow(
             try ConfigurationDirectoryValidator.validateForAdoption(
@@ -67,7 +67,7 @@ final class ConfigurationDirectoryValidatorTests: XCTestCase {
 
         try writeValidAppConfiguration(to: target.appendingPathComponent("config.yaml"))
         try "invalid".write(
-            to: old.appendingPathComponent("gestures.yaml"),
+            to: old.appendingPathComponent(ConfigurationFileNames.gesturesCustom),
             atomically: true,
             encoding: .utf8
         )
@@ -85,9 +85,16 @@ final class ConfigurationDirectoryValidatorTests: XCTestCase {
         try data.write(to: url, options: .atomic)
     }
 
-    private func writeValidGestureConfiguration(to url: URL) throws {
-        let data = try YAMLConfigurationCoder.encode(GestureConfiguration.defaultTemplate)
-        try data.write(to: url, options: .atomic)
+    private func writeValidSplitGestureConfiguration(
+        in directory: URL,
+        custom: GestureConfiguration = .emptyCustomTemplate
+    ) throws {
+        try GestureConfigurationStore(
+            fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesBuiltin)
+        ).save(BuiltInGestureSeeds.factoryBuiltinConfiguration())
+        try GestureConfigurationStore(
+            fileURL: directory.appendingPathComponent(ConfigurationFileNames.gesturesCustom)
+        ).save(custom)
     }
 
     private func makeTemporaryRoot() throws -> URL {

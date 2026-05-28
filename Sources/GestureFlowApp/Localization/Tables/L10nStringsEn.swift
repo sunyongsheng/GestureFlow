@@ -137,6 +137,7 @@ enum L10nStringsEn {
         .recoveryWithoutBackup: "Recovered from a corrupted configuration, but the damaged file could not be backed up.",
 
         .errorGestureDuplicate: "Duplicate gesture: only one gesture per app, path, and trigger button is allowed.",
+        .errorGestureMergeConflict: "The same gesture ID exists in both built-in and custom configuration files. Remove the duplicate from gestures-custom.yaml.",
         .errorRecordShortcut: "Record a keyboard shortcut.",
         .errorBundleIdentifierUnreadable: "Could not read the selected application's bundle ID.",
         .errorConfigDirectoryInvalidPath: "Enter a valid path.",
