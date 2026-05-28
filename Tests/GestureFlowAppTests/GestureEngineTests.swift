@@ -3,6 +3,19 @@ import XCTest
 import GestureFlowCore
 
 final class GestureEngineTests: XCTestCase {
+    private var savedLocalization: LocalizationManager!
+
+    override func setUp() {
+        super.setUp()
+        savedLocalization = AppServices.localization
+        AppServices.localization = LocalizationManager(language: .zhHans)
+    }
+
+    override func tearDown() {
+        AppServices.localization = savedLocalization
+        super.tearDown()
+    }
+
     func testStartWithoutAccessibilityPermissionPromptsAndDoesNotStartTap() {
         var promptCount = 0
         let tap = SpyMouseEventTapController()

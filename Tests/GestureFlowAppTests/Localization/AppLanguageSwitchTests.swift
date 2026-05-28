@@ -8,7 +8,9 @@ final class AppLanguageSwitchTests: XCTestCase {
         let localization = LocalizationManager(language: .zhHans)
         let viewModel = SettingsViewModel(
             loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(),
+                configuration: AppConfiguration(
+                    general: GeneralConfiguration(language: .zhHans)
+                ),
                 didRecoverFromCorruption: false,
                 backupURL: nil
             ),

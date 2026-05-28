@@ -479,7 +479,7 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         application.startGestureFlow()
 
-        application.statusBarController?.performMenuItem(title: "退出")
+        application.statusBarController?.performMenuItem(tag: .quit)
 
         XCTAssertEqual(eventTap.stopCount, 1)
         XCTAssertEqual(terminateCallCount, 1)
@@ -699,7 +699,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 
         application.launch()
         application.startGestureFlow()
-        application.statusBarController?.performMenuItem(title: "退出")
+        application.statusBarController?.performMenuItem(tag: .quit)
 
         XCTAssertEqual(eventTap.stopCount, 1)
         XCTAssertEqual(terminateCallCount, 1)

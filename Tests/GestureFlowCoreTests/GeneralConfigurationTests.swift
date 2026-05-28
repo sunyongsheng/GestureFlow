@@ -2,9 +2,9 @@ import XCTest
 @testable import GestureFlowCore
 
 final class GeneralConfigurationTests: XCTestCase {
-    func testGeneralConfigurationDefaultsToZhHans() {
-        XCTAssertEqual(GeneralConfiguration().language, .zhHans)
-        XCTAssertEqual(AppConfiguration().general.language, .zhHans)
+    func testGeneralConfigurationDefaultsToSystemPreferredLanguage() {
+        XCTAssertEqual(GeneralConfiguration().language, AppLanguage.resolvingSystemPreferred())
+        XCTAssertEqual(AppConfiguration().general.language, AppLanguage.resolvingSystemPreferred())
     }
 
     func testAppConfigurationDecodesWithoutGeneralSection() throws {
@@ -15,7 +15,7 @@ final class GeneralConfigurationTests: XCTestCase {
         let configuration = try YAMLConfigurationCoder.decode(AppConfiguration.self, from: data)
 
         XCTAssertTrue(configuration.isEnabled)
-        XCTAssertEqual(configuration.general.language, .zhHans)
+        XCTAssertEqual(configuration.general.language, AppLanguage.resolvingSystemPreferred())
     }
 
     func testAppConfigurationRoundTripsLanguageEn() throws {
@@ -28,7 +28,7 @@ final class GeneralConfigurationTests: XCTestCase {
         XCTAssertEqual(decoded.general.language, .en)
     }
 
-    func testUnknownLanguageFallsBackToZhHans() throws {
+    func testUnknownLanguageFallsBackToEnglish() throws {
         let yaml = """
         general:
           language: fr
@@ -36,6 +36,28 @@ final class GeneralConfigurationTests: XCTestCase {
         let data = Data(yaml.utf8)
         let configuration = try YAMLConfigurationCoder.decode(AppConfiguration.self, from: data)
 
-        XCTAssertEqual(configuration.general.language, .zhHans)
+        XCTAssertEqual(configuration.general.language, .en)
+    }
+
+    func testMatchingLocaleIdentifierMapsChineseVariants() {
+        XCTAssertEqual(AppLanguage(matchingLocaleIdentifier: "zh-Hans"), .zhHans)
+        XCTAssertEqual(AppLanguage(matchingLocaleIdentifier: "zh-Hans-CN"), .zhHans)
+        XCTAssertEqual(AppLanguage(matchingLocaleIdentifier: "zh-TW"), .zhHans)
+    }
+
+    func testMatchingLocaleIdentifierMapsEnglishVariants() {
+        XCTAssertEqual(AppLanguage(matchingLocaleIdentifier: "en"), .en)
+        XCTAssertEqual(AppLanguage(matchingLocaleIdentifier: "en-US"), .en)
+        XCTAssertEqual(AppLanguage(matchingLocaleIdentifier: "en-GB"), .en)
+    }
+
+    func testMatchingLocaleIdentifierReturnsNilForUnsupportedLanguages() {
+        XCTAssertNil(AppLanguage(matchingLocaleIdentifier: "fr"))
+        XCTAssertNil(AppLanguage(matchingLocaleIdentifier: "ja"))
+    }
+
+    func testResolvingSystemPreferredReturnsSupportedLanguage() {
+        let language = AppLanguage.resolvingSystemPreferred()
+        XCTAssertTrue(AppLanguage.allCases.contains(language))
     }
 }

@@ -7,8 +7,8 @@ public struct GeneralConfiguration: Codable, Equatable {
         case language
     }
 
-    public init(language: AppLanguage = .zhHans) {
-        self.language = language
+    public init(language: AppLanguage? = nil) {
+        self.language = language ?? AppLanguage.resolvingSystemPreferred()
     }
 
     public init(from decoder: Decoder) throws {
@@ -16,11 +16,13 @@ public struct GeneralConfiguration: Codable, Equatable {
         if let rawLanguage = try container.decodeIfPresent(String.self, forKey: .language) {
             language = AppLanguage(decodingPersistedValue: rawLanguage)
         } else {
-            language = .zhHans
+            language = AppLanguage.resolvingSystemPreferred()
         }
     }
 
-    public static let `default` = GeneralConfiguration()
+    public static var `default`: GeneralConfiguration {
+        GeneralConfiguration()
+    }
 }
 
 public struct AppConfiguration: Codable, Equatable {
