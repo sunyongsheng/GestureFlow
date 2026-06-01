@@ -229,7 +229,7 @@ private struct CGKeyboardEventPoster: KeyboardEventPosting {
 
 private struct NSApplicationActivator: ApplicationActivating {
     func activateCurrentApplication() {
-        NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps])
+        NSRunningApplication.current.activate()
     }
 }
 

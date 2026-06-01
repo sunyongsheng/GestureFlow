@@ -8,7 +8,7 @@ enum YAMLConfigurationCoder {
     }
 
     static func encode<T: Encodable>(_ value: T) throws -> Data {
-        var encoder = YAMLEncoder()
+        let encoder = YAMLEncoder()
         encoder.options.allowUnicode = true
         let yaml = try encoder.encode(value)
         guard let data = yaml.data(using: .utf8) else {

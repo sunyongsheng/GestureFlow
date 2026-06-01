@@ -5,7 +5,7 @@ import GestureFlowCore
 struct GestureSignaturePicker: View {
     @EnvironmentObject private var l10n: LocalizationManager
     @Binding var selection: GestureSignature
-    @Binding var customGestureSignatures: [GestureSignature]
+    @Binding var gestureSignatures: [GestureSignature]
     let onPersistCustomSignatures: () -> Void
     let onPauseGestureRecognition: () -> Void
     let onResumeGestureRecognition: () -> Void
@@ -54,7 +54,7 @@ struct GestureSignaturePicker: View {
                 }
             )
         }
-        .onChange(of: isRecordingSheetPresented) { isPresented in
+        .onChange(of: isRecordingSheetPresented) { _, isPresented in
             if isPresented {
                 onPauseGestureRecognition()
             } else {
@@ -77,7 +77,7 @@ struct GestureSignaturePicker: View {
                     Divider()
 
                     LazyVGrid(columns: columns, spacing: columnSpacing) {
-                        ForEach(customGestureSignatures, id: \.self) { signature in
+                        ForEach(gestureSignatures, id: \.self) { signature in
                             customCell(signature: signature)
                                 .id(GestureSignatureLookup.id(for: signature))
                         }
@@ -89,7 +89,7 @@ struct GestureSignaturePicker: View {
                 .padding(12)
             }
             .narrowVerticalScrollBar()
-            .onChange(of: scrollTargetID) { targetID in
+            .onChange(of: scrollTargetID) { _, targetID in
                 guard let targetID else { return }
                 withAnimation {
                     proxy.scrollTo(targetID, anchor: .center)
@@ -159,13 +159,13 @@ struct GestureSignaturePicker: View {
     private func handleRecordingConfirm(_ signature: GestureSignature) {
         isRecordingSheetPresented = false
 
-        if GestureSignatureLookup.exists(signature, customSignatures: customGestureSignatures) {
+        if GestureSignatureLookup.exists(signature, gestureSignatures: gestureSignatures) {
             selection = signature
             scrollTargetID = GestureSignatureLookup.id(for: signature)
             return
         }
 
-        customGestureSignatures.append(signature)
+        gestureSignatures.append(signature)
         onPersistCustomSignatures()
         selection = signature
         scrollTargetID = GestureSignatureLookup.id(for: signature)
