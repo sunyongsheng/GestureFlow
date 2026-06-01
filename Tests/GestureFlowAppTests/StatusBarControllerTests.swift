@@ -121,6 +121,11 @@ final class StatusBarControllerTests: XCTestCase {
         XCTAssertTrue(controller.menuItemTitles.contains("停止 GestureFlow"))
         XCTAssertTrue(controller.isMenuItemEnabled(tag: .gestureFlow))
     }
+
+    func testStatusBarIconsLoadAsTemplateImages() {
+        XCTAssertEqual(StatusBarIcon.image(isRunning: false).isTemplate, true)
+        XCTAssertEqual(StatusBarIcon.image(isRunning: true).isTemplate, true)
+    }
 }
 
 private extension StatusBarActions {

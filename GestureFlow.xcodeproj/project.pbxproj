@@ -137,6 +137,7 @@
 		EE0E5FDB1FEE6C84A9031FC2 /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85597E92C5F3F66FC294009F /* SettingsViewModelTests.swift */; };
 		EF40A344F544A55448031305 /* GestureOverlayWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */; };
 		F16F621BBAE6A7CAD0B16081 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 938F8FF11E6A912D4C3DD619 /* StatusBarController.swift */; };
+		F9B5A3C02D4E678901BCDEF2 /* StatusBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8A4F2B91C3D567890ABCDE1 /* StatusBarIcon.swift */; };
 		F5DBFD6162AF15B5B67EC30B /* PermissionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */; };
 		F712799818C32382C8A79B43 /* GestureFlowShellApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A82DCAFD63B2F2CBCBB5BA /* GestureFlowShellApp.swift */; };
 		F8DCC85669E15AA34D36845E /* GestureListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B22C6166DC2C256691E26E2 /* GestureListView.swift */; };
@@ -301,6 +302,7 @@
 		88C40365794474B38BB09446 /* GestureOverlayGeometryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayGeometryTests.swift; sourceTree = "<group>"; };
 		91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MouseEventTapTests.swift; sourceTree = "<group>"; };
 		938F8FF11E6A912D4C3DD619 /* StatusBarController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
+		E8A4F2B91C3D567890ABCDE1 /* StatusBarIcon.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatusBarIcon.swift; sourceTree = "<group>"; };
 		9495F29F933AF0BB482BDE84 /* GestureOverlayCoordinateConverter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayCoordinateConverter.swift; sourceTree = "<group>"; };
 		9D7742FB88F604C4EA4BBCF3 /* GestureFlowAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GestureFlowAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowApplicationTests.swift; sourceTree = "<group>"; };
@@ -725,6 +727,7 @@
 			isa = PBXGroup;
 			children = (
 				938F8FF11E6A912D4C3DD619 /* StatusBarController.swift */,
+				E8A4F2B91C3D567890ABCDE1 /* StatusBarIcon.swift */,
 			);
 			name = Menu;
 			path = Menu;
@@ -1096,6 +1099,7 @@
 				79C5BC5DDFF0DAE404E1550C /* GestureEngine.swift in Sources */,
 				5AB87EDE8EECB1DCD4846165 /* MouseEventTap.swift in Sources */,
 				F16F621BBAE6A7CAD0B16081 /* StatusBarController.swift in Sources */,
+				F9B5A3C02D4E678901BCDEF2 /* StatusBarIcon.swift in Sources */,
 				47E370BFD227D1CF75FA6B74 /* GestureOverlayCoordinateConverter.swift in Sources */,
 				13429230484BEFE81ECFD0BF /* GestureOverlayDisplaying.swift in Sources */,
 				BD000000000000000000000E /* GestureFeedbackCardView.swift in Sources */,

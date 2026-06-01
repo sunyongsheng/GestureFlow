@@ -80,9 +80,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
                 : localization.string(.statusBarStart)
             gestureFlowItem.isEnabled = true
         }
-        statusItem.button?.title = state.isRunning
-            ? localization.string(.statusBarTitleRunning)
-            : "GF"
+        applyStatusItemIcon(isRunning: state.isRunning)
         statusItem.button?.toolTip = localization.string(.statusBarToolTip)
     }
 
@@ -113,9 +111,15 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     private func configureStatusItem() {
-        statusItem.button?.title = "GF"
+        applyStatusItemIcon(isRunning: menuState.isRunning)
         statusItem.button?.toolTip = localization.string(.statusBarToolTip)
         statusItem.menu = menu
+    }
+
+    private func applyStatusItemIcon(isRunning: Bool) {
+        statusItem.button?.title = ""
+        statusItem.button?.image = StatusBarIcon.image(isRunning: isRunning)
+        statusItem.button?.imagePosition = .imageOnly
     }
 
     private func configureMenu() {
