@@ -53,6 +53,7 @@ struct MainSettingsView: View {
             currentSectionView
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .safeAreaPadding(.top)
         .background(SettingsWindowChrome.detailBackground)
         .onChange(of: selectedSection) { _, _ in
             NSApp.keyWindow?.makeFirstResponder(nil)
