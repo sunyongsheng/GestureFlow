@@ -29,6 +29,7 @@ struct GestureSettingsView: View {
                 Text(l10n.string(.gesturesGlobalScope))
                     .padding(.vertical, 6)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .listRowSeparator(.hidden)
                     .tag(GestureApplicationScope.global)
 
                 ForEach(viewModel.registeredApplicationBundleIdentifiers, id: \.self) { bundleIdentifier in
@@ -39,6 +40,7 @@ struct GestureSettingsView: View {
                             viewModel.removeApplication(bundleIdentifier: bundleIdentifier)
                         }
                     )
+                    .listRowSeparator(.hidden)
                     .tag(GestureApplicationScope.application(bundleIdentifier: bundleIdentifier))
                 }
             }
