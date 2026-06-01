@@ -9,7 +9,7 @@ final class GestureSignatureLookupTests: XCTestCase {
 
     func testExistsFindsBuiltInCatalogSignature() {
         let signature = GestureSignature(tokens: [.down, .right])
-        XCTAssertTrue(GestureSignatureLookup.exists(signature, customSignatures: []))
+        XCTAssertTrue(GestureSignatureLookup.exists(signature, gestureSignatures: []))
     }
 
     func testExistsFindsCustomSignature() {
@@ -17,13 +17,13 @@ final class GestureSignatureLookupTests: XCTestCase {
         XCTAssertTrue(
             GestureSignatureLookup.exists(
                 signature,
-                customSignatures: [signature]
+                gestureSignatures: [signature]
             )
         )
     }
 
     func testExistsReturnsFalseForUnknownSignature() {
         let signature = GestureSignature(tokens: [.left, .up, .right, .down, .left])
-        XCTAssertFalse(GestureSignatureLookup.exists(signature, customSignatures: []))
+        XCTAssertFalse(GestureSignatureLookup.exists(signature, gestureSignatures: []))
     }
 }

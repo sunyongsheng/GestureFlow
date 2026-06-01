@@ -35,7 +35,7 @@ public enum SplitGestureConfigurationLoader {
         let configuration = GestureConfiguration(
             applicationBundleIdentifiers: custom.applicationBundleIdentifiers,
             gestures: taggedBuiltin + taggedCustom,
-            customGestureSignatures: custom.customGestureSignatures
+            gestureSignatures: custom.gestureSignatures
         )
 
         return GestureConfigurationMergeResult(

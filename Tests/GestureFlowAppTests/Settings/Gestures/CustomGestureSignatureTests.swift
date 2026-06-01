@@ -9,13 +9,13 @@ final class CustomGestureSignatureTests: XCTestCase {
             saveGestureConfiguration: { savedConfiguration = $0 }
         )
 
-        viewModel.gestureConfiguration.customGestureSignatures = [
+        viewModel.gestureConfiguration.gestureSignatures = [
             GestureSignature(tokens: [.up, .left])
         ]
         viewModel.commitGestureConfigurationToDisk()
 
-        XCTAssertEqual(savedConfiguration?.customGestureSignatures.count, 1)
-        XCTAssertEqual(savedConfiguration?.customGestureSignatures[0].tokens, [.up, .left])
+        XCTAssertEqual(savedConfiguration?.gestureSignatures.count, 1)
+        XCTAssertEqual(savedConfiguration?.gestureSignatures[0].tokens, [.up, .left])
     }
 
     func testRestoreDefaultClearsCustomGestureSignatures() throws {
@@ -23,15 +23,15 @@ final class CustomGestureSignatureTests: XCTestCase {
         let viewModel = makeViewModel(
             gestureConfiguration: GestureConfiguration(
                 gestures: BuiltInGestureSeeds.factoryGestures(),
-                customGestureSignatures: [GestureSignature(tokens: [.up, .left])]
+                gestureSignatures: [GestureSignature(tokens: [.up, .left])]
             ),
             saveGestureConfiguration: { savedConfiguration = $0 }
         )
 
         viewModel.restoreDefaultGestureConfiguration()
 
-        XCTAssertTrue(viewModel.gestureConfiguration.customGestureSignatures.isEmpty)
-        XCTAssertTrue(savedConfiguration?.customGestureSignatures.isEmpty ?? false)
+        XCTAssertTrue(viewModel.gestureConfiguration.gestureSignatures.isEmpty)
+        XCTAssertTrue(savedConfiguration?.gestureSignatures.isEmpty ?? false)
     }
 
     private func makeViewModel(

@@ -3,16 +3,16 @@ import Foundation
 public struct GestureConfiguration: Codable, Equatable {
     public var applicationBundleIdentifiers: [String]
     public var gestures: [GestureDefinition]
-    public var customGestureSignatures: [GestureSignature]
+    public var gestureSignatures: [GestureSignature]
 
     public init(
         applicationBundleIdentifiers: [String] = [],
         gestures: [GestureDefinition] = [],
-        customGestureSignatures: [GestureSignature] = []
+        gestureSignatures: [GestureSignature] = []
     ) {
         self.applicationBundleIdentifiers = applicationBundleIdentifiers
         self.gestures = gestures
-        self.customGestureSignatures = customGestureSignatures
+        self.gestureSignatures = gestureSignatures
     }
 
     public static var emptyCustomTemplate: GestureConfiguration {
@@ -29,7 +29,7 @@ public struct GestureConfiguration: Codable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case applicationBundleIdentifiers
         case gestures
-        case customGestureSignatures
+        case gestureSignatures
     }
 
     public init(from decoder: Decoder) throws {
@@ -39,9 +39,9 @@ public struct GestureConfiguration: Codable, Equatable {
             forKey: .applicationBundleIdentifiers
         ) ?? []
         gestures = try container.decodeIfPresent([GestureDefinition].self, forKey: .gestures) ?? []
-        customGestureSignatures = try container.decodeIfPresent(
+        gestureSignatures = try container.decodeIfPresent(
             [GestureSignature].self,
-            forKey: .customGestureSignatures
+            forKey: .gestureSignatures
         ) ?? []
     }
 
@@ -49,6 +49,6 @@ public struct GestureConfiguration: Codable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(applicationBundleIdentifiers, forKey: .applicationBundleIdentifiers)
         try container.encode(gestures, forKey: .gestures)
-        try container.encode(customGestureSignatures, forKey: .customGestureSignatures)
+        try container.encode(gestureSignatures, forKey: .gestureSignatures)
     }
 }

@@ -14,7 +14,7 @@ final class SplitGestureConfigurationLoaderTests: XCTestCase {
             custom: GestureConfiguration(
                 applicationBundleIdentifiers: ["com.example.app"],
                 gestures: [customGesture],
-                customGestureSignatures: [GestureSignature(tokens: [.left])]
+                gestureSignatures: [GestureSignature(tokens: [.left])]
             )
         )
 

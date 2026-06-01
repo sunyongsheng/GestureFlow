@@ -52,7 +52,7 @@ final class GestureConfigurationService {
         let customConfiguration = GestureConfiguration(
             applicationBundleIdentifiers: configuration.applicationBundleIdentifiers,
             gestures: customGestures,
-            customGestureSignatures: configuration.customGestureSignatures
+            gestureSignatures: configuration.gestureSignatures
         )
         try customStore.save(customConfiguration)
 

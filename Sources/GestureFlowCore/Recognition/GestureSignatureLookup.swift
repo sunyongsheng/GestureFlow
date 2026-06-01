@@ -7,11 +7,11 @@ public enum GestureSignatureLookup {
 
     public static func exists(
         _ signature: GestureSignature,
-        customSignatures: [GestureSignature]
+        gestureSignatures: [GestureSignature]
     ) -> Bool {
         if GestureSignatureCatalog.all.contains(where: { $0.signature == signature }) {
             return true
         }
-        return customSignatures.contains(signature)
+        return gestureSignatures.contains(signature)
     }
 }

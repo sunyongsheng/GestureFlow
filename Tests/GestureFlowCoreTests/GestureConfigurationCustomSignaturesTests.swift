@@ -3,12 +3,12 @@ import XCTest
 
 final class GestureConfigurationCustomSignaturesTests: XCTestCase {
     func testDefaultTemplateHasEmptyCustomGestureSignatures() {
-        XCTAssertTrue(GestureConfiguration.defaultTemplate.customGestureSignatures.isEmpty)
+        XCTAssertTrue(GestureConfiguration.defaultTemplate.gestureSignatures.isEmpty)
     }
 
     func testEncodesAndDecodesCustomGestureSignatures() throws {
         var configuration = GestureConfiguration.defaultTemplate
-        configuration.customGestureSignatures = [
+        configuration.gestureSignatures = [
             GestureSignature(tokens: [.up, .left]),
             GestureSignature(tokens: [.down, .right, .up]),
         ]
@@ -16,7 +16,7 @@ final class GestureConfigurationCustomSignaturesTests: XCTestCase {
         let data = try YAMLConfigurationCoder.encode(configuration)
         let decoded = try YAMLConfigurationCoder.decode(GestureConfiguration.self, from: data)
 
-        XCTAssertEqual(decoded.customGestureSignatures, configuration.customGestureSignatures)
+        XCTAssertEqual(decoded.gestureSignatures, configuration.gestureSignatures)
     }
 
     func testLoadMissingFieldDefaultsToEmptyCustomGestureSignatures() throws {
@@ -30,6 +30,6 @@ final class GestureConfigurationCustomSignaturesTests: XCTestCase {
             from: Data(yaml.utf8)
         )
 
-        XCTAssertTrue(decoded.customGestureSignatures.isEmpty)
+        XCTAssertTrue(decoded.gestureSignatures.isEmpty)
     }
 }

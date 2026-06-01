@@ -290,7 +290,7 @@ struct GestureSettingsView: View {
     private func signatureCell(for gesture: GestureDefinition) -> some View {
         GestureSignaturePicker(
             selection: signatureBinding(for: gesture),
-            customGestureSignatures: customGestureSignaturesBinding,
+            gestureSignatures: gestureSignaturesBinding,
             onPersistCustomSignatures: {
                 viewModel.commitGestureConfigurationToDisk()
             },
@@ -305,10 +305,10 @@ struct GestureSettingsView: View {
         )
     }
 
-    private var customGestureSignaturesBinding: Binding<[GestureSignature]> {
+    private var gestureSignaturesBinding: Binding<[GestureSignature]> {
         Binding(
-            get: { viewModel.gestureConfiguration.customGestureSignatures },
-            set: { viewModel.gestureConfiguration.customGestureSignatures = $0 }
+            get: { viewModel.gestureConfiguration.gestureSignatures },
+            set: { viewModel.gestureConfiguration.gestureSignatures = $0 }
         )
     }
 
