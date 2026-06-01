@@ -124,7 +124,7 @@ final class GestureOverlayWindowTests: XCTestCase {
         XCTAssertEqual(messageLabel.stringValue, "关闭窗口")
     }
 
-    func testUnmatchedCompletionResetsTextColorAfterLiveRecognition() throws {
+    func testFeedbackCardTextColorStaysLabelColorForLiveAndCompletion() throws {
         let feedback = FeedbackConfiguration(
             trailColorHex: "#FF00AA",
             trailWidth: 3,
@@ -142,8 +142,7 @@ final class GestureOverlayWindowTests: XCTestCase {
                 message: nil,
                 matchedGestureID: BuiltInGestureSeeds.closeWindowID,
                 matchedGestureStoredName: "关闭窗口",
-                showsCard: true,
-                usesTrailColor: true
+                showsCard: true
             )
         )
 
@@ -151,8 +150,7 @@ final class GestureOverlayWindowTests: XCTestCase {
         let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
         let liveLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
         let liveTextColor = try XCTUnwrap(liveLabel.textColor)
-        let trailColor = try XCTUnwrap(ColorHexFormatting.nsColor(fromHex: "#FF00AA"))
-        XCTAssertTrue(liveTextColor.isEqual(trailColor))
+        XCTAssertTrue(liveTextColor.isEqual(NSColor.labelColor))
 
         overlayWindow.completeGesture(
             with: .unmatched,
@@ -167,7 +165,6 @@ final class GestureOverlayWindowTests: XCTestCase {
             LocalizationManager(language: .zhHans).string(.overlayUnmatchedGesture)
         )
         XCTAssertTrue(completionTextColor.isEqual(NSColor.labelColor))
-        XCTAssertFalse(completionTextColor.isEqual(trailColor))
     }
 
     func testUnderMouseTargetNotFoundWithoutMatchUsesUnmatchedOverlay() throws {

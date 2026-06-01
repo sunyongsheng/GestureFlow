@@ -72,7 +72,7 @@ final class GestureOverlayView: NSView {
             feedbackCardView.show(
                 message: message,
                 in: feedbackFrame,
-                textColor: feedbackTextColor(usesTrailColor: feedback.usesTrailColor),
+                textColor: .labelColor,
                 cornerRadius: CGFloat(trailAppearance.feedbackCardCornerRadius),
                 liquidGlassEnabled: trailAppearance.feedbackCardLiquidGlassEnabled
             )
@@ -91,7 +91,7 @@ final class GestureOverlayView: NSView {
             feedbackCardView.show(
                 message: message,
                 in: feedbackFrame,
-                textColor: feedbackTextColor(usesTrailColor: completion.usesTrailColorText),
+                textColor: .labelColor,
                 cornerRadius: CGFloat(trailAppearance.feedbackCardCornerRadius),
                 liquidGlassEnabled: trailAppearance.feedbackCardLiquidGlassEnabled
             )
@@ -268,11 +268,6 @@ final class GestureOverlayView: NSView {
             ?? NSColor.systemBlue.withAlphaComponent(alpha)
     }
 
-    private func feedbackTextColor(usesTrailColor: Bool) -> NSColor {
-        guard usesTrailColor else { return .labelColor }
-        return resolvedTrailColor(fromHex: trailAppearance.colorHex, opaque: true)
-    }
-
     private func drawMarker() {
         guard let marker else { return }
 
@@ -296,21 +291,6 @@ final class GestureOverlayView: NSView {
     private func configureFeedbackCard() {
         feedbackCardView.isHidden = true
         addSubview(feedbackCardView)
-    }
-}
-
-private extension GestureOverlayCompletion {
-    var usesTrailColorText: Bool {
-        switch self {
-        case .recognized,
-             .targetNotFound,
-             .shortcutNotConfigured,
-             .deliveryFailed,
-             .executionFailed:
-            return true
-        case .unmatched, .rejected:
-            return false
-        }
     }
 }
 

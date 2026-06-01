@@ -36,7 +36,6 @@ struct LiveGestureOverlayFeedback: Equatable {
     var matchedGestureID: UUID?
     var matchedGestureStoredName: String?
     var showsCard: Bool
-    var usesTrailColor: Bool = false
 }
 
 struct GestureOverlayMarker: Equatable {

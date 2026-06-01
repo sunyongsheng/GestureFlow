@@ -312,8 +312,7 @@ final class GestureEngine {
                 message: nil,
                 matchedGestureID: displayGesture.id,
                 matchedGestureStoredName: displayGesture.name,
-                showsCard: true,
-                usesTrailColor: true
+                showsCard: true
             )
         } else if partialSignature != nil {
             feedback = LiveGestureOverlayFeedback(
