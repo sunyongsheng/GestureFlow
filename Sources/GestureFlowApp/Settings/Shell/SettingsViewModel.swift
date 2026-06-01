@@ -100,7 +100,9 @@ final class SettingsViewModel: ObservableObject {
     }
 
     var registeredApplicationBundleIdentifiers: [String] {
-        gestureConfiguration.applicationBundleIdentifiers
+        gestureConfiguration.applicationBundleIdentifiers.filter {
+            NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil
+        }
     }
 
     func setAppLanguage(_ language: AppLanguage) {
