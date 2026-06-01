@@ -31,13 +31,13 @@ final class SettingsViewModelTests: XCTestCase {
         let directory = try makeTemporaryDirectory()
         let (service, saveGestureConfiguration) = try makeGesturePersistence(in: directory)
         var configuration = service.configuration
-        configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
+        configuration.applicationBundleIdentifiers.append("com.apple.Safari")
         configuration.gestures.append(
             GestureDefinition(
                 targetBundleIdentifier: "com.apple.Safari",
-                name: "Safari Back",
+                name: "Safari Custom",
                 trigger: .rightMouse,
-                signature: GestureSignature(tokens: [.left]),
+                signature: GestureSignature(tokens: [.left, .up, .left]),
                 shortcut: KeyboardShortcutAction(keyCode: 123, modifiers: [.command]),
                 source: .custom
             )
@@ -56,10 +56,13 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.gestureConfiguration, GestureConfiguration.defaultTemplate)
         XCTAssertEqual(viewModel.selectedApplicationScope, .global)
-        XCTAssertTrue(viewModel.registeredApplicationBundleIdentifiers.isEmpty)
+        XCTAssertFalse(viewModel.registeredApplicationBundleIdentifiers.contains("com.apple.Safari"))
         XCTAssertNil(viewModel.gestureSaveErrorMessage)
         XCTAssertTrue(try service.customStore.load().gestures.isEmpty)
-        XCTAssertEqual(try service.builtinStore.load().gestures.count, 1)
+        XCTAssertEqual(
+            try service.builtinStore.load().gestures.count,
+            BuiltInGestureSeeds.factoryGestures().count
+        )
     }
 
     func testCommitGestureShowsErrorWhenShortcutIsMissing() throws {
@@ -112,7 +115,7 @@ final class SettingsViewModelTests: XCTestCase {
 
         let newGestureID = viewModel.addGesture()
         viewModel.stageGestureUpdate(id: newGestureID) { gesture in
-            gesture.signature = GestureSignature(tokens: [.left])
+            gesture.signature = GestureSignature(tokens: [.left, .up, .left])
             gesture.shortcut = KeyboardShortcutAction(keyCode: 0, modifiers: [.command])
         }
 
@@ -167,10 +170,11 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testCancellingAddApplicationPanelDoesNothing() {
         let viewModel = makeViewModel(openApplicationPanel: { nil })
+        let identifiersBefore = viewModel.registeredApplicationBundleIdentifiers
 
         viewModel.addApplicationFromPanel()
 
-        XCTAssertTrue(viewModel.registeredApplicationBundleIdentifiers.isEmpty)
+        XCTAssertEqual(viewModel.registeredApplicationBundleIdentifiers, identifiersBefore)
         XCTAssertNil(viewModel.gestureSaveErrorMessage)
     }
 
@@ -178,13 +182,13 @@ final class SettingsViewModelTests: XCTestCase {
         let directory = try makeTemporaryDirectory()
         let (service, saveGestureConfiguration) = try makeGesturePersistence(in: directory)
         var configuration = service.configuration
-        configuration.applicationBundleIdentifiers = ["com.apple.Safari"]
+        configuration.applicationBundleIdentifiers.append("com.apple.Safari")
         configuration.gestures.append(
             GestureDefinition(
                 targetBundleIdentifier: "com.apple.Safari",
                 name: "Safari Close",
                 trigger: .rightMouse,
-                signature: GestureSignature(tokens: [.left]),
+                signature: GestureSignature(tokens: [.left, .up, .left]),
                 shortcut: KeyboardShortcutAction(keyCode: 13, modifiers: [.command]),
                 source: .custom
             )
@@ -200,10 +204,11 @@ final class SettingsViewModelTests: XCTestCase {
 
         service.configuration = viewModel.gestureConfiguration
         try service.save()
-        XCTAssertTrue(try service.customStore.load().applicationBundleIdentifiers.isEmpty)
+        XCTAssertFalse(try service.customStore.load().applicationBundleIdentifiers.contains("com.apple.Safari"))
         XCTAssertTrue(try service.customStore.load().gestures.isEmpty)
-        XCTAssertEqual(service.configuration.gestures.count, 1)
-        XCTAssertEqual(service.configuration.gestures[0].source, .builtin)
+        let builtinCount = BuiltInGestureSeeds.factoryGestures().count
+        XCTAssertEqual(service.configuration.gestures.count, builtinCount)
+        XCTAssertTrue(service.configuration.gestures.allSatisfy { $0.source == .builtin })
         XCTAssertEqual(viewModel.selectedApplicationScope, .global)
     }
 

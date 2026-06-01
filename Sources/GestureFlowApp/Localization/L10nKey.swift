@@ -126,6 +126,24 @@ enum L10nKey: String, CaseIterable {
     case gestureTargetForeground
     case gestureTargetUnderMouse
     case builtInCloseWindowGestureName
+    case builtInBackGestureName
+    case builtInForwardGestureName
+    case builtInNewTabGestureName
+    case builtInRefreshGestureName
+    case builtInMinimizeGestureName
+    case builtInUndoGestureName
+    case builtInRedoGestureName
+    case builtInCopyGestureName
+    case builtInPasteGestureName
+    case builtInFindGestureName
+    case builtInQuitAppGestureName
+    case builtInChromeScrollToTopGestureName
+    case builtInChromeScrollToBottomGestureName
+    case builtInChromeReopenClosedTabGestureName
+    case builtInChromeFocusAddressBarGestureName
+    case builtInFinderParentFolderGestureName
+    case builtInFinderOpenItemGestureName
+    case builtInFinderNewFolderGestureName
 
     case gestureDirectionUp
     case gestureDirectionDown

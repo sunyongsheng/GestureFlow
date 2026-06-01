@@ -19,8 +19,9 @@ final class GestureConfigurationServiceTests: XCTestCase {
                 atPath: directory.appendingPathComponent(ConfigurationFileNames.gesturesCustom).path
             )
         )
-        XCTAssertEqual(service.configuration.gestures.count, 1)
-        XCTAssertEqual(service.configuration.gestures[0].source, .builtin)
+        let builtinCount = BuiltInGestureSeeds.factoryGestures().count
+        XCTAssertEqual(service.configuration.gestures.count, builtinCount)
+        XCTAssertTrue(service.configuration.gestures.allSatisfy { $0.source == .builtin })
     }
 
     func testSaveWritesCustomMetadataToCustomFileOnly() throws {
@@ -71,8 +72,9 @@ final class GestureConfigurationServiceTests: XCTestCase {
         ).load()
         XCTAssertTrue(custom.applicationBundleIdentifiers.isEmpty)
         XCTAssertTrue(custom.gestures.isEmpty)
-        XCTAssertEqual(service.configuration.gestures.count, 1)
-        XCTAssertEqual(service.configuration.gestures[0].id, BuiltInGestureSeeds.closeWindowID)
+        let builtinCount = BuiltInGestureSeeds.factoryGestures().count
+        XCTAssertEqual(service.configuration.gestures.count, builtinCount)
+        XCTAssertTrue(service.configuration.gestures.contains { $0.id == BuiltInGestureSeeds.closeWindowID })
     }
 
     func testLoadReportsMergeConflicts() throws {

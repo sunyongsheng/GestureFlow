@@ -19,11 +19,14 @@ final class SplitGestureConfigurationLoaderTests: XCTestCase {
         )
 
         XCTAssertEqual(result.conflictingGestureIDs, [])
-        XCTAssertEqual(result.configuration.applicationBundleIdentifiers, ["com.example.app"])
-        XCTAssertEqual(result.configuration.gestures.count, 2)
-        XCTAssertEqual(result.configuration.gestures[0].source, .builtin)
-        XCTAssertEqual(result.configuration.gestures[1].source, .custom)
-        XCTAssertEqual(result.configuration.gestures[1].id, customGesture.id)
+        XCTAssertTrue(result.configuration.applicationBundleIdentifiers.contains("com.example.app"))
+        XCTAssertTrue(result.configuration.applicationBundleIdentifiers.contains("com.google.Chrome"))
+        XCTAssertTrue(result.configuration.applicationBundleIdentifiers.contains("com.apple.finder"))
+        let builtinCount = BuiltInGestureSeeds.factoryGestures().count
+        XCTAssertEqual(result.configuration.gestures.count, builtinCount + 1)
+        XCTAssertTrue(result.configuration.gestures.dropLast().allSatisfy { $0.source == .builtin })
+        XCTAssertEqual(result.configuration.gestures.last?.source, .custom)
+        XCTAssertEqual(result.configuration.gestures.last?.id, customGesture.id)
     }
 
     func testMergeDetectsDuplicateIDs() {
@@ -46,7 +49,8 @@ final class SplitGestureConfigurationLoaderTests: XCTestCase {
         )
 
         XCTAssertEqual(result.conflictingGestureIDs, [duplicateID])
-        XCTAssertEqual(result.configuration.gestures.count, 2)
+        let builtinCount = BuiltInGestureSeeds.factoryGestures().count
+        XCTAssertEqual(result.configuration.gestures.count, builtinCount + 1)
     }
 
     func testBootstrapMissingFilesCreatesBothYAMLFiles() throws {
@@ -65,7 +69,7 @@ final class SplitGestureConfigurationLoaderTests: XCTestCase {
 
         XCTAssertTrue(FileManager.default.fileExists(atPath: builtinStore.fileURL.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: customStore.fileURL.path))
-        XCTAssertEqual(try builtinStore.load().gestures.count, 1)
+        XCTAssertEqual(try builtinStore.load().gestures.count, BuiltInGestureSeeds.factoryGestures().count)
         XCTAssertTrue(try customStore.load().gestures.isEmpty)
     }
 

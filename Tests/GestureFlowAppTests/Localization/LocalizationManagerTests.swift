@@ -50,6 +50,36 @@ final class LocalizationManagerTests: XCTestCase {
         )
     }
 
+    func testLocalizedGestureDisplayNameResolvesAllBuiltInIDs() {
+        let manager = LocalizationManager(language: .en)
+        for gesture in BuiltInGestureSeeds.factoryGestures() {
+            let name = manager.localizedGestureDisplayName(id: gesture.id, storedName: nil)
+            XCTAssertFalse(name.isEmpty, "Built-in gesture \(gesture.id) should have a localized name")
+        }
+    }
+
+    func testLocalizedGestureDisplayNameForChromeGesture() {
+        let manager = LocalizationManager(language: .zhHans)
+        XCTAssertEqual(
+            manager.localizedGestureDisplayName(
+                id: BuiltInGestureSeeds.chromeScrollToTopID,
+                storedName: nil
+            ),
+            "滚到页面顶部"
+        )
+    }
+
+    func testLocalizedGestureDisplayNameForFinderGesture() {
+        let manager = LocalizationManager(language: .en)
+        XCTAssertEqual(
+            manager.localizedGestureDisplayName(
+                id: BuiltInGestureSeeds.finderNewFolderID,
+                storedName: nil
+            ),
+            "New Folder"
+        )
+    }
+
     func testGestureSignatureUsesIdeographicSeparatorForJapanese() {
         let manager = LocalizationManager(language: .ja)
         let signature = GestureSignature(tokens: [.up, .left])

@@ -78,12 +78,34 @@ final class LocalizationManager: ObservableObject {
         }
     }
 
+    private static let builtInNameKeys: [UUID: L10nKey] = [
+        BuiltInGestureSeeds.closeWindowID: .builtInCloseWindowGestureName,
+        BuiltInGestureSeeds.backID: .builtInBackGestureName,
+        BuiltInGestureSeeds.forwardID: .builtInForwardGestureName,
+        BuiltInGestureSeeds.newTabID: .builtInNewTabGestureName,
+        BuiltInGestureSeeds.refreshID: .builtInRefreshGestureName,
+        BuiltInGestureSeeds.minimizeID: .builtInMinimizeGestureName,
+        BuiltInGestureSeeds.undoID: .builtInUndoGestureName,
+        BuiltInGestureSeeds.redoID: .builtInRedoGestureName,
+        BuiltInGestureSeeds.copyID: .builtInCopyGestureName,
+        BuiltInGestureSeeds.pasteID: .builtInPasteGestureName,
+        BuiltInGestureSeeds.findID: .builtInFindGestureName,
+        BuiltInGestureSeeds.quitAppID: .builtInQuitAppGestureName,
+        BuiltInGestureSeeds.chromeScrollToTopID: .builtInChromeScrollToTopGestureName,
+        BuiltInGestureSeeds.chromeScrollToBottomID: .builtInChromeScrollToBottomGestureName,
+        BuiltInGestureSeeds.chromeReopenClosedTabID: .builtInChromeReopenClosedTabGestureName,
+        BuiltInGestureSeeds.chromeFocusAddressBarID: .builtInChromeFocusAddressBarGestureName,
+        BuiltInGestureSeeds.finderParentFolderID: .builtInFinderParentFolderGestureName,
+        BuiltInGestureSeeds.finderOpenItemID: .builtInFinderOpenItemGestureName,
+        BuiltInGestureSeeds.finderNewFolderID: .builtInFinderNewFolderGestureName,
+    ]
+
     func localizedGestureDisplayName(id: UUID, storedName: String?) -> String {
         if let storedName, !storedName.isEmpty {
             return storedName
         }
-        if id == BuiltInGestureSeeds.closeWindowID {
-            return string(.builtInCloseWindowGestureName)
+        if let key = Self.builtInNameKeys[id] {
+            return string(key)
         }
         return storedName ?? ""
     }
