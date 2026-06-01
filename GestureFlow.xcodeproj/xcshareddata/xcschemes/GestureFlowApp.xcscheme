@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "91BD3E75712457D38E30CA1F"
-               BuildableName = "GestureFlowApp.app"
+               BuildableName = "GestureFlow.app"
                BlueprintName = "GestureFlowApp"
                ReferencedContainer = "container:GestureFlow.xcodeproj">
             </BuildableReference>
@@ -73,16 +73,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "91BD3E75712457D38E30CA1F"
-            BuildableName = "GestureFlowApp.app"
-            BlueprintName = "GestureFlowApp"
-            ReferencedContainer = "container:GestureFlow.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "91BD3E75712457D38E30CA1F"
-            BuildableName = "GestureFlowApp.app"
+            BuildableName = "GestureFlow.app"
             BlueprintName = "GestureFlowApp"
             ReferencedContainer = "container:GestureFlow.xcodeproj">
          </BuildableReference>
@@ -125,7 +116,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "91BD3E75712457D38E30CA1F"
-            BuildableName = "GestureFlowApp.app"
+            BuildableName = "GestureFlow.app"
             BlueprintName = "GestureFlowApp"
             ReferencedContainer = "container:GestureFlow.xcodeproj">
          </BuildableReference>
@@ -142,7 +133,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "91BD3E75712457D38E30CA1F"
-            BuildableName = "GestureFlowApp.app"
+            BuildableName = "GestureFlow.app"
             BlueprintName = "GestureFlowApp"
             ReferencedContainer = "container:GestureFlow.xcodeproj">
          </BuildableReference>
