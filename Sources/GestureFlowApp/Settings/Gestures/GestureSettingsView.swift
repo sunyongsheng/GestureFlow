@@ -45,6 +45,7 @@ struct GestureSettingsView: View {
                 }
             }
             .listStyle(.inset)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
 
             Button {
                 viewModel.addApplicationFromPanel()
