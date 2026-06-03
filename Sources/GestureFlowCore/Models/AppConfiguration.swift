@@ -96,7 +96,7 @@ public struct GestureTriggerConfiguration: Codable, Equatable {
 
     public static let `default` = GestureTriggerConfiguration(
         movementThreshold: 24,
-        holdTimeoutMilliseconds: 250,
+        holdTimeoutMilliseconds: 450,
         maximumSampleDistance: 120
     )
 }
@@ -134,9 +134,9 @@ public struct FeedbackConfiguration: Codable, Equatable {
         trailColorHex: String,
         trailWidth: Double,
         trailOpacity: Double,
-        trailStrokeEnabled: Bool = false,
+        trailStrokeEnabled: Bool = true,
         trailStrokeColorHex: String = "#FFFFFF",
-        trailStrokeWidth: Double = 1.5,
+        trailStrokeWidth: Double = 2,
         overlayHideDelayMilliseconds: Int = 500,
         unrecognizedTrailColorHex: String = "#8E8E93",
         feedbackCardCornerRadius: Double = 18,
@@ -159,34 +159,37 @@ public struct FeedbackConfiguration: Codable, Equatable {
         trailColorHex = try container.decode(String.self, forKey: .trailColorHex)
         trailWidth = try container.decode(Double.self, forKey: .trailWidth)
         trailOpacity = try container.decode(Double.self, forKey: .trailOpacity)
-        trailStrokeEnabled = try container.decodeIfPresent(Bool.self, forKey: .trailStrokeEnabled) ?? false
-        trailStrokeColorHex = try container.decodeIfPresent(String.self, forKey: .trailStrokeColorHex) ?? "#FFFFFF"
-        trailStrokeWidth = try container.decodeIfPresent(Double.self, forKey: .trailStrokeWidth) ?? 1.5
+        trailStrokeEnabled = try container.decodeIfPresent(Bool.self, forKey: .trailStrokeEnabled)
+            ?? Self.default.trailStrokeEnabled
+        trailStrokeColorHex = try container.decodeIfPresent(String.self, forKey: .trailStrokeColorHex)
+            ?? Self.default.trailStrokeColorHex
+        trailStrokeWidth = try container.decodeIfPresent(Double.self, forKey: .trailStrokeWidth)
+            ?? Self.default.trailStrokeWidth
         overlayHideDelayMilliseconds = try container.decodeIfPresent(
             Int.self,
             forKey: .overlayHideDelayMilliseconds
-        ) ?? 500
+        ) ?? Self.default.overlayHideDelayMilliseconds
         unrecognizedTrailColorHex = try container.decodeIfPresent(
             String.self,
             forKey: .unrecognizedTrailColorHex
-        ) ?? "#8E8E93"
+        ) ?? Self.default.unrecognizedTrailColorHex
         feedbackCardCornerRadius = try container.decodeIfPresent(
             Double.self,
             forKey: .feedbackCardCornerRadius
-        ) ?? 18
+        ) ?? Self.default.feedbackCardCornerRadius
         feedbackCardLiquidGlassEnabled = try container.decodeIfPresent(
             Bool.self,
             forKey: .feedbackCardLiquidGlassEnabled
-        ) ?? false
+        ) ?? Self.default.feedbackCardLiquidGlassEnabled
     }
 
     public static let `default` = FeedbackConfiguration(
-        trailColorHex: "#4A90E2",
+        trailColorHex: "#00E042",
         trailWidth: 3,
-        trailOpacity: 0.85,
-        trailStrokeEnabled: false,
+        trailOpacity: 1,
+        trailStrokeEnabled: true,
         trailStrokeColorHex: "#FFFFFF",
-        trailStrokeWidth: 1.5,
+        trailStrokeWidth: 2,
         overlayHideDelayMilliseconds: 500,
         unrecognizedTrailColorHex: "#8E8E93"
     )

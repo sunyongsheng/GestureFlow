@@ -2,13 +2,15 @@ import XCTest
 @testable import GestureFlowCore
 
 final class FeedbackConfigurationTests: XCTestCase {
-    func testFeedbackConfigurationDefaultsStrokeDisabled() {
+    func testFeedbackConfigurationDefaults() {
         let config = FeedbackConfiguration.default
 
+        XCTAssertEqual(config.trailColorHex, "#00E042")
         XCTAssertEqual(config.trailWidth, 3, accuracy: 0.001)
-        XCTAssertFalse(config.trailStrokeEnabled)
+        XCTAssertEqual(config.trailOpacity, 1, accuracy: 0.001)
+        XCTAssertTrue(config.trailStrokeEnabled)
         XCTAssertEqual(config.trailStrokeColorHex, "#FFFFFF")
-        XCTAssertEqual(config.trailStrokeWidth, 1.5, accuracy: 0.001)
+        XCTAssertEqual(config.trailStrokeWidth, 2, accuracy: 0.001)
         XCTAssertEqual(config.overlayHideDelayMilliseconds, 500)
         XCTAssertEqual(config.unrecognizedTrailColorHex, "#8E8E93")
         XCTAssertEqual(config.feedbackCardCornerRadius, 18, accuracy: 0.001)
@@ -22,9 +24,9 @@ final class FeedbackConfigurationTests: XCTestCase {
 
         let config = try JSONDecoder().decode(FeedbackConfiguration.self, from: json)
 
-        XCTAssertFalse(config.trailStrokeEnabled)
+        XCTAssertTrue(config.trailStrokeEnabled)
         XCTAssertEqual(config.trailStrokeColorHex, "#FFFFFF")
-        XCTAssertEqual(config.trailStrokeWidth, 1.5, accuracy: 0.001)
+        XCTAssertEqual(config.trailStrokeWidth, 2, accuracy: 0.001)
         XCTAssertEqual(config.overlayHideDelayMilliseconds, 500)
         XCTAssertEqual(config.unrecognizedTrailColorHex, "#8E8E93")
         XCTAssertEqual(config.feedbackCardCornerRadius, 18, accuracy: 0.001)
