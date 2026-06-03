@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import XCTest
 @testable import GestureFlowApp
@@ -6,8 +7,7 @@ import GestureFlowCore
 final class MouseEventTapTests: XCTestCase {
     func testNormalRightClickBelowGestureThresholdReplaysSyntheticContextClick() {
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             }
@@ -33,7 +33,7 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testRightMouseDownIsSuppressedBeforeThresholdCrossing() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
 
         XCTAssertEqual(
             tap.handle(.rightMouseDown(at: GesturePoint(x: 10, y: 10))),
@@ -42,9 +42,9 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testGestureDoesNotBeginUntilThresholdCrossing() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
         var beganCount = 0
-        tap.onGestureBegan = { _, _ in
+        tap.onGestureBegan = { _, _, _ in
             beganCount += 1
         }
 
@@ -55,10 +55,10 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testCrossingThresholdBeginsGestureAndFlushesBufferedPoints() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
         var beganPoint: GesturePoint?
         var movedPoints: [GesturePoint] = []
-        tap.onGestureBegan = { _, point in
+        tap.onGestureBegan = { _, point, _ in
             beganPoint = point
         }
         tap.onGestureMoved = { movedPoints.append($0) }
@@ -77,15 +77,14 @@ final class MouseEventTapTests: XCTestCase {
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
         var timeoutPoints: [GesturePoint] = []
         var clearedTimeoutCount = 0
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             holdTimeoutMilliseconds: 250,
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             },
             holdTimeoutScheduler: scheduler.schedule(after:action:)
         )
-        tap.onGestureBegan = { _, _ in
+        tap.onGestureBegan = { _, _, _ in
             beganCount += 1
         }
         tap.onRightClickTimeout = { timeoutPoints.append($0) }
@@ -109,8 +108,7 @@ final class MouseEventTapTests: XCTestCase {
     func testRightGestureBeginsBeforeHoldTimeoutWhenMovementThresholdCrossesFirst() {
         let clock = TestClock()
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             holdTimeoutMilliseconds: 250,
             nowProvider: { clock.now }
         )
@@ -143,7 +141,7 @@ final class MouseEventTapTests: XCTestCase {
             holdTimeoutMilliseconds: 250,
             maximumSampleDistance: 120
         )
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             triggerConfigurationProvider: { configuration },
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
@@ -180,7 +178,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testPendingRightGestureIgnoresDraggedPointWhenSampleJumpExceedsThreshold() {
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             triggerConfigurationProvider: {
                 GestureTriggerConfiguration(
                     movementThreshold: 20,
@@ -210,7 +208,7 @@ final class MouseEventTapTests: XCTestCase {
     func testActiveMiddleGestureIgnoresDraggedPointWhenSampleJumpExceedsThreshold() {
         var movedPoints: [GesturePoint] = []
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             triggerConfigurationProvider: {
                 GestureTriggerConfiguration(
                     movementThreshold: 10,
@@ -247,7 +245,7 @@ final class MouseEventTapTests: XCTestCase {
     func testScheduledHoldTimeoutEmitsTimeoutMarkerWithoutAdditionalInput() {
         let scheduler = TestHoldTimeoutScheduler()
         var timeoutPoints: [GesturePoint] = []
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             holdTimeoutScheduler: scheduler.schedule(after:action:)
         )
         tap.onRightClickTimeout = { timeoutPoints.append($0) }
@@ -265,7 +263,7 @@ final class MouseEventTapTests: XCTestCase {
         var timeoutPoints: [GesturePoint] = []
         var clearedTimeoutCount = 0
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             },
@@ -290,8 +288,7 @@ final class MouseEventTapTests: XCTestCase {
     func testPromotingPendingRightGestureCancelsScheduledHoldTimeout() {
         let scheduler = TestHoldTimeoutScheduler()
         var timeoutPoints: [GesturePoint] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             holdTimeoutScheduler: scheduler.schedule(after:action:)
         )
         tap.onRightClickTimeout = { timeoutPoints.append($0) }
@@ -308,7 +305,7 @@ final class MouseEventTapTests: XCTestCase {
         let scheduler = TestHoldTimeoutScheduler()
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
         var clearedTimeoutCount = 0
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             },
@@ -334,7 +331,7 @@ final class MouseEventTapTests: XCTestCase {
     func testTimeoutMoveReleasesHeldRightButtonBeforeReplayingClick() {
         let scheduler = TestHoldTimeoutScheduler()
         var eventOrder: [String] = []
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { _, point in
                 eventOrder.append("click:\(point.x),\(point.y)")
             },
@@ -355,7 +352,7 @@ final class MouseEventTapTests: XCTestCase {
     func testNewRightMouseDownClearsStaleSuppressedTailFromPreviousTimeoutReplay() {
         let scheduler = TestHoldTimeoutScheduler()
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             },
@@ -378,7 +375,7 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testRightButtonGestureSuppressesEventsAfterEnoughMovement() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
         tap.onGestureEnded = { trigger, points in
             endedGestures.append((trigger, points))
@@ -394,7 +391,7 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testRightButtonGestureCompletesWithoutMouseMovedInput() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
         tap.onGestureEnded = { trigger, points in
             endedGestures.append((trigger, points))
@@ -419,7 +416,7 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testFailedRightButtonGestureStillSuppressesContextMenuAfterDrawingDistance() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
         tap.onGestureEnded = { trigger, points in
             endedGestures.append((trigger, points))
@@ -436,8 +433,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testMiddleButtonGestureDoesNotSuppressLaterRightClick() {
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             }
@@ -455,7 +451,7 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testMiddleButtonGestureCompletesWithoutMouseMovedInput() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
         tap.onGestureEnded = { trigger, points in
             endedGestures.append((trigger, points))
@@ -481,8 +477,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testMouseMovedDoesNotAdvanceRightButtonGestureRecognition() {
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             }
@@ -498,7 +493,7 @@ final class MouseEventTapTests: XCTestCase {
 
         XCTAssertEqual(tap.handle(.rightMouseDown(at: GesturePoint(x: 0, y: 0))), .suppressEvent)
         XCTAssertEqual(
-            tap.handle(
+            tap.handleIncomingCGEvent(
                 type: .mouseMoved,
                 event: makeMouseEvent(
                     type: .mouseMoved,
@@ -519,8 +514,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testHandleTypeConvertsQuartzEventLocationIntoAppKitScreenCoordinatesForSyntheticClickReplay() {
         var beganPoint: GesturePoint?
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             screenFramesProvider: { [CGRect(x: 0, y: 0, width: 1440, height: 900)] },
             desktopFrameProvider: { CGRect(x: 0, y: 0, width: 1440, height: 900) },
             syntheticClickPoster: { _, point in
@@ -529,7 +523,7 @@ final class MouseEventTapTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            tap.handle(
+            tap.handleIncomingCGEvent(
                 type: .rightMouseDown,
                 event: makeMouseEvent(
                     type: .rightMouseDown,
@@ -540,7 +534,7 @@ final class MouseEventTapTests: XCTestCase {
             .suppressEvent
         )
         XCTAssertEqual(
-            tap.handle(
+            tap.handleIncomingCGEvent(
                 type: .rightMouseUp,
                 event: makeMouseEvent(
                     type: .rightMouseUp,
@@ -556,8 +550,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testHandleTypeUsesContainingScreenInsteadOfDesktopUnionForYFlip() {
         var clickPoint: GesturePoint?
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             screenFramesProvider: {
                 [
                     CGRect(x: -1728, y: -37, width: 1728, height: 1117),
@@ -571,7 +564,7 @@ final class MouseEventTapTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            tap.handle(
+            tap.handleIncomingCGEvent(
                 type: .rightMouseDown,
                 event: makeMouseEvent(
                     type: .rightMouseDown,
@@ -582,7 +575,7 @@ final class MouseEventTapTests: XCTestCase {
             .suppressEvent
         )
         XCTAssertEqual(
-            tap.handle(
+            tap.handleIncomingCGEvent(
                 type: .rightMouseUp,
                 event: makeMouseEvent(
                     type: .rightMouseUp,
@@ -597,9 +590,9 @@ final class MouseEventTapTests: XCTestCase {
     }
 
     func testSyntheticEventsPostedByGestureFlowPassThroughTap() {
-        let tap = MouseEventTap(gestureThreshold: 24)
+        let tap = makeMouseEventTap()
         var beganCount = 0
-        tap.onGestureBegan = { _, _ in
+        tap.onGestureBegan = { _, _, _ in
             beganCount += 1
         }
 
@@ -611,25 +604,24 @@ final class MouseEventTapTests: XCTestCase {
         event.setIntegerValueField(.eventSourceUserData, value: 0x47465731)
 
         XCTAssertEqual(
-            tap.handle(type: .rightMouseDown, event: event),
+            tap.handleIncomingCGEvent(type: .rightMouseDown, event: event),
             .passEvent
         )
         XCTAssertEqual(beganCount, 0)
     }
 
     func testStopIgnoresQueuedCGEventsAfterTeardown() {
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             screenFramesProvider: { [CGRect(x: 0, y: 0, width: 100, height: 100)] },
             desktopFrameProvider: { CGRect(x: 0, y: 0, width: 100, height: 100) }
         )
         var beganPoints: [GesturePoint] = []
-        tap.onGestureBegan = { _, point in
+        tap.onGestureBegan = { _, point, _ in
             beganPoints.append(point)
         }
 
         XCTAssertEqual(
-            tap.handle(
+            tap.handleIncomingCGEvent(
                 type: .rightMouseDown,
                 event: makeMouseEvent(
                     type: .rightMouseDown,
@@ -644,7 +636,7 @@ final class MouseEventTapTests: XCTestCase {
         tap.stop()
 
         XCTAssertEqual(
-            tap.handle(
+            tap.handleIncomingCGEvent(
                 type: .rightMouseDown,
                 event: makeMouseEvent(
                     type: .rightMouseDown,
@@ -659,8 +651,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testSuppressedRightGestureReleasesMouseButtonImmediatelyForSystemStateRecovery() {
         var resets: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             mouseButtonResetter: { trigger, point in
                 resets.append((trigger, point))
             }
@@ -677,8 +668,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testStopDoesNotDoubleReleaseMouseButtonAfterSuppressedGestureRecoveredImmediately() {
         var resets: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             mouseButtonResetter: { trigger, point in
                 resets.append((trigger, point))
             }
@@ -696,8 +686,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testStopDoesNotReleaseMouseButtonAfterNormalRightClick() {
         var resets: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             mouseButtonResetter: { trigger, point in
                 resets.append((trigger, point))
             }
@@ -715,8 +704,7 @@ final class MouseEventTapTests: XCTestCase {
     func testShortRightClickDoesNotReleaseMouseButtonOnlyReplayClick() {
         var replayedClicks: [(GestureTrigger, GesturePoint)] = []
         var resets: [(GestureTrigger, GesturePoint)] = []
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             syntheticClickPoster: { trigger, point in
                 replayedClicks.append((trigger, point))
             },
@@ -736,8 +724,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testDisabledByTimeoutReEnablesEventTapAndPassesEvent() {
         var isEnabled: Bool?
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             eventTapEnabler: { isEnabled = $0 }
         )
 
@@ -748,8 +735,7 @@ final class MouseEventTapTests: XCTestCase {
 
     func testDisabledByUserInputReEnablesEventTapAndCancelsActiveGesture() {
         var isEnabled: Bool?
-        let tap = MouseEventTap(
-            gestureThreshold: 24,
+        let tap = makeMouseEventTap(
             eventTapEnabler: { isEnabled = $0 }
         )
         var endedGestures: [(GestureTrigger, [GesturePoint])] = []
@@ -770,6 +756,103 @@ final class MouseEventTapTests: XCTestCase {
         XCTAssertTrue(endedGestures.isEmpty)
         XCTAssertEqual(cancelCount, 1)
     }
+
+    func testRightMouseDownPassesThroughWhenGateReturnsFalse() {
+        var timeoutCount = 0
+        let tap = makeMouseEventTap(
+            gestureActivationGate: { _ in nil }
+        )
+        tap.onRightClickTimeout = { _ in
+            timeoutCount += 1
+        }
+
+        XCTAssertEqual(
+            tap.handle(.rightMouseDown(at: GesturePoint(x: 10, y: 10))),
+            .passEvent
+        )
+        XCTAssertEqual(timeoutCount, 0)
+    }
+
+    func testMiddleMouseDownPassesThroughWhenGateReturnsFalse() {
+        var beganCount = 0
+        let tap = makeMouseEventTap(
+            gestureActivationGate: { _ in nil }
+        )
+        tap.onGestureBegan = { _, _, _ in
+            beganCount += 1
+        }
+
+        XCTAssertEqual(
+            tap.handle(.middleMouseDown(at: GesturePoint(x: 10, y: 10))),
+            .passEvent
+        )
+        XCTAssertEqual(beganCount, 0)
+    }
+
+    func testRightMouseDownStillSuppressesWhenGateReturnsTrue() {
+        let tap = makeMouseEventTap(
+            gestureActivationGate: { _ in
+                ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: nil)
+            }
+        )
+
+        XCTAssertEqual(
+            tap.handle(.rightMouseDown(at: GesturePoint(x: 10, y: 10))),
+            .suppressEvent
+        )
+    }
+}
+
+private func makeMouseEventTap(
+    movementThreshold: Double = 24,
+    holdTimeoutMilliseconds: Int = GestureTriggerConfiguration.default.holdTimeoutMilliseconds,
+    maximumSampleDistance: Double = GestureTriggerConfiguration.default.maximumSampleDistance,
+    triggerConfigurationProvider: (() -> GestureTriggerConfiguration)? = nil,
+    gestureActivationGate: @escaping (GesturePoint) -> ResolvedGestureTarget? = { _ in
+        ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: nil)
+    },
+    eventTapEnabler: @escaping (Bool) -> Void = { _ in },
+    screenFramesProvider: @escaping () -> [CGRect] = {
+        NSScreen.screens.map(\.frame)
+    },
+    desktopFrameProvider: @escaping () -> CGRect = {
+        NSScreen.screens
+            .map(\.frame)
+            .reduce(NSScreen.main?.frame ?? .zero) { partial, frame in
+                partial.union(frame)
+            }
+    },
+    syntheticClickPoster: ((GestureTrigger, GesturePoint) -> Void)? = nil,
+    mouseButtonResetter: ((GestureTrigger, GesturePoint) -> Void)? = nil,
+    nowProvider: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
+    holdTimeoutScheduler: @escaping (TimeInterval, @escaping () -> Void) -> DispatchWorkItem = { delay, action in
+        let workItem = DispatchWorkItem(block: action)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+        return workItem
+    }
+) -> MouseEventTap {
+    let resolvedTriggerConfigurationProvider: () -> GestureTriggerConfiguration
+    if let triggerConfigurationProvider {
+        resolvedTriggerConfigurationProvider = triggerConfigurationProvider
+    } else {
+        let configuration = GestureTriggerConfiguration(
+            movementThreshold: movementThreshold,
+            holdTimeoutMilliseconds: holdTimeoutMilliseconds,
+            maximumSampleDistance: maximumSampleDistance
+        )
+        resolvedTriggerConfigurationProvider = { configuration }
+    }
+    return MouseEventTap(
+        triggerConfigurationProvider: resolvedTriggerConfigurationProvider,
+        gestureActivationGate: gestureActivationGate,
+        eventTapEnabler: eventTapEnabler,
+        screenFramesProvider: screenFramesProvider,
+        desktopFrameProvider: desktopFrameProvider,
+        syntheticClickPoster: syntheticClickPoster,
+        mouseButtonResetter: mouseButtonResetter,
+        nowProvider: nowProvider,
+        holdTimeoutScheduler: holdTimeoutScheduler
+    )
 }
 
 private func makeMouseEvent(

@@ -289,12 +289,93 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.configuration.feedback, .default)
         XCTAssertEqual(viewModel.configuration.trigger, .default)
         XCTAssertEqual(viewModel.configuration.gestureTargetApplication, .defaultValue)
+        XCTAssertEqual(viewModel.configuration.ignoredApplicationBundleIdentifiers, [])
 
         let persisted = try store.load()
         XCTAssertEqual(persisted.feedback, .default)
         XCTAssertEqual(persisted.trigger, .default)
         XCTAssertEqual(persisted.gestureTargetApplication, .defaultValue)
+        XCTAssertEqual(persisted.ignoredApplicationBundleIdentifiers, [])
         XCTAssertNil(viewModel.saveErrorMessage)
+    }
+
+    func testAddIgnoredApplicationPersists() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let store = AppConfigurationStore(fileURL: fileURL)
+        try store.save(AppConfiguration())
+
+        let viewModel = makeViewModel(
+            loadResult: ConfigurationLoadResult(
+                configuration: try store.load(),
+                didRecoverFromCorruption: false,
+                backupURL: nil
+            ),
+            saveConfiguration: { try store.save($0) }
+        )
+
+        viewModel.addIgnoredApplication(bundleIdentifier: "com.example.app")
+
+        XCTAssertEqual(viewModel.ignoredApplicationBundleIdentifiers, ["com.example.app"])
+        XCTAssertEqual(try store.load().ignoredApplicationBundleIdentifiers, ["com.example.app"])
+    }
+
+    func testAddIgnoredApplicationIgnoresDuplicates() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let store = AppConfigurationStore(fileURL: fileURL)
+        try store.save(AppConfiguration(ignoredApplicationBundleIdentifiers: ["com.example.app"]))
+
+        let viewModel = makeViewModel(
+            loadResult: ConfigurationLoadResult(
+                configuration: try store.load(),
+                didRecoverFromCorruption: false,
+                backupURL: nil
+            ),
+            saveConfiguration: { try store.save($0) }
+        )
+
+        viewModel.addIgnoredApplication(bundleIdentifier: "com.example.app")
+
+        XCTAssertEqual(viewModel.ignoredApplicationBundleIdentifiers, ["com.example.app"])
+    }
+
+    func testCannotAddOwnBundleIdentifierToIgnoredApplications() throws {
+        let ownBundleIdentifier = Bundle.main.bundleIdentifier ?? "com.test.host"
+        let fileURL = try makeTemporaryConfigURL()
+        let store = AppConfigurationStore(fileURL: fileURL)
+        try store.save(AppConfiguration())
+
+        let viewModel = makeViewModel(
+            loadResult: ConfigurationLoadResult(
+                configuration: try store.load(),
+                didRecoverFromCorruption: false,
+                backupURL: nil
+            ),
+            saveConfiguration: { try store.save($0) }
+        )
+
+        viewModel.addIgnoredApplication(bundleIdentifier: ownBundleIdentifier)
+
+        XCTAssertTrue(viewModel.ignoredApplicationBundleIdentifiers.isEmpty)
+    }
+
+    func testRemoveIgnoredApplication() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let store = AppConfigurationStore(fileURL: fileURL)
+        try store.save(AppConfiguration(ignoredApplicationBundleIdentifiers: ["com.example.app"]))
+
+        let viewModel = makeViewModel(
+            loadResult: ConfigurationLoadResult(
+                configuration: try store.load(),
+                didRecoverFromCorruption: false,
+                backupURL: nil
+            ),
+            saveConfiguration: { try store.save($0) }
+        )
+
+        viewModel.removeIgnoredApplication(bundleIdentifier: "com.example.app")
+
+        XCTAssertTrue(viewModel.ignoredApplicationBundleIdentifiers.isEmpty)
+        XCTAssertTrue(try store.load().ignoredApplicationBundleIdentifiers.isEmpty)
     }
 
     func testRestoreDefaultAdvancedSettingsPreservesIsEnabled() throws {

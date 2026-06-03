@@ -83,6 +83,15 @@ enum L10nKey: String, CaseIterable {
     case advancedSampleDistanceTitle
     case advancedSampleDistanceDescription
 
+    case advancedIgnoredAppsTitle
+    case advancedIgnoredAppsDescription
+    case advancedIgnoredAppsEmpty
+    case advancedIgnoredAppsAdd
+    case advancedIgnoredAppsAddFromFile
+    case advancedIgnoredAppsAddFromRunning
+    case advancedIgnoredAppsRunningEmpty
+    case advancedIgnoredAppsRemoveHelp
+
     case gesturesApplicationsLabel
     case gesturesGlobalScope
     case gesturesAddApplication

@@ -102,12 +102,18 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         AppServices.localization = localizationManager
 
         let runtimeState = self.runtimeState
+        let targetResolver = GestureTargetApplicationResolver()
+        let activationGate = GestureActivationGate(
+            configurationProvider: { runtimeState.appConfiguration },
+            targetResolver: targetResolver
+        )
         self.gestureEngine = injectedGestureEngine ?? GestureEngine(
             appConfigurationProvider: { runtimeState.appConfiguration },
             gestureConfigurationProvider: { runtimeState.gestureConfigurationService.configuration },
             permissionService: permissionService,
             eventTap: MouseEventTap(
-                triggerConfigurationProvider: { runtimeState.appConfiguration.trigger }
+                triggerConfigurationProvider: { runtimeState.appConfiguration.trigger },
+                gestureActivationGate: { activationGate.resolvedTargetForGestureActivation(at: $0) }
             ),
             overlay: GestureOverlayWindow(localization: localizationManager)
         )

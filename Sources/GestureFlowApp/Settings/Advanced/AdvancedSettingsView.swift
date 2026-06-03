@@ -13,6 +13,7 @@ struct AdvancedSettingsView: View {
                     viewModel: viewModel,
                     isSliderValueFieldFocused: $isSliderValueFieldFocused
                 )
+                IgnoredApplicationsSettingsView(viewModel: viewModel)
                 FeedbackSettingsView(
                     viewModel: viewModel,
                     isSliderValueFieldFocused: $isSliderValueFieldFocused

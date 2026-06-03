@@ -84,6 +84,15 @@ enum L10nStringsEn {
         .advancedSampleDistanceTitle: "Sample Jump Threshold",
         .advancedSampleDistanceDescription: "Maximum distance between samples used to filter pointer jitter.",
 
+        .advancedIgnoredAppsTitle: "Ignored Applications",
+        .advancedIgnoredAppsDescription: "When a listed application is the gesture target, GestureFlow will not intercept mouse events or trigger gestures.",
+        .advancedIgnoredAppsEmpty: "No ignored applications",
+        .advancedIgnoredAppsAdd: "Add Application",
+        .advancedIgnoredAppsAddFromFile: "Choose from File…",
+        .advancedIgnoredAppsAddFromRunning: "Running Applications",
+        .advancedIgnoredAppsRunningEmpty: "No available applications",
+        .advancedIgnoredAppsRemoveHelp: "Remove from ignored list",
+
         .gesturesApplicationsLabel: "Applications",
         .gesturesGlobalScope: "Global",
         .gesturesAddApplication: "Add Application",

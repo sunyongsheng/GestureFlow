@@ -31,6 +31,7 @@ public struct AppConfiguration: Codable, Equatable {
     public var feedback: FeedbackConfiguration
     public var trigger: GestureTriggerConfiguration
     public var gestureTargetApplication: GestureTargetApplication
+    public var ignoredApplicationBundleIdentifiers: [String]
 
     private enum CodingKeys: String, CodingKey {
         case isEnabled
@@ -38,6 +39,7 @@ public struct AppConfiguration: Codable, Equatable {
         case feedback
         case trigger
         case gestureTargetApplication
+        case ignoredApplicationBundleIdentifiers
     }
 
     public init(
@@ -45,13 +47,15 @@ public struct AppConfiguration: Codable, Equatable {
         general: GeneralConfiguration = .default,
         feedback: FeedbackConfiguration = .default,
         trigger: GestureTriggerConfiguration = .default,
-        gestureTargetApplication: GestureTargetApplication = .defaultValue
+        gestureTargetApplication: GestureTargetApplication = .defaultValue,
+        ignoredApplicationBundleIdentifiers: [String] = []
     ) {
         self.isEnabled = isEnabled
         self.general = general
         self.feedback = feedback
         self.trigger = trigger
         self.gestureTargetApplication = gestureTargetApplication
+        self.ignoredApplicationBundleIdentifiers = ignoredApplicationBundleIdentifiers
     }
 
     public init(from decoder: Decoder) throws {
@@ -64,6 +68,10 @@ public struct AppConfiguration: Codable, Equatable {
             GestureTargetApplication.self,
             forKey: .gestureTargetApplication
         ) ?? .defaultValue
+        ignoredApplicationBundleIdentifiers = try container.decodeIfPresent(
+            [String].self,
+            forKey: .ignoredApplicationBundleIdentifiers
+        ) ?? []
     }
 }
 

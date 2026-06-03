@@ -84,6 +84,15 @@ enum L10nStringsKo {
         .advancedSampleDistanceTitle: "샘플 점프 임계값",
         .advancedSampleDistanceDescription: "포인터 떨림을 걸러내기 위한 인접 샘플 간 최대 거리입니다.",
 
+        .advancedIgnoredAppsTitle: "무시할 앱",
+        .advancedIgnoredAppsDescription: "목록에 있는 앱이 제스처 대상일 때 GestureFlow는 마우스 이벤트를 가로채거나 제스처를 시작하지 않습니다.",
+        .advancedIgnoredAppsEmpty: "무시할 앱 없음",
+        .advancedIgnoredAppsAdd: "앱 추가",
+        .advancedIgnoredAppsAddFromFile: "파일에서 선택…",
+        .advancedIgnoredAppsAddFromRunning: "실행 중인 앱",
+        .advancedIgnoredAppsRunningEmpty: "추가할 수 있는 앱 없음",
+        .advancedIgnoredAppsRemoveHelp: "무시 목록에서 제거",
+
         .gesturesApplicationsLabel: "애플리케이션",
         .gesturesGlobalScope: "전역",
         .gesturesAddApplication: "애플리케이션 추가",

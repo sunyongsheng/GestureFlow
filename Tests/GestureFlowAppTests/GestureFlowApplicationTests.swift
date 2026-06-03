@@ -804,7 +804,7 @@ final class GestureFlowApplicationTests: XCTestCase {
 }
 
 private final class ApplicationSpyMouseEventTapController: MouseEventTapControlling {
-    var onGestureBegan: ((GestureTrigger, GesturePoint) -> Void)?
+    var onGestureBegan: ((GestureTrigger, GesturePoint, ResolvedGestureTarget) -> Void)?
     var onGestureMoved: ((GesturePoint) -> Void)?
     var onGestureEnded: ((GestureTrigger, [GesturePoint]) -> Void)?
     var onGestureCancelled: (() -> Void)?

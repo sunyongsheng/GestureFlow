@@ -69,9 +69,8 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureEnded?(
-            .rightMouse,
-            [
+        tap.simulateGestureEnded(
+            points: [
                 GesturePoint(x: 100, y: 0),
                 GesturePoint(x: 60, y: 0),
                 GesturePoint(x: 20, y: 0)
@@ -113,28 +112,24 @@ final class GestureEngineTests: XCTestCase {
         let tap = SpyMouseEventTapController()
         let actionExecutor = SpyActionExecutor()
         var feedback: [GestureEngineFeedback] = []
-        let targetResolver = SpyGestureTargetResolver(
-            resolvedTarget: ResolvedGestureTarget(
-                bundleIdentifier: "com.apple.Safari",
-                processIdentifier: 42
-            )
-        )
         let engine = makeEngine(
             gestureConfiguration: gestureConfiguration,
-            targetResolver: targetResolver,
             eventTap: tap,
             actionExecutor: actionExecutor,
             feedbackHandler: { feedback.append($0) }
         )
 
         engine.start()
-        tap.onGestureEnded?(
-            .rightMouse,
-            [
+        tap.simulateGestureEnded(
+            points: [
                 GesturePoint(x: 100, y: 0),
                 GesturePoint(x: 60, y: 0),
                 GesturePoint(x: 20, y: 0)
-            ]
+            ],
+            gestureTarget: ResolvedGestureTarget(
+                bundleIdentifier: "com.apple.Safari",
+                processIdentifier: 42
+            )
         )
 
         XCTAssertEqual(
@@ -171,7 +166,6 @@ final class GestureEngineTests: XCTestCase {
                 gestureTargetApplication: .underMouse
             ),
             gestureConfiguration: gestureConfiguration,
-            targetResolver: SpyGestureTargetResolver(resolvedTarget: .invalid),
             eventTap: tap,
             overlay: overlay,
             actionExecutor: actionExecutor,
@@ -179,20 +173,24 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureEnded?(
-            .rightMouse,
-            [
-                GesturePoint(x: 100, y: 0),
+        let startPoint = GesturePoint(x: 100, y: 0)
+        tap.simulateGestureEnded(
+            points: [
+                startPoint,
                 GesturePoint(x: 60, y: 0),
                 GesturePoint(x: 20, y: 0)
-            ]
+            ],
+            gestureTarget: .invalid
         )
 
         let gesture = gestureConfiguration.gestures[0]
+        let beganPoint = GestureOverlayGeometry.applyHotspotOffset(to: startPoint)
         XCTAssertTrue(actionExecutor.executedActions.isEmpty)
         XCTAssertEqual(
             overlay.events,
             [
+                .began(beganPoint, GestureTrailAppearance(feedback: .default)),
+                initialLiveFeedback(at: beganPoint),
                 .completed(
                     .targetNotFound(gestureID: gesture.id, storedName: gesture.name),
                     GesturePoint(x: 20, y: 0)
@@ -211,7 +209,7 @@ final class GestureEngineTests: XCTestCase {
         )
     }
 
-    func testUnderMousePolicyUsesTargetResolvedAtGestureStartNotGestureEnd() {
+    func testUnderMousePolicyUsesTargetCapturedAtGestureStart() {
         let shortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
         let gestureConfiguration = GestureConfiguration(
             gestures: [
@@ -225,17 +223,9 @@ final class GestureEngineTests: XCTestCase {
         )
         let tap = SpyMouseEventTapController()
         let actionExecutor = SpyActionExecutor()
-        let targetResolver = SpyGestureTargetResolver(
-            targetsByCallIndex: [
-                ResolvedGestureTarget(
-                    bundleIdentifier: "com.gestureflow.app",
-                    processIdentifier: 999
-                ),
-                ResolvedGestureTarget(
-                    bundleIdentifier: "com.apple.Safari",
-                    processIdentifier: 42
-                )
-            ]
+        let capturedTarget = ResolvedGestureTarget(
+            bundleIdentifier: "com.gestureflow.app",
+            processIdentifier: 999
         )
         let engine = makeEngine(
             appConfiguration: AppConfiguration(
@@ -243,13 +233,12 @@ final class GestureEngineTests: XCTestCase {
                 gestureTargetApplication: .underMouse
             ),
             gestureConfiguration: gestureConfiguration,
-            targetResolver: targetResolver,
             eventTap: tap,
             actionExecutor: actionExecutor
         )
 
         engine.start()
-        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100))
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100), capturedTarget)
         tap.onGestureEnded?(
             .rightMouse,
             [
@@ -259,7 +248,6 @@ final class GestureEngineTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(targetResolver.resolveCallCount, 1)
         XCTAssertEqual(
             actionExecutor.executedActions,
             [
@@ -269,6 +257,27 @@ final class GestureEngineTests: XCTestCase {
                 )
             ]
         )
+    }
+
+    func testGestureEndedWithoutCapturedTargetRejects() {
+        var feedback: [GestureEngineFeedback] = []
+        let tap = SpyMouseEventTapController()
+        let engine = makeEngine(
+            eventTap: tap,
+            feedbackHandler: { feedback.append($0) }
+        )
+
+        engine.start()
+        tap.onGestureEnded?(
+            .rightMouse,
+            [
+                GesturePoint(x: 100, y: 100),
+                GesturePoint(x: 60, y: 100),
+                GesturePoint(x: 20, y: 100)
+            ]
+        )
+
+        XCTAssertEqual(feedback, [.rejected(trigger: .rightMouse)])
     }
 
     func testUnderMousePolicyMatchesAppUnderStartPoint() {
@@ -300,25 +309,22 @@ final class GestureEngineTests: XCTestCase {
                 gestureTargetApplication: .underMouse
             ),
             gestureConfiguration: gestureConfiguration,
-            targetResolver: SpyGestureTargetResolver(
-                resolvedTarget: ResolvedGestureTarget(
-                    bundleIdentifier: "com.apple.Safari",
-                    processIdentifier: 77
-                )
-            ),
             eventTap: tap,
             actionExecutor: actionExecutor,
             feedbackHandler: { feedback.append($0) }
         )
 
         engine.start()
-        tap.onGestureEnded?(
-            .rightMouse,
-            [
+        tap.simulateGestureEnded(
+            points: [
                 GesturePoint(x: 100, y: 0),
                 GesturePoint(x: 60, y: 0),
                 GesturePoint(x: 20, y: 0)
-            ]
+            ],
+            gestureTarget: ResolvedGestureTarget(
+                bundleIdentifier: "com.apple.Safari",
+                processIdentifier: 77
+            )
         )
 
         XCTAssertEqual(
@@ -345,9 +351,8 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureEnded?(
-            .rightMouse,
-            [
+        tap.simulateGestureEnded(
+            points: [
                 GesturePoint(x: 0, y: 0),
                 GesturePoint(x: 50, y: 0)
             ]
@@ -384,10 +389,10 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureEnded?(
-            .rightMouse,
-            [
-                GesturePoint(x: 0, y: 0),
+        let startPoint = GesturePoint(x: 0, y: 0)
+        tap.simulateGestureEnded(
+            points: [
+                startPoint,
                 GesturePoint(x: 50, y: 0)
             ]
         )
@@ -402,9 +407,12 @@ final class GestureEngineTests: XCTestCase {
             ]
         )
         let gesture = gestureConfiguration.gestures[0]
+        let beganPoint = GestureOverlayGeometry.applyHotspotOffset(to: startPoint)
         XCTAssertEqual(
             overlay.events,
             [
+                .began(beganPoint, GestureTrailAppearance(feedback: .default)),
+                initialLiveFeedback(at: beganPoint),
                 .completed(
                     .executionFailed(gestureID: gesture.id, storedName: gesture.name),
                     GesturePoint(x: 50, y: 0)
@@ -459,7 +467,7 @@ final class GestureEngineTests: XCTestCase {
         let gesture = gestureConfiguration.gestures[0]
 
         engine.start()
-        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100))
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100), ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1))
         tap.onGestureMoved?(GesturePoint(x: 80, y: 100))
         tap.onGestureEnded?(
             .rightMouse,
@@ -529,18 +537,21 @@ final class GestureEngineTests: XCTestCase {
         let gesture = gestureConfiguration.gestures[0]
 
         engine.start()
-        tap.onGestureEnded?(
-            .rightMouse,
-            [
-                GesturePoint(x: 1500, y: 80),
+        let startPoint = GesturePoint(x: 1500, y: 80)
+        tap.simulateGestureEnded(
+            points: [
+                startPoint,
                 GesturePoint(x: 1444, y: 80),
                 GesturePoint(x: 1442, y: 80)
             ]
         )
 
+        let beganPoint = GestureOverlayGeometry.applyHotspotOffset(to: startPoint)
         XCTAssertEqual(
             overlay.events,
             [
+                .began(beganPoint, GestureTrailAppearance(feedback: .default)),
+                initialLiveFeedback(at: beganPoint),
                 .completed(
                     .recognized(gestureID: gesture.id, storedName: gesture.name),
                     GesturePoint(x: 1442, y: 80)
@@ -569,7 +580,7 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 10, y: 10))
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 10, y: 10), ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1))
         tap.onGestureCancelled?()
 
         let beganPoint = GestureOverlayGeometry.applyHotspotOffset(to: GesturePoint(x: 10, y: 10))
@@ -641,7 +652,7 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100))
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 100, y: 100), ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1))
         tap.onGestureMoved?(GesturePoint(x: 100, y: 50))
         tap.onGestureMoved?(GesturePoint(x: 100, y: 10))
 
@@ -685,7 +696,7 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 0, y: 60))
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 0, y: 60), ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1))
         tap.onGestureMoved?(GesturePoint(x: 0, y: 0))
 
         let downLive = overlay.liveUpdates.last
@@ -722,7 +733,7 @@ final class GestureEngineTests: XCTestCase {
         )
 
         engine.start()
-        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 0, y: 60))
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 0, y: 60), ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1))
         tap.onGestureMoved?(GesturePoint(x: 0, y: 0))
         tap.onGestureMoved?(GesturePoint(x: 70, y: 0))
 
@@ -740,7 +751,7 @@ final class GestureEngineTests: XCTestCase {
         let engine = makeEngine(eventTap: tap, overlay: overlay)
 
         engine.start()
-        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 20, y: 30))
+        tap.onGestureBegan?(.rightMouse, GesturePoint(x: 20, y: 30), ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1))
         engine.stop()
 
         let beganPoint = GestureOverlayGeometry.applyHotspotOffset(to: GesturePoint(x: 20, y: 30))
@@ -773,7 +784,6 @@ final class GestureEngineTests: XCTestCase {
             gestureTargetApplication: .foreground
         ),
         gestureConfiguration: GestureConfiguration = GestureConfiguration.defaultTemplate,
-        targetResolver: GestureTargetResolving = SpyGestureTargetResolver(),
         permissionService: PermissionService = PermissionService(trustCheck: { true }, permissionPrompt: {}),
         eventTap: SpyMouseEventTapController = SpyMouseEventTapController(),
         overlay: GestureOverlayDisplaying = NoopGestureOverlay(),
@@ -783,7 +793,6 @@ final class GestureEngineTests: XCTestCase {
         GestureEngine(
             appConfigurationProvider: { appConfiguration },
             gestureConfigurationProvider: { gestureConfiguration },
-            targetResolver: targetResolver,
             permissionService: permissionService,
             eventTap: eventTap,
             overlay: overlay,
@@ -798,42 +807,8 @@ private struct ExecutedActionCall: Equatable {
     var targetProcessIdentifier: pid_t?
 }
 
-private final class SpyGestureTargetResolver: GestureTargetResolving {
-    private(set) var resolveCallCount = 0
-    private let targetsByCallIndex: [ResolvedGestureTarget]
-    private let fallbackTarget: ResolvedGestureTarget
-
-    init(
-        resolvedTarget: ResolvedGestureTarget = ResolvedGestureTarget(
-            bundleIdentifier: nil,
-            processIdentifier: 1
-        )
-    ) {
-        self.targetsByCallIndex = []
-        self.fallbackTarget = resolvedTarget
-    }
-
-    init(targetsByCallIndex: [ResolvedGestureTarget]) {
-        self.targetsByCallIndex = targetsByCallIndex
-        self.fallbackTarget = targetsByCallIndex.last
-            ?? ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: 1)
-    }
-
-    func resolve(
-        policy: GestureTargetApplication,
-        at startPoint: GesturePoint
-    ) -> ResolvedGestureTarget {
-        resolveCallCount += 1
-        let index = resolveCallCount - 1
-        if index < targetsByCallIndex.count {
-            return targetsByCallIndex[index]
-        }
-        return fallbackTarget
-    }
-}
-
 private final class SpyMouseEventTapController: MouseEventTapControlling {
-    var onGestureBegan: ((GestureTrigger, GesturePoint) -> Void)?
+    var onGestureBegan: ((GestureTrigger, GesturePoint, ResolvedGestureTarget) -> Void)?
     var onGestureMoved: ((GesturePoint) -> Void)?
     var onGestureEnded: ((GestureTrigger, [GesturePoint]) -> Void)?
     var onGestureCancelled: (() -> Void)?
@@ -842,6 +817,19 @@ private final class SpyMouseEventTapController: MouseEventTapControlling {
 
     private(set) var startCount = 0
     private(set) var stopCount = 0
+
+    func simulateGestureEnded(
+        trigger: GestureTrigger = .rightMouse,
+        points: [GesturePoint],
+        gestureTarget: ResolvedGestureTarget = ResolvedGestureTarget(
+            bundleIdentifier: nil,
+            processIdentifier: 1
+        )
+    ) {
+        guard let startPoint = points.first else { return }
+        onGestureBegan?(trigger, startPoint, gestureTarget)
+        onGestureEnded?(trigger, points)
+    }
 
     func start() -> Bool {
         startCount += 1

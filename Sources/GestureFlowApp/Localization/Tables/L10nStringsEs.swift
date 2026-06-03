@@ -84,6 +84,15 @@ enum L10nStringsEs {
         .advancedSampleDistanceTitle: "Umbral de salto de muestra",
         .advancedSampleDistanceDescription: "Distancia máxima entre muestras para filtrar el temblor del puntero.",
 
+        .advancedIgnoredAppsTitle: "Aplicaciones ignoradas",
+        .advancedIgnoredAppsDescription: "Cuando una aplicación de la lista es el objetivo del gesto, GestureFlow no interceptará eventos del ratón ni activará gestos.",
+        .advancedIgnoredAppsEmpty: "No hay aplicaciones ignoradas",
+        .advancedIgnoredAppsAdd: "Añadir aplicación",
+        .advancedIgnoredAppsAddFromFile: "Elegir archivo…",
+        .advancedIgnoredAppsAddFromRunning: "Aplicaciones en ejecución",
+        .advancedIgnoredAppsRunningEmpty: "No hay aplicaciones disponibles",
+        .advancedIgnoredAppsRemoveHelp: "Quitar de la lista ignorada",
+
         .gesturesApplicationsLabel: "Aplicaciones",
         .gesturesGlobalScope: "Global",
         .gesturesAddApplication: "Añadir aplicación",

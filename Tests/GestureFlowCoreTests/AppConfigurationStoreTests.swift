@@ -78,6 +78,19 @@ final class AppConfigurationStoreTests: XCTestCase {
         XCTAssertEqual(configuration.gestureTargetApplication, .underMouse)
     }
 
+    func testMissingIgnoredApplicationsBackfillsEmptyArray() throws {
+        let fileURL = try makeTemporaryConfigURL()
+        let partialConfiguration = """
+        isEnabled: true
+        """
+        try partialConfiguration.write(to: fileURL, atomically: true, encoding: .utf8)
+        let store = AppConfigurationStore(fileURL: fileURL)
+
+        let configuration = try store.load()
+
+        XCTAssertEqual(configuration.ignoredApplicationBundleIdentifiers, [])
+    }
+
     private func makeTemporaryConfigURL() throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

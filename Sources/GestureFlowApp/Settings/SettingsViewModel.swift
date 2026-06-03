@@ -257,6 +257,55 @@ final class SettingsViewModel: ObservableObject {
         persistAppConfiguration()
     }
 
+    var ignoredApplicationBundleIdentifiers: [String] {
+        configuration.ignoredApplicationBundleIdentifiers
+    }
+
+    var runningApplicationsAvailableForIgnore: [(bundleIdentifier: String, name: String)] {
+        let ignored = Set(configuration.ignoredApplicationBundleIdentifiers)
+        let ownBundleIdentifier = Bundle.main.bundleIdentifier
+        return NSWorkspace.shared.runningApplications
+            .filter { application in
+                application.activationPolicy == .regular
+                    && application.bundleIdentifier.map { bundleIdentifier in
+                        bundleIdentifier != ownBundleIdentifier && !ignored.contains(bundleIdentifier)
+                    } ?? false
+            }
+            .compactMap { application -> (bundleIdentifier: String, name: String)? in
+                guard let bundleIdentifier = application.bundleIdentifier else { return nil }
+                let name = application.localizedName?.trimmingCharacters(in: .whitespacesAndNewlines)
+                let resolvedName = (name?.isEmpty == false) ? name! : Self.displayName(forBundleIdentifier: bundleIdentifier)
+                return (bundleIdentifier, resolvedName)
+            }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    func addIgnoredApplicationFromPanel() {
+        guard let applicationURL = openApplicationPanel() else {
+            return
+        }
+
+        guard let bundleIdentifier = Bundle(url: applicationURL)?.bundleIdentifier else {
+            saveErrorMessage = localizationManager.string(.errorBundleIdentifierUnreadable)
+            return
+        }
+
+        addIgnoredApplication(bundleIdentifier: bundleIdentifier)
+    }
+
+    func addIgnoredApplication(bundleIdentifier: String) {
+        guard !isOwnBundleIdentifier(bundleIdentifier) else { return }
+        guard !configuration.ignoredApplicationBundleIdentifiers.contains(bundleIdentifier) else { return }
+
+        configuration.ignoredApplicationBundleIdentifiers.append(bundleIdentifier)
+        persistAppConfiguration()
+    }
+
+    func removeIgnoredApplication(bundleIdentifier: String) {
+        configuration.ignoredApplicationBundleIdentifiers.removeAll { $0 == bundleIdentifier }
+        persistAppConfiguration()
+    }
+
     func requestAccessibilityPermission() {
         permissionPrompt()
     }
@@ -403,7 +452,12 @@ final class SettingsViewModel: ObservableObject {
         configuration.feedback = .default
         configuration.trigger = .default
         configuration.gestureTargetApplication = .defaultValue
+        configuration.ignoredApplicationBundleIdentifiers = []
         persistAppConfiguration()
+    }
+
+    private func isOwnBundleIdentifier(_ bundleIdentifier: String) -> Bool {
+        bundleIdentifier == Bundle.main.bundleIdentifier
     }
 
     private func persistGestureConfiguration() {

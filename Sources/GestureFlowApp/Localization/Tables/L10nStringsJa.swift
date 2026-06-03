@@ -84,6 +84,15 @@ enum L10nStringsJa {
         .advancedSampleDistanceTitle: "サンプル跳躍しきい値",
         .advancedSampleDistanceDescription: "ジッター除去のための、隣接サンプル間の最大距離です。",
 
+        .advancedIgnoredAppsTitle: "無視するアプリ",
+        .advancedIgnoredAppsDescription: "リスト内のアプリがジェスチャ対象の場合、GestureFlow はマウスイベントを横取りせず、ジェスチャを開始しません。",
+        .advancedIgnoredAppsEmpty: "無視するアプリはありません",
+        .advancedIgnoredAppsAdd: "アプリを追加",
+        .advancedIgnoredAppsAddFromFile: "ファイルから選択…",
+        .advancedIgnoredAppsAddFromRunning: "実行中のアプリ",
+        .advancedIgnoredAppsRunningEmpty: "追加できるアプリがありません",
+        .advancedIgnoredAppsRemoveHelp: "無視リストから削除",
+
         .gesturesApplicationsLabel: "アプリケーション",
         .gesturesGlobalScope: "グローバル",
         .gesturesAddApplication: "アプリケーションを追加",

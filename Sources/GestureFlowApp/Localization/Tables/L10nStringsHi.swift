@@ -84,6 +84,15 @@ enum L10nStringsHi {
         .advancedSampleDistanceTitle: "सैंपल जंप सीमा",
         .advancedSampleDistanceDescription: "पॉइंटर कंपन फ़िल्टर करने के लिए सैंपल के बीच अधिकतम दूरी।",
 
+        .advancedIgnoredAppsTitle: "अनदेखे ऐप",
+        .advancedIgnoredAppsDescription: "जब सूची में कोई ऐप जेस्चर लक्ष्य हो, GestureFlow माउस इवेंट नहीं रोकेगा और जेस्चर शुरू नहीं करेगा।",
+        .advancedIgnoredAppsEmpty: "कोई अनदेखा ऐप नहीं",
+        .advancedIgnoredAppsAdd: "ऐप जोड़ें",
+        .advancedIgnoredAppsAddFromFile: "फ़ाइल से चुनें…",
+        .advancedIgnoredAppsAddFromRunning: "चल रहे ऐप",
+        .advancedIgnoredAppsRunningEmpty: "कोई उपलब्ध ऐप नहीं",
+        .advancedIgnoredAppsRemoveHelp: "अनदेखी सूची से हटाएँ",
+
         .gesturesApplicationsLabel: "ऐप्लिकेशन",
         .gesturesGlobalScope: "वैश्विक",
         .gesturesAddApplication: "ऐप्लिकेशन जोड़ें",

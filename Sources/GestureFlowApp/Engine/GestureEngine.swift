@@ -16,7 +16,6 @@ final class GestureEngine {
 
     private let appConfigurationProvider: AppConfigurationProvider
     private let gestureConfigurationProvider: GestureConfigurationProvider
-    private let targetResolver: GestureTargetResolving
     private let permissionService: PermissionService
     private let eventTap: MouseEventTapControlling
     private let recognizer: GestureRecognizer
@@ -35,9 +34,8 @@ final class GestureEngine {
     init(
         appConfigurationProvider: @escaping AppConfigurationProvider,
         gestureConfigurationProvider: @escaping GestureConfigurationProvider,
-        targetResolver: GestureTargetResolving = GestureTargetApplicationResolver(),
-        permissionService: PermissionService = PermissionService(),
-        eventTap: MouseEventTapControlling = MouseEventTap(),
+        permissionService: PermissionService,
+        eventTap: MouseEventTapControlling,
         recognizer: GestureRecognizer = GestureRecognizer(),
         matcher: GestureMatcher = GestureMatcher(),
         overlay: GestureOverlayDisplaying = NoopGestureOverlay(),
@@ -48,7 +46,6 @@ final class GestureEngine {
     ) {
         self.appConfigurationProvider = appConfigurationProvider
         self.gestureConfigurationProvider = gestureConfigurationProvider
-        self.targetResolver = targetResolver
         self.permissionService = permissionService
         self.eventTap = eventTap
         self.recognizer = recognizer
@@ -80,9 +77,9 @@ final class GestureEngine {
     }
 
     private func installCallbacks() {
-        eventTap.onGestureBegan = { [weak self] trigger, point in
+        eventTap.onGestureBegan = { [weak self] trigger, point, gestureTarget in
             self?.clearTimeoutMarkerIfNeeded()
-            self?.handleGestureBegan(trigger: trigger, at: point)
+            self?.handleGestureBegan(trigger: trigger, at: point, gestureTarget: gestureTarget)
         }
         eventTap.onGestureMoved = { [weak self] point in
             self?.handleGestureMoved(to: point)
@@ -104,9 +101,13 @@ final class GestureEngine {
         }
     }
 
-    private func handleGestureBegan(trigger: GestureTrigger, at point: GesturePoint) {
+    private func handleGestureBegan(
+        trigger: GestureTrigger,
+        at point: GesturePoint,
+        gestureTarget: ResolvedGestureTarget
+    ) {
         let work = { [self] in
-            self.captureGestureTarget(at: point)
+            self.pendingGestureTarget = gestureTarget
             self.activeGestureTrigger = trigger
             self.activeGesturePoints = [point]
             let appearance = GestureTrailAppearance(feedback: self.appConfigurationProvider().feedback)
@@ -125,11 +126,6 @@ final class GestureEngine {
             self.refreshLiveGestureFeedback(at: point)
         }
         runOnMain(work)
-    }
-
-    private func captureGestureTarget(at startPoint: GesturePoint) {
-        let policy = appConfigurationProvider().gestureTargetApplication
-        pendingGestureTarget = targetResolver.resolve(policy: policy, at: startPoint)
     }
 
     private func handleGestureEnded(trigger: GestureTrigger, points: [GesturePoint]) {
@@ -151,16 +147,15 @@ final class GestureEngine {
             return
         }
 
-        guard let startPoint = points.first else {
+        guard let resolvedTarget = pendingGestureTarget else {
             overlay.completeGesture(with: .rejected, at: completionPoint, hideAfter: hideAfter)
             feedbackHandler(.rejected(trigger: trigger))
             return
         }
+        
+        pendingGestureTarget = nil
 
         let targetPolicy = appConfigurationProvider().gestureTargetApplication
-        let resolvedTarget = pendingGestureTarget
-            ?? targetResolver.resolve(policy: targetPolicy, at: startPoint)
-        pendingGestureTarget = nil
         let match = matcher.match(
             trigger: trigger,
             signature: signature,

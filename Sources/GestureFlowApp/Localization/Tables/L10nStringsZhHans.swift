@@ -84,6 +84,15 @@ enum L10nStringsZhHans {
         .advancedSampleDistanceTitle: "采样跳变阈值",
         .advancedSampleDistanceDescription: "相邻采样点允许的最大间距，用于过滤指针抖动。",
 
+        .advancedIgnoredAppsTitle: "忽略应用",
+        .advancedIgnoredAppsDescription: "列表中的应用作为手势目标时，GestureFlow 不会拦截鼠标事件或触发手势。",
+        .advancedIgnoredAppsEmpty: "暂无忽略应用",
+        .advancedIgnoredAppsAdd: "添加应用",
+        .advancedIgnoredAppsAddFromFile: "从文件选择…",
+        .advancedIgnoredAppsAddFromRunning: "从运行中的应用",
+        .advancedIgnoredAppsRunningEmpty: "无可用应用",
+        .advancedIgnoredAppsRemoveHelp: "从忽略列表移除",
+
         .gesturesApplicationsLabel: "应用",
         .gesturesGlobalScope: "全局",
         .gesturesAddApplication: "添加应用",

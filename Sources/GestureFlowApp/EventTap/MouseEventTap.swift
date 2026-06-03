@@ -20,7 +20,7 @@ enum MouseEventTapInput: Equatable {
 }
 
 protocol MouseEventTapControlling: AnyObject {
-    var onGestureBegan: ((GestureTrigger, GesturePoint) -> Void)? { get set }
+    var onGestureBegan: ((GestureTrigger, GesturePoint, ResolvedGestureTarget) -> Void)? { get set }
     var onGestureMoved: ((GesturePoint) -> Void)? { get set }
     var onGestureEnded: ((GestureTrigger, [GesturePoint]) -> Void)? { get set }
     var onGestureCancelled: (() -> Void)? { get set }
@@ -34,7 +34,7 @@ protocol MouseEventTapControlling: AnyObject {
 final class MouseEventTap: MouseEventTapControlling {
     private static let syntheticEventSignature: Int64 = 0x47465731
 
-    var onGestureBegan: ((GestureTrigger, GesturePoint) -> Void)?
+    var onGestureBegan: ((GestureTrigger, GesturePoint, ResolvedGestureTarget) -> Void)?
     var onGestureMoved: ((GesturePoint) -> Void)?
     var onGestureEnded: ((GestureTrigger, [GesturePoint]) -> Void)?
     var onGestureCancelled: (() -> Void)?
@@ -42,6 +42,7 @@ final class MouseEventTap: MouseEventTapControlling {
     var onRightClickTimeoutCleared: (() -> Void)?
 
     private let triggerConfigurationProvider: () -> GestureTriggerConfiguration
+    private let gestureActivationGate: (GesturePoint) -> ResolvedGestureTarget?
     private let eventTapEnabler: (Bool) -> Void
     private let screenFramesProvider: () -> [CGRect]
     private let desktopFrameProvider: () -> CGRect
@@ -60,10 +61,8 @@ final class MouseEventTap: MouseEventTapControlling {
     private var isRightClickTimeoutActive = false
 
     init(
-        gestureThreshold: Double = GestureTriggerConfiguration.default.movementThreshold,
-        holdTimeoutMilliseconds: Int = GestureTriggerConfiguration.default.holdTimeoutMilliseconds,
-        maximumSampleDistance: Double = GestureTriggerConfiguration.default.maximumSampleDistance,
-        triggerConfigurationProvider: (() -> GestureTriggerConfiguration)? = nil,
+        triggerConfigurationProvider: @escaping () -> GestureTriggerConfiguration,
+        gestureActivationGate: @escaping (GesturePoint) -> ResolvedGestureTarget?,
         eventTapEnabler: @escaping (Bool) -> Void = { _ in },
         screenFramesProvider: @escaping () -> [CGRect] = {
             NSScreen.screens.map(\.frame)
@@ -84,11 +83,6 @@ final class MouseEventTap: MouseEventTapControlling {
             return workItem
         }
     ) {
-        let resolvedTriggerConfiguration = GestureTriggerConfiguration(
-            movementThreshold: gestureThreshold,
-            holdTimeoutMilliseconds: holdTimeoutMilliseconds,
-            maximumSampleDistance: maximumSampleDistance
-        )
         let resolvedSyntheticClickPoster = syntheticClickPoster
             ?? MouseEventTap.makeSyntheticClickPoster(
                 screenFramesProvider: screenFramesProvider,
@@ -101,7 +95,8 @@ final class MouseEventTap: MouseEventTapControlling {
             )
         self.syntheticClickPoster = resolvedSyntheticClickPoster
         self.mouseButtonResetter = resolvedMouseButtonResetter
-        self.triggerConfigurationProvider = triggerConfigurationProvider ?? { resolvedTriggerConfiguration }
+        self.triggerConfigurationProvider = triggerConfigurationProvider
+        self.gestureActivationGate = gestureActivationGate
         self.eventTapEnabler = eventTapEnabler
         self.screenFramesProvider = screenFramesProvider
         self.desktopFrameProvider = desktopFrameProvider
@@ -135,7 +130,7 @@ final class MouseEventTap: MouseEventTapControlling {
             let tap = Unmanaged<MouseEventTap>
                 .fromOpaque(userInfo)
                 .takeUnretainedValue()
-            let decision = tap.handle(type: type, event: event)
+            let decision = tap.handleIncomingCGEvent(type: type, event: event)
             return decision == .suppressEvent ? nil : Unmanaged.passUnretained(event)
         }
 
@@ -214,45 +209,55 @@ final class MouseEventTap: MouseEventTapControlling {
         }
     }
 
-    func handle(type: CGEventType, event: CGEvent) -> MouseEventTapDecision {
+    func handleIncomingCGEvent(type: CGEventType, event: CGEvent) -> MouseEventTapDecision {
         guard acceptsCGEvents else { return .passEvent }
         if event.getIntegerValueField(.eventSourceUserData) == Self.syntheticEventSignature {
             return .passEvent
         }
+        guard let input = semanticInput(from: type, event: event) else {
+            return .passEvent
+        }
+        return handle(input)
+    }
 
-        let quartzPoint = event.location
-        let point = appKitScreenPoint(from: quartzPoint)
+    private func semanticInput(from type: CGEventType, event: CGEvent) -> MouseEventTapInput? {
+        let point = appKitScreenPoint(from: event.location)
 
         switch type {
         case .rightMouseDown:
-            return handle(.rightMouseDown(at: point))
+            return .rightMouseDown(at: point)
         case .rightMouseDragged:
-            return handle(.rightMouseDragged(to: point))
+            return .rightMouseDragged(to: point)
         case .rightMouseUp:
-            return handle(.rightMouseUp(at: point))
+            return .rightMouseUp(at: point)
         case .otherMouseDown where event.mouseButtonNumber == 2:
-            return handle(.middleMouseDown(at: point))
+            return .middleMouseDown(at: point)
         case .otherMouseDragged where activeGesture?.trigger == .middleMouse:
-            return handle(.middleMouseDragged(to: point))
+            return .middleMouseDragged(to: point)
         case .otherMouseUp where event.mouseButtonNumber == 2:
-            return handle(.middleMouseUp(at: point))
+            return .middleMouseUp(at: point)
         case .tapDisabledByTimeout:
-            return handle(.tapDisabledByTimeout)
+            return .tapDisabledByTimeout
         case .tapDisabledByUserInput:
-            return handle(.tapDisabledByUserInput)
+            return .tapDisabledByUserInput
         default:
-            return .passEvent
+            return nil
         }
     }
 
     private func beginPendingRightClick(at point: GesturePoint) -> MouseEventTapDecision {
+        guard let resolvedTarget = gestureActivationGate(point) else {
+            return .passEvent
+        }
+
         suppressRightMouseSequenceUntilUp = false
         clearRightClickTimeoutIfNeeded()
         pendingRightClick = PendingRightClick(
             origin: point,
             points: [point],
             beganAt: nowProvider(),
-            exceededHoldTimeout: false
+            exceededHoldTimeout: false,
+            resolvedTarget: resolvedTarget
         )
         pendingMouseButtonReset = nil
         schedulePendingRightClickTimeout()
@@ -342,7 +347,7 @@ final class MouseEventTap: MouseEventTapControlling {
         }
 
         if pathLength(of: pending.points) >= currentTriggerConfiguration().movementThreshold {
-            onGestureBegan?(.rightMouse, pending.points[0])
+            onGestureBegan?(.rightMouse, pending.points[0], pending.resolvedTarget)
             if pending.points.count > 2 {
                 for bufferedPoint in pending.points.dropFirst().dropLast() {
                     onGestureMoved?(bufferedPoint)
@@ -357,8 +362,12 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func promotePendingRightClickToGesture(_ pending: PendingRightClick) {
-        activeGesture = ActiveGesture(trigger: .rightMouse, points: pending.points)
-        onGestureBegan?(.rightMouse, pending.points[0])
+        activeGesture = ActiveGesture(
+            trigger: .rightMouse,
+            points: pending.points,
+            resolvedTarget: pending.resolvedTarget
+        )
+        onGestureBegan?(.rightMouse, pending.points[0], pending.resolvedTarget)
         for bufferedPoint in pending.points.dropFirst() {
             onGestureMoved?(bufferedPoint)
         }
@@ -377,11 +386,15 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func begin(trigger: GestureTrigger, at point: GesturePoint) -> MouseEventTapDecision {
+        guard let resolvedTarget = gestureActivationGate(point) else {
+            return .passEvent
+        }
+
         if pendingMouseButtonReset?.trigger == trigger {
             pendingMouseButtonReset = nil
         }
-        activeGesture = ActiveGesture(trigger: trigger, points: [point])
-        onGestureBegan?(trigger, point)
+        activeGesture = ActiveGesture(trigger: trigger, points: [point], resolvedTarget: resolvedTarget)
+        onGestureBegan?(trigger, point, resolvedTarget)
         return .passEvent
     }
 
@@ -588,6 +601,7 @@ final class MouseEventTap: MouseEventTapControlling {
 private struct ActiveGesture {
     var trigger: GestureTrigger
     var points: [GesturePoint]
+    var resolvedTarget: ResolvedGestureTarget
 }
 
 private struct PendingRightClick {
@@ -595,6 +609,7 @@ private struct PendingRightClick {
     var points: [GesturePoint]
     var beganAt: TimeInterval
     var exceededHoldTimeout: Bool
+    var resolvedTarget: ResolvedGestureTarget
 }
 
 private struct PendingMouseButtonReset {
