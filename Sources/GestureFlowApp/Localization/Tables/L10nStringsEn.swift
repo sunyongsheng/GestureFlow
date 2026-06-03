@@ -27,7 +27,7 @@ enum L10nStringsEn {
         .generalGestureRecognitionTitle: "Gesture Recognition",
         .generalGestureRecognitionDescription: "When enabled, GestureFlow listens for and recognizes configured mouse gestures.",
         .generalAppLanguageTitle: "Application Language",
-        .generalAppLanguageDescription: "Choose the interface language (takes effect immediately).",
+        .generalAppLanguageDescription: "Choose the interface language.",
         .generalConfigDirectoryTitle: "Configuration Directory",
         .generalConfigDirectoryDescription: "Use a custom directory to sync configuration across machines.",
         .generalConfigDirectoryPathPlaceholder: "Configuration directory path",

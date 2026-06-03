@@ -27,7 +27,7 @@ enum L10nStringsFr {
         .generalGestureRecognitionTitle: "Reconnaissance des gestes",
         .generalGestureRecognitionDescription: "Lorsqu’elle est activée, GestureFlow écoute et reconnaît les gestes de souris configurés.",
         .generalAppLanguageTitle: "Langue de l’application",
-        .generalAppLanguageDescription: "Choisissez la langue de l’interface (effet immédiat).",
+        .generalAppLanguageDescription: "Choisissez la langue de l’interface.",
         .generalConfigDirectoryTitle: "Dossier de configuration",
         .generalConfigDirectoryDescription: "Utilisez un dossier personnalisé pour synchroniser la configuration entre machines.",
         .generalConfigDirectoryPathPlaceholder: "Chemin du dossier de configuration",

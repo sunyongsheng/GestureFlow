@@ -27,7 +27,7 @@ enum L10nStringsKo {
         .generalGestureRecognitionTitle: "제스처 인식",
         .generalGestureRecognitionDescription: "켜면 설정된 마우스 제스처를 감지하고 인식합니다.",
         .generalAppLanguageTitle: "앱 언어",
-        .generalAppLanguageDescription: "인터페이스 표시 언어를 선택합니다(즉시 적용).",
+        .generalAppLanguageDescription: "인터페이스 표시 언어를 선택합니다.",
         .generalConfigDirectoryTitle: "구성 디렉터리",
         .generalConfigDirectoryDescription: "사용자 지정 디렉터리로 여러 Mac 간 구성을 동기화합니다.",
         .generalConfigDirectoryPathPlaceholder: "구성 디렉터리 경로",

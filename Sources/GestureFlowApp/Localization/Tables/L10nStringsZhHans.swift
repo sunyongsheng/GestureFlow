@@ -27,7 +27,7 @@ enum L10nStringsZhHans {
         .generalGestureRecognitionTitle: "手势识别",
         .generalGestureRecognitionDescription: "开启后，GestureFlow 会开始监听并识别配置的鼠标手势。",
         .generalAppLanguageTitle: "应用语言",
-        .generalAppLanguageDescription: "选择界面显示语言（立即生效）。",
+        .generalAppLanguageDescription: "选择界面显示语言。",
         .generalConfigDirectoryTitle: "配置目录",
         .generalConfigDirectoryDescription: "自定义配置目录以实现配置同步",
         .generalConfigDirectoryPathPlaceholder: "配置目录路径",

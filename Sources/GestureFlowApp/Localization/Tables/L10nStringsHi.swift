@@ -27,7 +27,7 @@ enum L10nStringsHi {
         .generalGestureRecognitionTitle: "जेस्चर पहचान",
         .generalGestureRecognitionDescription: "सक्षम होने पर, GestureFlow कॉन्फ़िगर किए गए माउस जेस्चर सुनता और पहचानता है।",
         .generalAppLanguageTitle: "ऐप भाषा",
-        .generalAppLanguageDescription: "इंटरफ़ेस भाषा चुनें (तुरंत लागू होती है)।",
+        .generalAppLanguageDescription: "इंटरफ़ेस भाषा चुनें।",
         .generalConfigDirectoryTitle: "कॉन्फ़िगरेशन निर्देशिका",
         .generalConfigDirectoryDescription: "मशीनों के बीच सिंक के लिए कस्टम निर्देशिका उपयोग करें।",
         .generalConfigDirectoryPathPlaceholder: "कॉन्फ़िगरेशन निर्देशिका पथ",

@@ -27,7 +27,7 @@ enum L10nStringsEs {
         .generalGestureRecognitionTitle: "Reconocimiento de gestos",
         .generalGestureRecognitionDescription: "Cuando está activado, GestureFlow escucha y reconoce los gestos del ratón configurados.",
         .generalAppLanguageTitle: "Idioma de la aplicación",
-        .generalAppLanguageDescription: "Elige el idioma de la interfaz (se aplica de inmediato).",
+        .generalAppLanguageDescription: "Elige el idioma de la interfaz.",
         .generalConfigDirectoryTitle: "Directorio de configuración",
         .generalConfigDirectoryDescription: "Usa un directorio personalizado para sincronizar la configuración entre equipos.",
         .generalConfigDirectoryPathPlaceholder: "Ruta del directorio de configuración",

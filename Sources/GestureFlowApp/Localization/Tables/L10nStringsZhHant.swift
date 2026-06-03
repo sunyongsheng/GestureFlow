@@ -27,7 +27,7 @@ enum L10nStringsZhHant {
         .generalGestureRecognitionTitle: "手勢辨識",
         .generalGestureRecognitionDescription: "開啟後，GestureFlow 會開始監聽並辨識設定的滑鼠手勢。",
         .generalAppLanguageTitle: "應用程式語言",
-        .generalAppLanguageDescription: "選擇介面顯示語言（立即生效）。",
+        .generalAppLanguageDescription: "選擇介面顯示語言。",
         .generalConfigDirectoryTitle: "設定目錄",
         .generalConfigDirectoryDescription: "自訂設定目錄以在多部裝置間同步設定。",
         .generalConfigDirectoryPathPlaceholder: "設定目錄路徑",

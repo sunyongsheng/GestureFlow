@@ -27,7 +27,7 @@ enum L10nStringsJa {
         .generalGestureRecognitionTitle: "ジェスチャ認識",
         .generalGestureRecognitionDescription: "有効にすると、設定したマウスジェスチャの監視と認識を開始します。",
         .generalAppLanguageTitle: "アプリの言語",
-        .generalAppLanguageDescription: "インターフェースの表示言語を選択します（すぐに反映されます）。",
+        .generalAppLanguageDescription: "インターフェースの表示言語を選択します。",
         .generalConfigDirectoryTitle: "設定フォルダ",
         .generalConfigDirectoryDescription: "カスタムフォルダで複数の Mac 間で設定を同期できます。",
         .generalConfigDirectoryPathPlaceholder: "設定フォルダのパス",
