@@ -10,27 +10,6 @@ public enum ConfigurationDirectoryRelocationError: Error, Equatable {
     case invalidConfigurationContent
 }
 
-extension ConfigurationDirectoryRelocationError: LocalizedError {
-    public var errorDescription: String? {
-        switch self {
-        case .invalidPath:
-            return "请输入有效路径。"
-        case .notADirectory:
-            return "请选择文件夹路径。"
-        case .directoryNotWritable:
-            return "目录不可写。"
-        case .sameAsCurrentDirectory:
-            return "配置目录未更改。"
-        case .copyFailed:
-            return "复制配置文件失败。"
-        case .configurationDirectoryWriteFailed:
-            return "保存配置目录设置失败。"
-        case .invalidConfigurationContent:
-            return "目标目录中的配置文件无效，请检查后重试。"
-        }
-    }
-}
-
 public struct ConfigurationDirectoryRelocator {
     private let fileManager: FileManager
     private let configurationDirectoryStore: ConfigurationDirectoryStore
