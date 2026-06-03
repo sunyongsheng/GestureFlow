@@ -76,7 +76,7 @@ enum L10nStringsEn {
         .advancedTriggerTitle: "Trigger",
         .advancedTriggerDescription: "Tune when recognition starts and sampling tolerance for stability.",
         .advancedGestureTargetTitle: "Gesture Target App",
-        .advancedGestureTargetDescription: "Choose which app is used to match gestures and receive shortcuts.",
+        .advancedGestureTargetDescription: "Determines which application gestures apply to.",
         .advancedMovementThresholdTitle: "Movement Threshold",
         .advancedMovementThresholdDescription: "Pointer movement required before drawing and recognition begin.",
         .advancedHoldTimeoutTitle: "Hold Timeout",

@@ -76,7 +76,7 @@ enum L10nStringsZhHans {
         .advancedTriggerTitle: "触发",
         .advancedTriggerDescription: "调整识别触发时机与采样容错范围，平衡灵敏度和稳定性。",
         .advancedGestureTargetTitle: "手势目标应用",
-        .advancedGestureTargetDescription: "决定按哪个应用匹配手势规则，以及手势快捷键发往哪个应用。",
+        .advancedGestureTargetDescription: "决定手势对哪个应用生效。",
         .advancedMovementThresholdTitle: "移动阈值",
         .advancedMovementThresholdDescription: "指针移动超过该距离后才开始绘制并识别手势。",
         .advancedHoldTimeoutTitle: "按住超时",

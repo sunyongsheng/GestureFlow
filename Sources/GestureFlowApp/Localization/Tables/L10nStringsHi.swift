@@ -76,7 +76,7 @@ enum L10nStringsHi {
         .advancedTriggerTitle: "ट्रिगर",
         .advancedTriggerDescription: "पहचान शुरू होने का समय और सैंपलिंग सहनशीलता समायोजित करें।",
         .advancedGestureTargetTitle: "जेस्चर लक्ष्य ऐप",
-        .advancedGestureTargetDescription: "जेस्चर मिलान और शॉर्टकट प्राप्त करने वाला ऐप चुनें।",
+        .advancedGestureTargetDescription: "निर्धारित करता है कि जेस्चर किस ऐप पर लागू होते हैं।",
         .advancedMovementThresholdTitle: "गति सीमा",
         .advancedMovementThresholdDescription: "इस दूरी से अधिक चलने पर ही ड्रॉ और पहचान शुरू होती है।",
         .advancedHoldTimeoutTitle: "दबाए रखने की समय सीमा",

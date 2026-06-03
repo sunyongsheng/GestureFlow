@@ -76,7 +76,7 @@ enum L10nStringsZhHant {
         .advancedTriggerTitle: "觸發",
         .advancedTriggerDescription: "調整辨識開始時機與取樣容錯，平衡靈敏度與穩定性。",
         .advancedGestureTargetTitle: "手勢目標 App",
-        .advancedGestureTargetDescription: "選擇用於比對手勢規則及接收快捷鍵的 App。",
+        .advancedGestureTargetDescription: "決定手勢對哪個 App 生效。",
         .advancedMovementThresholdTitle: "移動閾值",
         .advancedMovementThresholdDescription: "指標移動超過此距離後才開始繪製並辨識手勢。",
         .advancedHoldTimeoutTitle: "按住逾時",

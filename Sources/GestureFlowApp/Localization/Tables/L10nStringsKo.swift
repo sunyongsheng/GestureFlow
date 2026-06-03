@@ -76,7 +76,7 @@ enum L10nStringsKo {
         .advancedTriggerTitle: "트리거",
         .advancedTriggerDescription: "인식 시작 시점과 샘플링 허용 범위를 조정해 민감도와 안정성의 균형을 맞춥니다.",
         .advancedGestureTargetTitle: "제스처 대상 앱",
-        .advancedGestureTargetDescription: "제스처 규칙 매칭 및 단축키를 받을 앱을 선택합니다.",
+        .advancedGestureTargetDescription: "제스처가 적용되는 앱을 결정합니다.",
         .advancedMovementThresholdTitle: "이동 임계값",
         .advancedMovementThresholdDescription: "포인터가 이 거리 이상 움직인 후에 그리기와 인식을 시작합니다.",
         .advancedHoldTimeoutTitle: "길게 누르기 제한 시간",

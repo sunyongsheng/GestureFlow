@@ -76,7 +76,7 @@ enum L10nStringsEs {
         .advancedTriggerTitle: "Activación",
         .advancedTriggerDescription: "Ajusta cuándo empieza el reconocimiento y la tolerancia de muestreo para equilibrar sensibilidad y estabilidad.",
         .advancedGestureTargetTitle: "App objetivo del gesto",
-        .advancedGestureTargetDescription: "Elige qué app se usa para coincidir gestos y recibir atajos.",
+        .advancedGestureTargetDescription: "Determina a qué aplicación se aplican los gestos.",
         .advancedMovementThresholdTitle: "Umbral de movimiento",
         .advancedMovementThresholdDescription: "Movimiento del puntero necesario antes de empezar a dibujar y reconocer.",
         .advancedHoldTimeoutTitle: "Tiempo de espera al mantener",

@@ -76,7 +76,7 @@ enum L10nStringsJa {
         .advancedTriggerTitle: "トリガー",
         .advancedTriggerDescription: "認識開始のタイミングとサンプリング許容範囲を調整し、感度と安定性のバランスを取ります。",
         .advancedGestureTargetTitle: "ジェスチャ対象アプリ",
-        .advancedGestureTargetDescription: "ジェスチャの照合とショートカット送信先のアプリを選択します。",
+        .advancedGestureTargetDescription: "ジェスチャがどのアプリに適用されるかを決定します。",
         .advancedMovementThresholdTitle: "移動しきい値",
         .advancedMovementThresholdDescription: "ポインタがこの距離以上動いた後に描画と認識を開始します。",
         .advancedHoldTimeoutTitle: "長押しタイムアウト",

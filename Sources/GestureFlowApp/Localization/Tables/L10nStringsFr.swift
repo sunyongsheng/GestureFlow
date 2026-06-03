@@ -76,7 +76,7 @@ enum L10nStringsFr {
         .advancedTriggerTitle: "Déclenchement",
         .advancedTriggerDescription: "Ajustez le moment où la reconnaissance commence et la tolérance d’échantillonnage pour équilibrer sensibilité et stabilité.",
         .advancedGestureTargetTitle: "App cible du geste",
-        .advancedGestureTargetDescription: "Choisissez l’app utilisée pour faire correspondre les gestes et recevoir les raccourcis.",
+        .advancedGestureTargetDescription: "Détermine à quelle application les gestes s’appliquent.",
         .advancedMovementThresholdTitle: "Seuil de mouvement",
         .advancedMovementThresholdDescription: "Déplacement du pointeur requis avant de commencer le tracé et la reconnaissance.",
         .advancedHoldTimeoutTitle: "Délai d’appui prolongé",
