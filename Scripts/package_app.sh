@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 APP_NAME="GestureFlow"
-SCHEME_NAME="GestureFlowApp"
+SCHEME_NAME="GestureFlow"
 BUILD_CONFIGURATION="Release"
 OUTPUT_ROOT="${REPO_ROOT}/build"
 APP_BUNDLE="${OUTPUT_ROOT}/${APP_NAME}.app"
