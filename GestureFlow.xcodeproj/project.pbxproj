@@ -390,8 +390,11 @@
 				CD0000000000000000000003 /* Common */,
 				CD0000000000000000000004 /* General */,
 				CD0000000000000000000005 /* Gestures */,
-				CD0000000000000000000009 /* Shell */,
 				CD000000000000000000000A /* Window */,
+				AC0000000000000000000015 /* MainSettingsView.swift */,
+				AC0000000000000000000016 /* SettingsRootView.swift */,
+				AC0000000000000000000017 /* SettingsSidebarModels.swift */,
+				AC0000000000000000000018 /* SettingsViewModel.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -668,17 +671,6 @@
 				AC0000000000000000000014 /* GestureSignatureRecordingView.swift */,
 			);
 			path = UI;
-			sourceTree = "<group>";
-		};
-		CD0000000000000000000009 /* Shell */ = {
-			isa = PBXGroup;
-			children = (
-				AC0000000000000000000015 /* MainSettingsView.swift */,
-				AC0000000000000000000016 /* SettingsRootView.swift */,
-				AC0000000000000000000017 /* SettingsSidebarModels.swift */,
-				AC0000000000000000000018 /* SettingsViewModel.swift */,
-			);
-			path = Shell;
 			sourceTree = "<group>";
 		};
 		CD000000000000000000000A /* Window */ = {
