@@ -16,6 +16,7 @@
 		26E66E45BDB9D5837A02A2CD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 417098F3262B735C581E1651 /* Cocoa.framework */; };
 		289CBBD1F7DA270AA3CE6185 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE04815AFE4C4CA2B5DB75BF /* AppConfiguration.swift */; };
 		29766FD4E68CB075B475182F /* GestureOverlayGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88C40365794474B38BB09446 /* GestureOverlayGeometryTests.swift */; };
+		2BB14D9D2FD01ED800A8C2D5 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 2BB14D9C2FD01ED800A8C2D5 /* AppIcon.icon */; };
 		47E370BFD227D1CF75FA6B74 /* GestureOverlayCoordinateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9495F29F933AF0BB482BDE84 /* GestureOverlayCoordinateConverter.swift */; };
 		4B5C6D708192A3B4C5D6E7F8 /* GesturePointCoordinateSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4B5C6D708192A3B4C5D6E7 /* GesturePointCoordinateSystem.swift */; };
 		566B836192AB4D380DC8889A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F24FE8A3C96369FBA30C018 /* AppDelegate.swift */; };
@@ -185,6 +186,7 @@
 		2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayWindowTests.swift; sourceTree = "<group>"; };
 		282FBEE420718AB2FDBF90E5 /* GestureOverlayGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayGeometry.swift; sourceTree = "<group>"; };
 		29F74C1EC51067D5CBB87483 /* GestureMatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureMatcher.swift; sourceTree = "<group>"; };
+		2BB14D9C2FD01ED800A8C2D5 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
 		35FB763932E2D29FBA279B6E /* GestureFlowApplication.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFlowApplication.swift; sourceTree = "<group>"; };
 		37AEA743DB6743F3087CAC78 /* SettingsWindowOpenerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowOpenerTests.swift; sourceTree = "<group>"; };
@@ -375,6 +377,7 @@
 			children = (
 				19E8C6516A12999F2BAE7767 /* Info.plist */,
 				CC1214E7E3323BC8B9AB7BF2 /* Assets.xcassets */,
+				2BB14D9C2FD01ED800A8C2D5 /* AppIcon.icon */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -968,6 +971,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BB14D9D2FD01ED800A8C2D5 /* AppIcon.icon in Resources */,
 				927227F91FAF29D401862515 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
