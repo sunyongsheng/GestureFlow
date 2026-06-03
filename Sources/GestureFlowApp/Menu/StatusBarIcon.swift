@@ -16,39 +16,43 @@ enum StatusBarIcon {
             NSColor.black.setFill()
 
             let body = NSBezierPath(
-                roundedRect: NSRect(x: 4.1, y: 1.4, width: 9.8, height: 14.7),
-                xRadius: 4.9,
-                yRadius: 4.9
+                roundedRect: NSRect(x: 4.05, y: 1.55, width: 9.9, height: 13.5),
+                xRadius: 4.75,
+                yRadius: 4.75
             )
             body.fill()
 
             NSGraphicsContext.saveGraphicsState()
-            NSColor.clear.setFill()
+            NSColor.clear.setStroke()
             NSGraphicsContext.current?.compositingOperation = .clear
-
-            let topSplit = NSBezierPath(
-                roundedRect: NSRect(x: 8.4, y: 1.8, width: 1.2, height: 4.7),
-                xRadius: 0.6,
-                yRadius: 0.6
-            )
-            topSplit.fill()
-
-            NSBezierPath(rect: NSRect(x: 8.4, y: 6.0, width: 5.2, height: 0.9)).fill()
-
-            let wheel = NSBezierPath(
-                roundedRect: NSRect(x: 8.1, y: 4.0, width: 1.8, height: 3.1),
-                xRadius: 0.9,
-                yRadius: 0.9
-            )
-            wheel.fill()
-
+            let gap = sCurveCenterlinePath()
+            gap.lineWidth = 1.7
+            gap.lineCapStyle = .butt
+            gap.lineJoinStyle = .miter
+            gap.stroke()
             NSGraphicsContext.restoreGraphicsState()
 
             guard isRunning else { return true }
 
             NSColor.black.setFill()
-            NSBezierPath(ovalIn: NSRect(x: 13.4, y: 12.9, width: 2.9, height: 2.9)).fill()
+            NSBezierPath(ovalIn: NSRect(x: 13.3, y: 12.1, width: 2.9, height: 2.9)).fill()
             return true
         }
+    }
+
+    private static func sCurveCenterlinePath() -> NSBezierPath {
+        let path = NSBezierPath()
+        path.move(to: NSPoint(x: 9, y: 1.55))
+        path.curve(
+            to: NSPoint(x: 9, y: 8.3),
+            controlPoint1: NSPoint(x: 9, y: 5),
+            controlPoint2: NSPoint(x: 11, y: 6.5)
+        )
+        path.curve(
+            to: NSPoint(x: 9, y: 15.05),
+            controlPoint1: NSPoint(x: 7, y: 10),
+            controlPoint2: NSPoint(x: 9, y: 13)
+        )
+        return path
     }
 }

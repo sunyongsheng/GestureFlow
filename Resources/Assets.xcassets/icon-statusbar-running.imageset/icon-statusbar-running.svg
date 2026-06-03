@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36" fill="none">
+  <defs>
+    <mask id="mouse-cutouts">
+      <rect width="36" height="36" fill="white"/>
+      <path
+        d="M 18 3.10
+           C 18 10, 22 13, 18 16.6
+           C 14 20, 18 26, 18 30.10"
+        fill="none"
+        stroke="black"
+        stroke-width="3.4"
+        stroke-linecap="butt"
+        stroke-linejoin="miter"/>
+    </mask>
+  </defs>
+  <rect
+    x="8.10"
+    y="3.10"
+    width="19.8"
+    height="27"
+    rx="9.5"
+    ry="9.5"
+    fill="#000000"
+    mask="url(#mouse-cutouts)"/>
+  <circle cx="29.5" cy="27.1" r="2.9" fill="#000000"/>
+</svg>

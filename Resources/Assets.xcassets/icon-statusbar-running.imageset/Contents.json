@@ -1,14 +1,8 @@
 {
   "images" : [
     {
-      "filename" : "icon-statusbar-running.png",
-      "idiom" : "mac",
-      "scale" : "1x"
-    },
-    {
-      "filename" : "icon-statusbar-running@2x.png",
-      "idiom" : "mac",
-      "scale" : "2x"
+      "filename" : "icon-statusbar-running.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {
@@ -16,6 +10,7 @@
     "version" : 1
   },
   "properties" : {
+    "preserves-vector-representation" : true,
     "template-rendering-intent" : "template"
   }
 }
