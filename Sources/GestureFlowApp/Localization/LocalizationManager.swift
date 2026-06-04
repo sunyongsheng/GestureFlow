@@ -22,6 +22,19 @@ final class LocalizationManager: ObservableObject {
         String(format: string(key), arguments: arguments)
     }
 
+    func message(for error: GitHubReleaseClientError) -> String {
+        switch error {
+        case .missingAppcastAsset:
+            return string(.aboutUpdateCheckFailedMissingAppcast)
+        case .httpError(let statusCode):
+            return format(.aboutUpdateCheckFailedHTTP, statusCode)
+        case .invalidTagName:
+            return string(.aboutUpdateCheckFailedInvalidRelease)
+        case .invalidResponse:
+            return string(.aboutUpdateCheckFailedGeneric)
+        }
+    }
+
     func message(for error: ConfigurationDirectoryRelocationError) -> String {
         switch error {
         case .invalidPath:

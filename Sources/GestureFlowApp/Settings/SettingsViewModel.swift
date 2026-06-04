@@ -16,6 +16,10 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var launchAtLoginErrorMessage: String?
     @Published private(set) var isAutomaticUpdateEnabled: Bool
     @Published private(set) var canCheckForUpdates: Bool
+    @Published private(set) var isCheckingForUpdates = false
+    @Published var isUpdateCheckAlertPresented = false
+    @Published private(set) var updateCheckAlertTitle = ""
+    @Published private(set) var updateCheckAlertMessage = ""
     @Published var selectedApplicationScope: GestureApplicationScope = .global
     @Published var draftConfigurationDirectoryPath: String
     @Published private(set) var persistedConfigurationDirectoryPath: String
@@ -346,7 +350,18 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func checkForUpdates() {
+        guard !isCheckingForUpdates else { return }
         checkForUpdatesAction()
+    }
+
+    func setUpdateCheckInProgress(_ inProgress: Bool) {
+        isCheckingForUpdates = inProgress
+    }
+
+    func presentUpdateCheckAlert(title: String, message: String) {
+        updateCheckAlertTitle = title
+        updateCheckAlertMessage = message
+        isUpdateCheckAlertPresented = true
     }
 
     func quitApplication() {

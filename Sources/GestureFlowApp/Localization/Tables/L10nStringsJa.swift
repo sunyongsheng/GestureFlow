@@ -125,6 +125,13 @@ enum L10nStringsJa {
         .aboutAutomaticUpdateDescription: "GestureFlow 実行中は 7 日ごとに更新を確認します。",
         .aboutCheckForUpdatesButton: "更新を確認",
         .aboutUpdateUnavailableInDevelopment: "開発ビルドでは更新を利用できません。",
+        .aboutUpdateUpToDateTitle: "最新バージョンです",
+        .aboutUpdateUpToDateMessage: "GestureFlow %@ は最新バージョンです。",
+        .aboutUpdateCheckFailedTitle: "更新を確認できませんでした",
+        .aboutUpdateCheckFailedMissingAppcast: "最新リリースに更新メタデータ（appcast.xml）がありません。リリース完了後に再試行してください。",
+        .aboutUpdateCheckFailedHTTP: "更新サーバーがエラーを返しました（HTTP %d）。しばらくしてから再試行してください。",
+        .aboutUpdateCheckFailedInvalidRelease: "最新リリースのタグを読み取れませんでした。しばらくしてから再試行してください。",
+        .aboutUpdateCheckFailedGeneric: "更新サーバーに接続できません。ネットワークを確認して再試行してください。",
 
         .overlayUnmatchedGesture: "認識できないジェスチャ",
 

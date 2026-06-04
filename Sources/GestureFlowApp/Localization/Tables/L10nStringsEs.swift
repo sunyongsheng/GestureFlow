@@ -125,6 +125,13 @@ enum L10nStringsEs {
         .aboutAutomaticUpdateDescription: "Comprueba actualizaciones cada 7 días mientras GestureFlow está en ejecución.",
         .aboutCheckForUpdatesButton: "Buscar actualizaciones",
         .aboutUpdateUnavailableInDevelopment: "Las actualizaciones no están disponibles en compilaciones de desarrollo.",
+        .aboutUpdateUpToDateTitle: "Estás al día",
+        .aboutUpdateUpToDateMessage: "GestureFlow %@ ya es la versión más reciente.",
+        .aboutUpdateCheckFailedTitle: "No se pudo buscar actualizaciones",
+        .aboutUpdateCheckFailedMissingAppcast: "La última versión no incluye metadatos de actualización (appcast.xml). Vuelve a intentarlo cuando termine la publicación.",
+        .aboutUpdateCheckFailedHTTP: "El servidor de actualizaciones devolvió un error (HTTP %d). Inténtalo más tarde.",
+        .aboutUpdateCheckFailedInvalidRelease: "No se pudo leer la etiqueta de la última versión. Inténtalo más tarde.",
+        .aboutUpdateCheckFailedGeneric: "No se puede conectar con el servidor de actualizaciones. Comprueba la red e inténtalo de nuevo.",
 
         .overlayUnmatchedGesture: "Gesto no reconocido",
 

@@ -125,6 +125,13 @@ enum L10nStringsEn {
         .aboutAutomaticUpdateDescription: "Check for updates every 7 days while GestureFlow is running.",
         .aboutCheckForUpdatesButton: "Check for Updates",
         .aboutUpdateUnavailableInDevelopment: "Updates are not available in development builds.",
+        .aboutUpdateUpToDateTitle: "You're Up to Date",
+        .aboutUpdateUpToDateMessage: "GestureFlow %@ is currently the newest version available.",
+        .aboutUpdateCheckFailedTitle: "Could Not Check for Updates",
+        .aboutUpdateCheckFailedMissingAppcast: "The latest release does not include update metadata (appcast.xml). Try again after the release workflow completes.",
+        .aboutUpdateCheckFailedHTTP: "The update server returned an error (HTTP %d). Please try again later.",
+        .aboutUpdateCheckFailedInvalidRelease: "The latest release tag could not be read. Please try again later.",
+        .aboutUpdateCheckFailedGeneric: "Unable to reach the update server. Check your network connection and try again.",
 
         .overlayUnmatchedGesture: "Unrecognized Gesture",
 

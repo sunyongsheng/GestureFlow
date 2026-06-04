@@ -28,11 +28,17 @@ struct AboutSettingsView: View {
                             Button(action: {
                                 viewModel.checkForUpdates()
                             }) {
-                                Text(l10n.string(.aboutCheckForUpdatesButton))
+                                HStack(spacing: 8) {
+                                    if viewModel.isCheckingForUpdates {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    }
+                                    Text(l10n.string(.aboutCheckForUpdatesButton))
+                                }
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.regular)
-                            .disabled(!viewModel.canCheckForUpdates)
+                            .disabled(!viewModel.canCheckForUpdates || viewModel.isCheckingForUpdates)
                         }
                     }
 
@@ -55,6 +61,14 @@ struct AboutSettingsView: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             #endif
+        }
+        .alert(
+            viewModel.updateCheckAlertTitle,
+            isPresented: $viewModel.isUpdateCheckAlertPresented
+        ) {
+            Button(l10n.string(.settingsConfirm), role: .cancel) {}
+        } message: {
+            Text(viewModel.updateCheckAlertMessage)
         }
     }
 

@@ -92,7 +92,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             releaseClient: GitHubReleaseClient(currentAppVersion: currentAppVersion),
             updateController: AppUpdateController(),
             preferencesStore: updatePreferencesStore,
-            scheduler: updateScheduler
+            scheduler: updateScheduler,
+            currentAppVersion: currentAppVersion
         )
         self.notificationCenter = notificationCenter
         self.activationNotificationName = activationNotificationName
@@ -282,7 +283,16 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
                 }
             },
             checkForUpdates: { [weak self] in
-                Task { await self?.appUpdateService.checkForUpdatesIfNeeded(force: true) }
+                guard let self, let viewModel = self.settingsViewModel else { return }
+                Task {
+                    await self.appUpdateService.checkForUpdatesIfNeeded(
+                        force: true,
+                        onManualProgress: { viewModel.setUpdateCheckInProgress($0) },
+                        onManualOutcome: { [weak self] outcome in
+                            self?.presentManualUpdateCheckOutcome(outcome, viewModel: viewModel)
+                        }
+                    )
+                }
             },
             pauseGestureRecognition: { [weak self] in
                 self?.pauseGestureRecognitionForCustomSignatureRecording()
@@ -492,6 +502,33 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted
         )
+    }
+
+    private func presentManualUpdateCheckOutcome(
+        _ outcome: ManualUpdateCheckOutcome,
+        viewModel: SettingsViewModel
+    ) {
+        switch outcome {
+        case .delegatedToSparkle:
+            break
+        case .upToDate:
+            viewModel.presentUpdateCheckAlert(
+                title: localizationManager.string(.aboutUpdateUpToDateTitle),
+                message: localizationManager.format(
+                    .aboutUpdateUpToDateMessage,
+                    currentVersionString()
+                )
+            )
+        case .failed(let error):
+            viewModel.presentUpdateCheckAlert(
+                title: localizationManager.string(.aboutUpdateCheckFailedTitle),
+                message: localizationManager.message(for: error)
+            )
+        }
+    }
+
+    private func currentVersionString() -> String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
     }
 
     private func showPlaceholder(title: String, message: String = "This screen will be added in a later task.") {

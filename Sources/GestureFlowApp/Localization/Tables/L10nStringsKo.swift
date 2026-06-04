@@ -125,6 +125,13 @@ enum L10nStringsKo {
         .aboutAutomaticUpdateDescription: "GestureFlow 실행 중 7일마다 업데이트를 확인합니다.",
         .aboutCheckForUpdatesButton: "업데이트 확인",
         .aboutUpdateUnavailableInDevelopment: "개발 빌드에서는 업데이트를 사용할 수 없습니다.",
+        .aboutUpdateUpToDateTitle: "최신 버전입니다",
+        .aboutUpdateUpToDateMessage: "GestureFlow %@(이)가 최신 버전입니다.",
+        .aboutUpdateCheckFailedTitle: "업데이트를 확인할 수 없습니다",
+        .aboutUpdateCheckFailedMissingAppcast: "최신 릴리스에 업데이트 메타데이터(appcast.xml)가 없습니다. 릴리스가 완료된 후 다시 시도하세요.",
+        .aboutUpdateCheckFailedHTTP: "업데이트 서버가 오류를 반환했습니다(HTTP %d). 나중에 다시 시도하세요.",
+        .aboutUpdateCheckFailedInvalidRelease: "최신 릴리스 태그를 읽을 수 없습니다. 나중에 다시 시도하세요.",
+        .aboutUpdateCheckFailedGeneric: "업데이트 서버에 연결할 수 없습니다. 네트워크를 확인한 후 다시 시도하세요.",
 
         .overlayUnmatchedGesture: "인식되지 않은 제스처",
 

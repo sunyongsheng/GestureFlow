@@ -142,6 +142,7 @@
 		UP0000000000000000000003 /* GitHubReleaseClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000004 /* GitHubReleaseClientTests.swift */; };
 		UP0000000000000000000005 /* UpdatePreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000006 /* UpdatePreferencesStoreTests.swift */; };
 		UP0000000000000000000007 /* UpdateSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000008 /* UpdateSchedulerTests.swift */; };
+		UP0000000000000000000009 /* AppUpdateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000010 /* AppUpdateServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -306,6 +307,7 @@
 		UP0000000000000000000004 /* GitHubReleaseClientTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Services/GitHubReleaseClientTests.swift; sourceTree = "<group>"; };
 		UP0000000000000000000006 /* UpdatePreferencesStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Services/UpdatePreferencesStoreTests.swift; sourceTree = "<group>"; };
 		UP0000000000000000000008 /* UpdateSchedulerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Services/UpdateSchedulerTests.swift; sourceTree = "<group>"; };
+		UP0000000000000000000010 /* AppUpdateServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Services/AppUpdateServiceTests.swift; sourceTree = "<group>"; };
 		B045D62F33B0560A3B4D9680 /* ConflictDetectorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConflictDetectorTests.swift; sourceTree = "<group>"; };
 		B2C483FF9C710FF74C05D13B /* GestureOverlayWindow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayWindow.swift; sourceTree = "<group>"; };
 		B4A0BD4BCBBE39E9137D88A5 /* GestureFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GestureFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -488,6 +490,7 @@
 				UP0000000000000000000004 /* GitHubReleaseClientTests.swift */,
 				UP0000000000000000000006 /* UpdatePreferencesStoreTests.swift */,
 				UP0000000000000000000008 /* UpdateSchedulerTests.swift */,
+				UP0000000000000000000010 /* AppUpdateServiceTests.swift */,
 			);
 			path = GestureFlowAppTests;
 			sourceTree = "<group>";
@@ -1073,6 +1076,7 @@
 				UP0000000000000000000003 /* GitHubReleaseClientTests.swift in Sources */,
 				UP0000000000000000000005 /* UpdatePreferencesStoreTests.swift in Sources */,
 				UP0000000000000000000007 /* UpdateSchedulerTests.swift in Sources */,
+				UP0000000000000000000009 /* AppUpdateServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1342,7 +1346,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = top.aengus.gestureflow;
 				PRODUCT_MODULE_NAME = GestureFlowApp;
 				PRODUCT_NAME = GestureFlow;
@@ -1376,7 +1380,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = top.aengus.gestureflow;
 				PRODUCT_MODULE_NAME = GestureFlowApp;
 				PRODUCT_NAME = GestureFlow;

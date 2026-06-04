@@ -125,6 +125,13 @@ enum L10nStringsZhHant {
         .aboutAutomaticUpdateDescription: "GestureFlow 執行期間每 7 天自動檢查一次更新。",
         .aboutCheckForUpdatesButton: "檢查更新",
         .aboutUpdateUnavailableInDevelopment: "開發版不支援檢查更新。",
+        .aboutUpdateUpToDateTitle: "已是最新版本",
+        .aboutUpdateUpToDateMessage: "目前 GestureFlow %@ 已是最新版本。",
+        .aboutUpdateCheckFailedTitle: "無法檢查更新",
+        .aboutUpdateCheckFailedMissingAppcast: "最新 Release 缺少更新中繼資料（appcast.xml），請待發佈流程完成後再試。",
+        .aboutUpdateCheckFailedHTTP: "更新伺服器回傳錯誤（HTTP %d），請稍後再試。",
+        .aboutUpdateCheckFailedInvalidRelease: "無法解析最新 Release 的版本標籤，請稍後再試。",
+        .aboutUpdateCheckFailedGeneric: "無法連線至更新伺服器，請檢查網路後重試。",
 
         .overlayUnmatchedGesture: "無法辨識的手勢",
 

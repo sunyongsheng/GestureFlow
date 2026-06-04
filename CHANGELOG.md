@@ -2,6 +2,10 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.1] - 2026-06-04
+
+- Fix manual **Check for Updates** on the About page: show a loading indicator, an up-to-date alert, and clear error messages when the GitHub release or appcast metadata is unavailable.
+
 ## [0.2.0] - 2026-06-04
 
 - Add in-app updates on the About page: manual **Check for Updates** and an **Automatic Updates** toggle (checks every 7 days while the app is running).

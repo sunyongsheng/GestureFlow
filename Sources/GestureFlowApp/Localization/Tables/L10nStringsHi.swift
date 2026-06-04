@@ -125,6 +125,13 @@ enum L10nStringsHi {
         .aboutAutomaticUpdateDescription: "GestureFlow चलने पर हर 7 दिन में अपडेट की जांच करें।",
         .aboutCheckForUpdatesButton: "अपडेट जांचें",
         .aboutUpdateUnavailableInDevelopment: "डेवलपमेंट बिल्ड में अपडेट उपलब्ध नहीं हैं।",
+        .aboutUpdateUpToDateTitle: "आप अप टू डेट हैं",
+        .aboutUpdateUpToDateMessage: "GestureFlow %@ पहले से नवीनतम संस्करण है।",
+        .aboutUpdateCheckFailedTitle: "अपडेट जांच नहीं हो सकी",
+        .aboutUpdateCheckFailedMissingAppcast: "नवीनतम रिलीज़ में अपडेट मेटाडेटा (appcast.xml) नहीं है। रिलीज़ पूरा होने के बाद पुनः प्रयास करें।",
+        .aboutUpdateCheckFailedHTTP: "अपडेट सर्वर ने त्रुटि लौटाई (HTTP %d)। बाद में पुनः प्रयास करें।",
+        .aboutUpdateCheckFailedInvalidRelease: "नवीनतम रिलीज़ टैग पढ़ा नहीं जा सका। बाद में पुनः प्रयास करें।",
+        .aboutUpdateCheckFailedGeneric: "अपडेट सर्वर तक पहुँच नहीं हो सकी। नेटवर्क जाँचें और पुनः प्रयास करें।",
 
         .overlayUnmatchedGesture: "अपरिचित जेस्चर",
 
