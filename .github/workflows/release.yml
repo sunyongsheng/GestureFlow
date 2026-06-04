@@ -84,11 +84,12 @@ jobs:
           set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
           ZIP="dist/GestureFlow-${VERSION}-macos.zip"
-          SIGN_PLIST="dist/sign_output.plist"
           APPCAST="dist/appcast.xml"
 
+          SPARKLE_DIR="${RUNNER_TEMP}/sparkle"
+          mkdir -p "${SPARKLE_DIR}"
           curl -fsSL -o sparkle.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.6.4/Sparkle-2.6.4.tar.xz
-          tar xf sparkle.tar.xz
+          tar xf sparkle.tar.xz -C "${SPARKLE_DIR}"
 
           if [ -z "${SPARKLE_PRIVATE_KEY:-}" ]; then
             echo "error: SPARKLE_PRIVATE_KEY secret is required for release builds" >&2
@@ -96,9 +97,14 @@ jobs:
           fi
 
           echo "${SPARKLE_PRIVATE_KEY}" | base64 --decode > ed_private_key.pem
-          ./Sparkle/bin/sign_update "${ZIP}" -f ed_private_key.pem -o "${SIGN_PLIST}"
-          Scripts/generate_appcast.sh "${VERSION}" "${ZIP}" "${SIGN_PLIST}" "${APPCAST}"
-          rm -f ed_private_key.pem sparkle.tar.xz
+          SIGN_OUTPUT="$("${SPARKLE_DIR}/bin/sign_update" "${ZIP}" -f ed_private_key.pem)"
+          ED_SIGNATURE="$(echo "${SIGN_OUTPUT}" | sed -E 's/.*sparkle:edSignature="([^"]*)".*/\1/')"
+          if [ -z "${ED_SIGNATURE}" ]; then
+            echo "error: failed to parse sign_update output: ${SIGN_OUTPUT}" >&2
+            exit 1
+          fi
+          Scripts/generate_appcast.sh "${VERSION}" "${ZIP}" "${ED_SIGNATURE}" "${APPCAST}"
+          rm -rf "${SPARKLE_DIR}" ed_private_key.pem sparkle.tar.xz
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

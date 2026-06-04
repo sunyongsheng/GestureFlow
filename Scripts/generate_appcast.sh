@@ -3,20 +3,19 @@
 # Generate a Sparkle appcast.xml for a signed release zip.
 #
 # Usage:
-#   Scripts/generate_appcast.sh <version> <zip-path> <sign-output-file> <output-appcast-path>
+#   Scripts/generate_appcast.sh <version> <zip-path> <ed-signature> <output-appcast-path>
 #
-# The sign-output-file is the plist written by Sparkle's sign_update (-o flag).
+# <ed-signature> is the base64 EdDSA string from sign_update output.
 #
 set -euo pipefail
 
-VERSION="${1:?usage: $0 <version> <zip-path> <sign-output-file> <output-appcast-path>}"
+VERSION="${1:?usage: $0 <version> <zip-path> <ed-signature> <output-appcast-path>}"
 ZIP_PATH="${2:?}"
-SIGN_PLIST="${3:?}"
+ED_SIGNATURE="${3:?}"
 OUTPUT_PATH="${4:?}"
 
 ARTIFACT_NAME="$(basename "${ZIP_PATH}")"
 ZIP_LENGTH="$(wc -c < "${ZIP_PATH}" | tr -d ' ')"
-ED_SIGNATURE="$(/usr/libexec/PlistBuddy -c 'Print edSignature' "${SIGN_PLIST}")"
 ENCLOSURE_URL="https://github.com/sunyongsheng/GestureFlow/releases/download/release/v${VERSION}/${ARTIFACT_NAME}"
 
 cat > "${OUTPUT_PATH}" <<EOF
