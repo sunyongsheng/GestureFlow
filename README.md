@@ -79,3 +79,30 @@ open build/GestureFlow.app
 ```
 
 首次启动时，macOS 会显示权限引导或提示授予**辅助功能**权限。应用需要该权限才能监听全局鼠标事件并触发操作。
+
+## 构建 Release
+
+发布包会用自签证书 **GestureFlow Self-Signed** 签名（便于辅助功能等权限在更新后延续）。证书只需配置一次：
+
+```bash
+# 生成 .p12 与 base64（默认密码 gestureflow，有效期约 10 年）
+Scripts/generate-signing-cert.sh
+
+# 导入登录钥匙串，供 package_app.sh / sign_app_bundle.sh 使用
+security import ~/Desktop/gestureflow-signing.p12 \
+  -k ~/Library/Keychains/login.keychain-db \
+  -P gestureflow \
+  -T /usr/bin/codesign
+
+# 验证（自签身份可能不出现在 find-identity 列表中，以 dryrun 为准）
+codesign -s "GestureFlow Self-Signed" -f --dryrun /bin/ls
+```
+
+请备份 `gestureflow-signing.p12`，并在后续版本中复用同一文件。
+
+打包：
+
+```bash
+Scripts/package_app.sh              # build/GestureFlow.app
+Scripts/package_release.sh 0.2.3    # dist/ 下的 zip、dmg 与校验和
+```
