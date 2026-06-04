@@ -1,171 +1,81 @@
 # GestureFlow
 
-GestureFlow is a native macOS menu bar utility for mouse gestures. The current
-MVP focuses on right-button gesture capture, gesture matching, visual feedback,
-local configuration, and a small set of built-in actions.
+[English README](README.en.md)
 
-## Requirements
+GestureFlow 是一款原生 macOS 鼠标手势工具。按住鼠标按键绘制路径，即可在当前应用中触发快捷键或操作。
 
-- macOS 14.0 or later
-- Xcode 26 or newer
-- Swift 5.9 toolchain
+## 功能介绍
 
-## Project Structure
+### 鼠标手势
 
-- `GestureFlowCore`: shared gesture models, recognition, matching, validation,
-  and configuration storage
-- `GestureFlowApp`: macOS menu bar application, permissions flow, event tap,
-  overlay, settings, and action execution
+- 使用**右键**或**中键**触发手势
+- 支持单段或多段路径（上、下、左、右）
 
-## Open In Xcode
+### 手势库
 
-Open the standard macOS app project:
+- **全局**手势适用于所有场景，也可为已注册应用配置**按应用**手势集
+- 内置常用快捷键预设：后退/前进、复制/粘贴、查找、新建标签页、刷新、最小化、撤销/重做等
+- 可为各应用**设置专属手势**
+- 支持**自定义手势**：在画布上录制路径并绑定键盘快捷键
+
+### 视觉反馈
+
+- 绘制时显示实时**手势轨迹** overlay
+- 可自定义轨迹颜色、宽度、透明度与描边
+- 手势识别后可选择显示**反馈卡片**
+
+### 高级调节
+
+- 可调节移动阈值、按住超时与采样距离
+- 将操作发送至**前台应用**或**鼠标下方应用**
+- 可配置**忽略应用**列表，在指定应用中禁用手势
+
+### 设置与配置
+
+- 支持**登录时启动**及全局手势识别开关
+- 支持**自定义配置目录**，便于在多台设备间同步设置（含 XDG `~/.config/gestureflow`）
+- **多语言支持**
+
+## 系统要求
+
+- macOS 14.0 或更高版本
+- Xcode 26 或更高版本
+- Swift 5.9 工具链
+
+## 项目结构
+
+- `GestureFlowCore`：共享手势模型、识别、匹配、校验与配置存储
+- `GestureFlowApp`：macOS 菜单栏应用、权限流程、事件监听、overlay、设置与动作执行
+
+## 在 Xcode 中打开
+
+打开标准 macOS 应用工程：
 
 ```bash
 open GestureFlow.xcodeproj
 ```
 
-Primary local workflow:
+本地主要工作流：
 
-- Run the `GestureFlowApp` scheme from Xcode
-- Test from Xcode's Test action
-- Use `xcodebuild` for command-line validation
+- 在 Xcode 中运行 `GestureFlowApp` scheme
+- 通过 Xcode 的 Test 操作运行测试
+- 使用 `xcodebuild` 进行命令行验证
 
-## Build
+## 构建
 
-Build the app with Xcode:
+使用 Xcode 构建应用：
 
 ```bash
 xcodebuild -project GestureFlow.xcodeproj -scheme GestureFlowApp -sdk macosx build
 ```
 
-## Run
+## 运行
 
-Run the menu bar app from Xcode, or build and launch the packaged bundle:
+在 Xcode 中运行应用，或构建并启动打包后的 bundle：
 
 ```bash
 Scripts/package_app.sh
 open build/GestureFlow.app
 ```
 
-On first launch, macOS should show a permissions guide or prompt for
-Accessibility access. The app needs Accessibility permission to observe global
-mouse events and trigger actions.
-
-## Swift Package Compatibility
-
-The repository still supports Swift Package Manager for compatibility checks:
-
-```bash
-swift build
-swift test
-```
-
-These commands are no longer the primary desktop app workflow.
-
-## Package A Local App Bundle
-
-Build and sign a release `.app` with a **stable self-signed certificate** so
-macOS privacy permissions (Accessibility, etc.) survive updates:
-
-```bash
-# One-time: generate and import the signing certificate
-Scripts/generate-signing-cert.sh ~/Desktop
-security import ~/Desktop/gestureflow-signing.p12 \
-  -k ~/Library/Keychains/login.keychain-db \
-  -P gestureflow \
-  -T /usr/bin/codesign
-
-# Build + sign
-Scripts/package_app.sh
-open build/GestureFlow.app
-```
-
-The script builds the release app and creates:
-
-```text
-build/GestureFlow.app
-```
-
-Signing identity (fixed CN): `GestureFlow Self-Signed`. Override with
-`MACOS_SIGNING_IDENTITY`. If the identity is missing from your keychain,
-`package_app.sh` falls back to ad-hoc signing and prints a warning.
-
-For CI, set GitHub Actions secrets `MACOS_CERTIFICATE` (base64 `.p12`),
-`MACOS_CERTIFICATE_PWD`, `MACOS_SIGNING_IDENTITY`, and `KEYCHAIN_PASSWORD`.
-See `Scripts/generate-signing-cert.sh` for details.
-
-You can launch the packaged bundle with Finder or:
-
-```bash
-open build/GestureFlow.app
-```
-
-## Release (GitHub Actions)
-
-Push a version tag to trigger a signed universal build, zip/dmg artifacts, and
-GitHub Release:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Required repository secrets:
-
-| Secret | Description |
-|--------|-------------|
-| `MACOS_CERTIFICATE` | Base64 of `gestureflow-signing.p12` |
-| `MACOS_CERTIFICATE_PWD` | `.p12` export password |
-| `MACOS_SIGNING_IDENTITY` | `GestureFlow Self-Signed` |
-| `KEYCHAIN_PASSWORD` | Any throwaway string for CI keychain |
-
-Local dry run of the release packager:
-
-```bash
-Scripts/package_release.sh 0.1.0
-```
-
-Outputs land in `dist/`:
-
-```text
-dist/GestureFlow-0.1.0-macos.zip
-dist/GestureFlow-0.1.0-macos.dmg
-```
-
-Add release notes under the matching `## [version]` heading in `CHANGELOG.md`.
-
-## Accessibility Setup
-
-1. Launch GestureFlow.
-2. Open `System Settings > Privacy & Security > Accessibility`.
-3. Enable GestureFlow in the app list.
-4. If the app does not appear yet, relaunch it and trigger the permission
-   prompt again from the in-app guide.
-
-Without Accessibility permission, gesture capture stays disabled.
-
-## Engineering Notes
-
-- Mouse input troubleshooting and root-cause notes:
-  [mouse-input-troubleshooting.md](file:///Users/bytedance/Projects/GestureFlow/docs/mouse-input-troubleshooting.md)
-
-## Validation
-
-Useful local validation commands:
-
-```bash
-Scripts/validate_xcode_and_spm.sh
-Scripts/package_app.sh
-open build/GestureFlow.app
-```
-
-## MVP Limitations
-
-- Release packaging uses a reusable self-signed certificate (not Developer ID /
-  notarization). Gatekeeper may still prompt on first launch.
-- GitHub Releases ship zip + dmg; notarization is not configured yet.
-- Trackpad gesture support is deferred; the MVP focuses on mouse gestures.
-- Action coverage is intentionally limited to built-in shortcuts, app launch,
-  URL open, and a small set of system commands.
-- Some behaviors still depend on macOS permission state and current hardware.
+首次启动时，macOS 会显示权限引导或提示授予**辅助功能**权限。应用需要该权限才能监听全局鼠标事件并触发操作。
