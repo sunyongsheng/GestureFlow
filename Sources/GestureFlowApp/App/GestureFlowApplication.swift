@@ -31,6 +31,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private let runtimeState: RuntimeState
     private let permissionService: PermissionService
     private let launchAtLoginService: LaunchAtLoginControlling
+    private let appUpdateService: AppUpdateService
     private let gestureEngine: GestureEngine
     private let notificationCenter: NotificationCenter
     private let activationNotificationName: Notification.Name
@@ -59,6 +60,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         configurationDirectoryRelocator: ConfigurationDirectoryRelocator? = nil,
         permissionService: PermissionService = PermissionService(),
         launchAtLoginService: LaunchAtLoginControlling = LaunchAtLoginService(),
+        appUpdateService: AppUpdateService? = nil,
         injectedGestureEngine: GestureEngine? = nil,
         notificationCenter: NotificationCenter = .default,
         activationNotificationName: Notification.Name = NSApplication.didBecomeActiveNotification,
@@ -83,6 +85,15 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             )
         self.permissionService = permissionService
         self.launchAtLoginService = launchAtLoginService
+        let updatePreferencesStore = UpdatePreferencesStore()
+        let updateScheduler = UpdateScheduler()
+        let currentAppVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+        self.appUpdateService = appUpdateService ?? AppUpdateService(
+            releaseClient: GitHubReleaseClient(currentAppVersion: currentAppVersion),
+            updateController: AppUpdateController(),
+            preferencesStore: updatePreferencesStore,
+            scheduler: updateScheduler
+        )
         self.notificationCenter = notificationCenter
         self.activationNotificationName = activationNotificationName
         self.terminationNotificationName = terminationNotificationName
@@ -137,9 +148,22 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     func launch() {
         observeApplicationActivationIfNeeded()
         observeApplicationTerminationIfNeeded()
+        startAutomaticUpdatesIfNeeded()
         openSettings(source: .launch)
         refreshApplicationState(promptIfNeeded: false)
         scheduleLaunchPermissionPromptIfNeeded()
+    }
+
+    private func startAutomaticUpdatesIfNeeded() {
+        appUpdateService.startAutomaticUpdatesIfNeeded { [weak self] in
+            Task { await self?.appUpdateService.checkForUpdatesIfNeeded(force: false) }
+        }
+    }
+
+    private func makeUpdateSchedulerCallback() -> () -> Void {
+        { [weak self] in
+            Task { await self?.appUpdateService.checkForUpdatesIfNeeded(force: false) }
+        }
     }
 
     func startGestureFlow() {
@@ -219,6 +243,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted,
             isLaunchAtLoginEnabled: launchAtLoginService.isEnabled,
+            isAutomaticUpdateEnabled: appUpdateService.isAutomaticUpdateEnabled,
+            canCheckForUpdates: appUpdateService.canCheckForUpdates,
             localizationManager: localizationManager,
             saveConfiguration: { [weak self] newConfiguration in
                 try self?.applySettingsConfiguration(newConfiguration)
@@ -249,6 +275,14 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             },
             launchAtLoginStatus: { [weak self] in
                 self?.launchAtLoginService.isEnabled ?? false
+            },
+            setAutomaticUpdateEnabled: { [weak self] isEnabled in
+                self?.appUpdateService.setAutomaticUpdateEnabled(isEnabled) {
+                    self?.makeUpdateSchedulerCallback()()
+                }
+            },
+            checkForUpdates: { [weak self] in
+                Task { await self?.appUpdateService.checkForUpdatesIfNeeded(force: true) }
             },
             pauseGestureRecognition: { [weak self] in
                 self?.pauseGestureRecognitionForCustomSignatureRecording()
@@ -397,6 +431,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             object: nil,
             queue: nil
         ) { [weak self] _ in
+            self?.appUpdateService.stopAutomaticUpdates()
             self?.stopGestureEngine(persistUserPreference: false)
         }
     }

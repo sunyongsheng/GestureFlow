@@ -121,6 +121,10 @@ enum L10nStringsHi {
 
         .aboutVersionLabel: "संस्करण",
         .aboutDevelopmentEnvironment: "विकास",
+        .aboutAutomaticUpdateTitle: "स्वचालित अपडेट",
+        .aboutAutomaticUpdateDescription: "GestureFlow चलने पर हर 7 दिन में अपडेट की जांच करें।",
+        .aboutCheckForUpdatesButton: "अपडेट जांचें",
+        .aboutUpdateUnavailableInDevelopment: "डेवलपमेंट बिल्ड में अपडेट उपलब्ध नहीं हैं।",
 
         .overlayUnmatchedGesture: "अपरिचित जेस्चर",
 

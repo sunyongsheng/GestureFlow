@@ -77,6 +77,29 @@ jobs:
           : "${KEYCHAIN_PASSWORD:?KEYCHAIN_PASSWORD secret is required}"
           Scripts/package_release.sh "${{ steps.version.outputs.version }}"
 
+      - name: Generate Sparkle appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          ZIP="dist/GestureFlow-${VERSION}-macos.zip"
+          SIGN_PLIST="dist/sign_output.plist"
+          APPCAST="dist/appcast.xml"
+
+          curl -fsSL -o sparkle.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.6.4/Sparkle-2.6.4.tar.xz
+          tar xf sparkle.tar.xz
+
+          if [ -z "${SPARKLE_PRIVATE_KEY:-}" ]; then
+            echo "error: SPARKLE_PRIVATE_KEY secret is required for release builds" >&2
+            exit 1
+          fi
+
+          echo "${SPARKLE_PRIVATE_KEY}" | base64 --decode > ed_private_key.pem
+          ./Sparkle/bin/sign_update "${ZIP}" -f ed_private_key.pem -o "${SIGN_PLIST}"
+          Scripts/generate_appcast.sh "${VERSION}" "${ZIP}" "${SIGN_PLIST}" "${APPCAST}"
+          rm -f ed_private_key.pem sparkle.tar.xz
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -86,6 +109,7 @@ jobs:
             dist/${{ steps.package.outputs.artifact_name }}.sha256
             dist/${{ steps.package.outputs.dmg_name }}
             dist/${{ steps.package.outputs.dmg_name }}.sha256
+            dist/appcast.xml
           if-no-files-found: error
           retention-days: 30
 

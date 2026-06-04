@@ -121,6 +121,10 @@ enum L10nStringsJa {
 
         .aboutVersionLabel: "バージョン",
         .aboutDevelopmentEnvironment: "開発",
+        .aboutAutomaticUpdateTitle: "自動更新",
+        .aboutAutomaticUpdateDescription: "GestureFlow 実行中は 7 日ごとに更新を確認します。",
+        .aboutCheckForUpdatesButton: "更新を確認",
+        .aboutUpdateUnavailableInDevelopment: "開発ビルドでは更新を利用できません。",
 
         .overlayUnmatchedGesture: "認識できないジェスチャ",
 

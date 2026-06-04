@@ -121,6 +121,10 @@ enum L10nStringsZhHant {
 
         .aboutVersionLabel: "版本",
         .aboutDevelopmentEnvironment: "開發環境",
+        .aboutAutomaticUpdateTitle: "自動更新",
+        .aboutAutomaticUpdateDescription: "GestureFlow 執行期間每 7 天自動檢查一次更新。",
+        .aboutCheckForUpdatesButton: "檢查更新",
+        .aboutUpdateUnavailableInDevelopment: "開發版不支援檢查更新。",
 
         .overlayUnmatchedGesture: "無法辨識的手勢",
 

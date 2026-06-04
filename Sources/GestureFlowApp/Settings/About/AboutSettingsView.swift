@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AboutSettingsView: View {
+    @ObservedObject var viewModel: SettingsViewModel
     @EnvironmentObject private var l10n: LocalizationManager
 
     private let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
@@ -14,11 +15,46 @@ struct AboutSettingsView: View {
                 title: appName,
                 description: nil
             ) {
-                versionRow(
-                    title: l10n.string(.aboutVersionLabel),
-                    value: versionDisplayValue
-                )
+                VStack(alignment: .leading, spacing: 18) {
+                    SettingsValueRow(
+                        title: l10n.string(.aboutVersionLabel),
+                        description: nil,
+                        statusText: nil
+                    ) {
+                        HStack(spacing: 10) {
+                            Text(versionDisplayValue)
+                                .font(.body.weight(.medium))
+
+                            Button(action: {
+                                viewModel.checkForUpdates()
+                            }) {
+                                Text(l10n.string(.aboutCheckForUpdatesButton))
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.regular)
+                            .disabled(!viewModel.canCheckForUpdates)
+                        }
+                    }
+
+                    Divider()
+
+                    SettingsValueRow(
+                        title: l10n.string(.aboutAutomaticUpdateTitle),
+                        description: nil,
+                        statusText: nil
+                    ) {
+                        Toggle("", isOn: automaticUpdateBinding)
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                    }
+                }
             }
+
+            #if DEBUG
+            Text(l10n.string(.aboutUpdateUnavailableInDevelopment))
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            #endif
         }
     }
 
@@ -26,16 +62,10 @@ struct AboutSettingsView: View {
         version ?? l10n.string(.aboutDevelopmentEnvironment)
     }
 
-    private func versionRow(title: String, value: String) -> some View {
-        HStack {
-            Text(title)
-                .foregroundColor(.secondary)
-
-            Spacer()
-
-            Text(value)
-                .fontWeight(.medium)
-        }
-        .font(.body)
+    private var automaticUpdateBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.isAutomaticUpdateEnabled },
+            set: { viewModel.setAutomaticUpdateEnabled($0) }
+        )
     }
 }

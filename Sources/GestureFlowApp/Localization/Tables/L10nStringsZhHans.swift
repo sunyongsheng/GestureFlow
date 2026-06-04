@@ -121,6 +121,10 @@ enum L10nStringsZhHans {
 
         .aboutVersionLabel: "版本",
         .aboutDevelopmentEnvironment: "开发环境",
+        .aboutAutomaticUpdateTitle: "自动更新",
+        .aboutAutomaticUpdateDescription: "GestureFlow 运行期间每 7 天自动检查一次更新。",
+        .aboutCheckForUpdatesButton: "检查更新",
+        .aboutUpdateUnavailableInDevelopment: "开发版不支持检查更新。",
 
         .overlayUnmatchedGesture: "未识别手势",
 

@@ -508,6 +508,28 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isLaunchAtLoginEnabled)
     }
 
+    func testSetAutomaticUpdateEnabledInvokesInjectedAction() {
+        var saved = false
+        let viewModel = makeViewModel(
+            isAutomaticUpdateEnabled: false,
+            setAutomaticUpdateEnabled: { saved = $0 }
+        )
+
+        viewModel.setAutomaticUpdateEnabled(true)
+
+        XCTAssertTrue(saved)
+        XCTAssertTrue(viewModel.isAutomaticUpdateEnabled)
+    }
+
+    func testCheckForUpdatesInvokesInjectedAction() {
+        var invoked = false
+        let viewModel = makeViewModel(checkForUpdates: { invoked = true })
+
+        viewModel.checkForUpdates()
+
+        XCTAssertTrue(invoked)
+    }
+
     private func makeViewModel(
         loadResult: ConfigurationLoadResult = ConfigurationLoadResult(
             configuration: AppConfiguration(),
@@ -518,6 +540,8 @@ final class SettingsViewModelTests: XCTestCase {
         isRunning: Bool = false,
         isAccessibilityTrusted: Bool = true,
         isLaunchAtLoginEnabled: Bool = false,
+        isAutomaticUpdateEnabled: Bool = false,
+        canCheckForUpdates: Bool = true,
         saveConfiguration: @escaping (AppConfiguration) throws -> Void = { _ in },
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void = { _ in },
         startGestureFlow: @escaping () -> Void = {},
@@ -525,6 +549,8 @@ final class SettingsViewModelTests: XCTestCase {
         quitApplication: @escaping () -> Void = {},
         setLaunchAtLoginEnabled: @escaping (Bool) throws -> Void = { _ in },
         launchAtLoginStatus: @escaping () -> Bool = { false },
+        setAutomaticUpdateEnabled: @escaping (Bool) -> Void = { _ in },
+        checkForUpdates: @escaping () -> Void = {},
         openApplicationPanel: @escaping () -> URL? = { nil }
     ) -> SettingsViewModel {
         SettingsViewModel(
@@ -533,6 +559,8 @@ final class SettingsViewModelTests: XCTestCase {
             isRunning: isRunning,
             isAccessibilityTrusted: isAccessibilityTrusted,
             isLaunchAtLoginEnabled: isLaunchAtLoginEnabled,
+            isAutomaticUpdateEnabled: isAutomaticUpdateEnabled,
+            canCheckForUpdates: canCheckForUpdates,
             saveConfiguration: saveConfiguration,
             saveGestureConfiguration: saveGestureConfiguration,
             requestAccessibilityPermission: {},
@@ -541,6 +569,8 @@ final class SettingsViewModelTests: XCTestCase {
             quitApplication: quitApplication,
             setLaunchAtLoginEnabled: setLaunchAtLoginEnabled,
             launchAtLoginStatus: launchAtLoginStatus,
+            setAutomaticUpdateEnabled: setAutomaticUpdateEnabled,
+            checkForUpdates: checkForUpdates,
             openApplicationPanel: openApplicationPanel,
             pauseGestureRecognition: {},
             resumeGestureRecognition: {}

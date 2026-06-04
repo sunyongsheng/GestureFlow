@@ -131,6 +131,17 @@
 		FC580C899A5782136F3908B9 /* SettingsWindowCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD7C0628561595B19BE5527 /* SettingsWindowCoordinatorTests.swift */; };
 		FE4E3FFAE7D1EED8C2093C96 /* MouseEventTapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */; };
 		FF0000000000000000000001 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000001 /* Yams */; };
+		FF0000000000000000000002 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000002 /* Sparkle */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BB0000000000000000000015 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000015 /* SemanticVersion.swift */; };
+		BD0000000000000000000021 /* GitHubReleaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000021 /* GitHubReleaseClient.swift */; };
+		BD0000000000000000000022 /* UpdatePreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000022 /* UpdatePreferencesStore.swift */; };
+		BD0000000000000000000023 /* UpdateScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000023 /* UpdateScheduler.swift */; };
+		BD0000000000000000000024 /* AppUpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000024 /* AppUpdateController.swift */; };
+		BD0000000000000000000025 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000025 /* AppUpdateService.swift */; };
+		UP0000000000000000000001 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000002 /* SemanticVersionTests.swift */; };
+		UP0000000000000000000003 /* GitHubReleaseClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000004 /* GitHubReleaseClientTests.swift */; };
+		UP0000000000000000000005 /* UpdatePreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000006 /* UpdatePreferencesStoreTests.swift */; };
+		UP0000000000000000000007 /* UpdateSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UP0000000000000000000008 /* UpdateSchedulerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -233,6 +244,7 @@
 		AA0000000000000000000012 /* GestureSignatureCatalog.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureSignatureCatalog.swift; sourceTree = "<group>"; };
 		AA0000000000000000000013 /* GestureSignaturePathGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureSignaturePathGeometry.swift; sourceTree = "<group>"; };
 		AA0000000000000000000014 /* GestureTargetResolving.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureTargetResolving.swift; sourceTree = "<group>"; };
+		AA0000000000000000000015 /* SemanticVersion.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		AA855F54F132B7FE60EA8D0B /* StatusBarControllerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatusBarControllerTests.swift; sourceTree = "<group>"; };
 		AC0000000000000000000001 /* AboutSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AboutSettingsView.swift; sourceTree = "<group>"; };
 		AC0000000000000000000002 /* AdvancedSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AdvancedSettingsView.swift; sourceTree = "<group>"; };
@@ -285,6 +297,15 @@
 		AD000000000000000000000E /* GestureFeedbackCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFeedbackCardView.swift; sourceTree = "<group>"; };
 		AD000000000000000000000F /* GestureTargetApplicationResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureTargetApplicationResolver.swift; sourceTree = "<group>"; };
 		AD0000000000000000000020 /* GestureActivationGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureActivationGate.swift; sourceTree = "<group>"; };
+		AD0000000000000000000021 /* GitHubReleaseClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitHubReleaseClient.swift; sourceTree = "<group>"; };
+		AD0000000000000000000022 /* UpdatePreferencesStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UpdatePreferencesStore.swift; sourceTree = "<group>"; };
+		AD0000000000000000000023 /* UpdateScheduler.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UpdateScheduler.swift; sourceTree = "<group>"; };
+		AD0000000000000000000024 /* AppUpdateController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppUpdateController.swift; sourceTree = "<group>"; };
+		AD0000000000000000000025 /* AppUpdateService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
+		UP0000000000000000000002 /* SemanticVersionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
+		UP0000000000000000000004 /* GitHubReleaseClientTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Services/GitHubReleaseClientTests.swift; sourceTree = "<group>"; };
+		UP0000000000000000000006 /* UpdatePreferencesStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Services/UpdatePreferencesStoreTests.swift; sourceTree = "<group>"; };
+		UP0000000000000000000008 /* UpdateSchedulerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Services/UpdateSchedulerTests.swift; sourceTree = "<group>"; };
 		B045D62F33B0560A3B4D9680 /* ConflictDetectorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConflictDetectorTests.swift; sourceTree = "<group>"; };
 		B2C483FF9C710FF74C05D13B /* GestureOverlayWindow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayWindow.swift; sourceTree = "<group>"; };
 		B4A0BD4BCBBE39E9137D88A5 /* GestureFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GestureFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -310,6 +331,7 @@
 			files = (
 				26E66E45BDB9D5837A02A2CD /* Cocoa.framework in Frameworks */,
 				19B1C6B7C86F57B21DB16BF0 /* GestureFlowCore.framework in Frameworks */,
+				FF0000000000000000000002 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,6 +394,7 @@
 				AA0000000000000000000003 /* GestureConfiguration.swift */,
 				AA0000000000000000000002 /* GestureSource.swift */,
 				AA0000000000000000000004 /* GestureTargetApplication.swift */,
+				AA0000000000000000000015 /* SemanticVersion.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -462,6 +485,9 @@
 				85597E92C5F3F66FC294009F /* SettingsViewModelTests.swift */,
 				F46FDB4027988A9B24CB13DD /* SettingsWindowLifecycleObserverTests.swift */,
 				AA855F54F132B7FE60EA8D0B /* StatusBarControllerTests.swift */,
+				UP0000000000000000000004 /* GitHubReleaseClientTests.swift */,
+				UP0000000000000000000006 /* UpdatePreferencesStoreTests.swift */,
+				UP0000000000000000000008 /* UpdateSchedulerTests.swift */,
 			);
 			path = GestureFlowAppTests;
 			sourceTree = "<group>";
@@ -474,6 +500,7 @@
 				4F21DA1D037EC4AB66536A4B /* GestureMatcherTests.swift */,
 				1E37DC1583A40D7D7DB11C88 /* GestureRecognizerTests.swift */,
 				667EFB5B0EDFECBAC20F10F6 /* PublicAPITests.swift */,
+				UP0000000000000000000002 /* SemanticVersionTests.swift */,
 			);
 			path = GestureFlowCoreTests;
 			sourceTree = "<group>";
@@ -749,6 +776,11 @@
 			children = (
 				AD000000000000000000000C /* GestureConfigurationService.swift */,
 				AD000000000000000000000D /* LaunchAtLoginService.swift */,
+				AD0000000000000000000021 /* GitHubReleaseClient.swift */,
+				AD0000000000000000000022 /* UpdatePreferencesStore.swift */,
+				AD0000000000000000000023 /* UpdateScheduler.swift */,
+				AD0000000000000000000024 /* AppUpdateController.swift */,
+				AD0000000000000000000025 /* AppUpdateService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -852,6 +884,9 @@
 				D3EFE63E03F655B3F0ED8DCD /* PBXTargetDependency */,
 			);
 			name = GestureFlowApp;
+			packageProductDependencies = (
+				DD0000000000000000000002 /* Sparkle */,
+			);
 			productName = GestureFlowApp;
 			productReference = B4A0BD4BCBBE39E9137D88A5 /* GestureFlow.app */;
 			productType = "com.apple.product-type.application";
@@ -931,6 +966,7 @@
 			mainGroup = EFBEEC1F6B38E4C28B3474EB;
 			packageReferences = (
 				EE0000000000000000000001 /* XCRemoteSwiftPackageReference "Yams" */,
+				EE0000000000000000000002 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			productRefGroup = 526B8E3D89EAA1F5FD9E36A3 /* Products */;
 			projectDirPath = "";
@@ -1007,6 +1043,7 @@
 				BB0000000000000000000002 /* GestureSource.swift in Sources */,
 				BB0000000000000000000004 /* GestureTargetApplication.swift in Sources */,
 				BB0000000000000000000014 /* GestureTargetResolving.swift in Sources */,
+				BB0000000000000000000015 /* SemanticVersion.swift in Sources */,
 				BB0000000000000000000010 /* SplitGestureConfigurationLoader.swift in Sources */,
 				76F0034C5AC53BD8FAD94392 /* ConflictDetector.swift in Sources */,
 				BB0000000000000000000006 /* YAMLConfigurationCoder.swift in Sources */,
@@ -1033,6 +1070,9 @@
 				EE0E5FDB1FEE6C84A9031FC2 /* SettingsViewModelTests.swift in Sources */,
 				9C7C002ACABA0A147FF7D1AB /* SettingsWindowLifecycleObserverTests.swift in Sources */,
 				B9A9C60EB34DB710B27CF477 /* StatusBarControllerTests.swift in Sources */,
+				UP0000000000000000000003 /* GitHubReleaseClientTests.swift in Sources */,
+				UP0000000000000000000005 /* UpdatePreferencesStoreTests.swift in Sources */,
+				UP0000000000000000000007 /* UpdateSchedulerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1060,6 +1100,11 @@
 				95FE636493DE4FE816976B00 /* PermissionService.swift in Sources */,
 				BD000000000000000000000C /* GestureConfigurationService.swift in Sources */,
 				BD000000000000000000000D /* LaunchAtLoginService.swift in Sources */,
+				BD0000000000000000000021 /* GitHubReleaseClient.swift in Sources */,
+				BD0000000000000000000022 /* UpdatePreferencesStore.swift in Sources */,
+				BD0000000000000000000023 /* UpdateScheduler.swift in Sources */,
+				BD0000000000000000000024 /* AppUpdateController.swift in Sources */,
+				BD0000000000000000000025 /* AppUpdateService.swift in Sources */,
 				BD0000000000000000000002 /* L10nKey.swift in Sources */,
 				BD0000000000000000000003 /* L10nTables.swift in Sources */,
 				BD0000000000000000000004 /* L10nStringsEn.swift in Sources */,
@@ -1117,6 +1162,7 @@
 				D5B044F8BD11A55C74D1548F /* GestureMatcherTests.swift in Sources */,
 				5AA51CECE1D58A4AAC6D6CF0 /* GestureRecognizerTests.swift in Sources */,
 				FBB552B02864BB311DCDC449 /* PublicAPITests.swift in Sources */,
+				UP0000000000000000000001 /* SemanticVersionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1545,6 +1591,14 @@
 				minimumVersion = 5.0.6;
 			};
 		};
+		EE0000000000000000000002 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1552,6 +1606,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EE0000000000000000000001 /* XCRemoteSwiftPackageReference "Yams" */;
 			productName = Yams;
+		};
+		DD0000000000000000000002 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EE0000000000000000000002 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

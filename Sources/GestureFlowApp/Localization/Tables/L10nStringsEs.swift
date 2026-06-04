@@ -121,6 +121,10 @@ enum L10nStringsEs {
 
         .aboutVersionLabel: "Versión",
         .aboutDevelopmentEnvironment: "Desarrollo",
+        .aboutAutomaticUpdateTitle: "Actualizaciones automáticas",
+        .aboutAutomaticUpdateDescription: "Comprueba actualizaciones cada 7 días mientras GestureFlow está en ejecución.",
+        .aboutCheckForUpdatesButton: "Buscar actualizaciones",
+        .aboutUpdateUnavailableInDevelopment: "Las actualizaciones no están disponibles en compilaciones de desarrollo.",
 
         .overlayUnmatchedGesture: "Gesto no reconocido",
 

@@ -14,6 +14,8 @@ final class SettingsViewModel: ObservableObject {
     @Published private(set) var isAccessibilityTrusted: Bool
     @Published private(set) var isLaunchAtLoginEnabled: Bool
     @Published private(set) var launchAtLoginErrorMessage: String?
+    @Published private(set) var isAutomaticUpdateEnabled: Bool
+    @Published private(set) var canCheckForUpdates: Bool
     @Published var selectedApplicationScope: GestureApplicationScope = .global
     @Published var draftConfigurationDirectoryPath: String
     @Published private(set) var persistedConfigurationDirectoryPath: String
@@ -38,6 +40,8 @@ final class SettingsViewModel: ObservableObject {
     private let quitApplicationAction: () -> Void
     private let setLaunchAtLoginEnabledAction: (Bool) throws -> Void
     private let launchAtLoginStatusProvider: () -> Bool
+    private let setAutomaticUpdateEnabledAction: (Bool) -> Void
+    private let checkForUpdatesAction: () -> Void
     private let openApplicationPanel: () -> URL?
     let pauseGestureRecognition: () -> Void
     let resumeGestureRecognition: () -> Void
@@ -50,6 +54,8 @@ final class SettingsViewModel: ObservableObject {
         isRunning: Bool,
         isAccessibilityTrusted: Bool,
         isLaunchAtLoginEnabled: Bool = false,
+        isAutomaticUpdateEnabled: Bool = false,
+        canCheckForUpdates: Bool = true,
         localizationManager: LocalizationManager = LocalizationManager(language: .zhHans),
         saveConfiguration: @escaping (AppConfiguration) throws -> Void,
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void,
@@ -61,6 +67,8 @@ final class SettingsViewModel: ObservableObject {
         quitApplication: @escaping () -> Void,
         setLaunchAtLoginEnabled: @escaping (Bool) throws -> Void = { _ in },
         launchAtLoginStatus: @escaping () -> Bool = { false },
+        setAutomaticUpdateEnabled: @escaping (Bool) -> Void = { _ in },
+        checkForUpdates: @escaping () -> Void = {},
         openApplicationPanel: @escaping () -> URL? = SettingsViewModel.defaultOpenApplicationPanel,
         pauseGestureRecognition: @escaping () -> Void,
         resumeGestureRecognition: @escaping () -> Void
@@ -75,6 +83,8 @@ final class SettingsViewModel: ObservableObject {
         self.isRunning = isRunning
         self.isAccessibilityTrusted = isAccessibilityTrusted
         self.isLaunchAtLoginEnabled = isLaunchAtLoginEnabled
+        self.isAutomaticUpdateEnabled = isAutomaticUpdateEnabled
+        self.canCheckForUpdates = canCheckForUpdates
         self.saveConfiguration = saveConfiguration
         self.saveGestureConfiguration = saveGestureConfiguration
         self.relocateConfigurationDirectoryAction = relocateConfigurationDirectory
@@ -85,6 +95,8 @@ final class SettingsViewModel: ObservableObject {
         self.quitApplicationAction = quitApplication
         self.setLaunchAtLoginEnabledAction = setLaunchAtLoginEnabled
         self.launchAtLoginStatusProvider = launchAtLoginStatus
+        self.setAutomaticUpdateEnabledAction = setAutomaticUpdateEnabled
+        self.checkForUpdatesAction = checkForUpdates
         self.openApplicationPanel = openApplicationPanel
         self.pauseGestureRecognition = pauseGestureRecognition
         self.resumeGestureRecognition = resumeGestureRecognition
@@ -326,6 +338,15 @@ final class SettingsViewModel: ObservableObject {
             launchAtLoginErrorMessage = error.localizedDescription
         }
         isLaunchAtLoginEnabled = launchAtLoginStatusProvider()
+    }
+
+    func setAutomaticUpdateEnabled(_ isEnabled: Bool) {
+        setAutomaticUpdateEnabledAction(isEnabled)
+        isAutomaticUpdateEnabled = isEnabled
+    }
+
+    func checkForUpdates() {
+        checkForUpdatesAction()
     }
 
     func quitApplication() {

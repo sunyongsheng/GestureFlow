@@ -121,6 +121,10 @@ enum L10nStringsKo {
 
         .aboutVersionLabel: "버전",
         .aboutDevelopmentEnvironment: "개발",
+        .aboutAutomaticUpdateTitle: "자동 업데이트",
+        .aboutAutomaticUpdateDescription: "GestureFlow 실행 중 7일마다 업데이트를 확인합니다.",
+        .aboutCheckForUpdatesButton: "업데이트 확인",
+        .aboutUpdateUnavailableInDevelopment: "개발 빌드에서는 업데이트를 사용할 수 없습니다.",
 
         .overlayUnmatchedGesture: "인식되지 않은 제스처",
 

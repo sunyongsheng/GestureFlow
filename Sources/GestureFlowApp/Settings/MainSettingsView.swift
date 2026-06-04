@@ -72,7 +72,7 @@ struct MainSettingsView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
         case .about:
-            AboutSettingsView()
+            AboutSettingsView(viewModel: viewModel)
         }
     }
 

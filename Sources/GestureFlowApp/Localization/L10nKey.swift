@@ -120,6 +120,10 @@ enum L10nKey: String, CaseIterable {
 
     case aboutVersionLabel
     case aboutDevelopmentEnvironment
+    case aboutAutomaticUpdateTitle
+    case aboutAutomaticUpdateDescription
+    case aboutCheckForUpdatesButton
+    case aboutUpdateUnavailableInDevelopment
 
     case overlayUnmatchedGesture
 
