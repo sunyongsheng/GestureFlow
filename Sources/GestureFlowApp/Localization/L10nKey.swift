@@ -118,11 +118,8 @@ enum L10nKey: String, CaseIterable {
     case gesturesRecordingCanvasHint
     case gesturesNewGestureName
 
-    case aboutCardDescription
     case aboutVersionLabel
-    case aboutBuildLabel
     case aboutDevelopmentEnvironment
-    case aboutBuildUnavailable
 
     case overlayUnmatchedGesture
 

@@ -119,11 +119,8 @@ enum L10nStringsKo {
         .gesturesRecordingCanvasHint: "캔버스에서 왼쪽 버튼으로 그리기(최대 %d개 세그먼트)",
         .gesturesNewGestureName: "새 제스처",
 
-        .aboutCardDescription: "이 설치의 버전 메타데이터입니다.",
         .aboutVersionLabel: "버전",
-        .aboutBuildLabel: "빌드",
         .aboutDevelopmentEnvironment: "개발",
-        .aboutBuildUnavailable: "없음",
 
         .overlayUnmatchedGesture: "인식되지 않은 제스처",
 

@@ -119,11 +119,8 @@ enum L10nStringsZhHans {
         .gesturesRecordingCanvasHint: "使用左键在画布内绘制手势（最多 %d 段）",
         .gesturesNewGestureName: "新手势",
 
-        .aboutCardDescription: "当前安装包的版本元信息。",
-        .aboutVersionLabel: "版本号",
-        .aboutBuildLabel: "构建号",
+        .aboutVersionLabel: "版本",
         .aboutDevelopmentEnvironment: "开发环境",
-        .aboutBuildUnavailable: "未提供",
 
         .overlayUnmatchedGesture: "未识别手势",
 

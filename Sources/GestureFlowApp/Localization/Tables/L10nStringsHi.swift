@@ -119,11 +119,8 @@ enum L10nStringsHi {
         .gesturesRecordingCanvasHint: "कैनवास पर बाएँ बटन से बनाएँ (अधिकतम %d खंड)",
         .gesturesNewGestureName: "नया जेस्चर",
 
-        .aboutCardDescription: "इस इंस्टॉलेशन का संस्करण विवरण।",
         .aboutVersionLabel: "संस्करण",
-        .aboutBuildLabel: "बिल्ड",
         .aboutDevelopmentEnvironment: "विकास",
-        .aboutBuildUnavailable: "उपलब्ध नहीं",
 
         .overlayUnmatchedGesture: "अपरिचित जेस्चर",
 

@@ -119,11 +119,8 @@ enum L10nStringsEn {
         .gesturesRecordingCanvasHint: "Draw with the left button on the canvas (up to %d segments)",
         .gesturesNewGestureName: "New Gesture",
 
-        .aboutCardDescription: "Version metadata for this installation.",
         .aboutVersionLabel: "Version",
-        .aboutBuildLabel: "Build",
         .aboutDevelopmentEnvironment: "Development",
-        .aboutBuildUnavailable: "Not available",
 
         .overlayUnmatchedGesture: "Unrecognized Gesture",
 

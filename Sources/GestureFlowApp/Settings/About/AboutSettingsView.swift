@@ -7,26 +7,23 @@ struct AboutSettingsView: View {
         ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
         ?? "GestureFlow"
     private let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-    private let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
 
     var body: some View {
         SettingsPage {
             SettingsCard(
                 title: appName,
-                description: l10n.string(.aboutCardDescription)
+                description: nil
             ) {
-                VStack(alignment: .leading, spacing: 14) {
-                    versionRow(
-                        title: l10n.string(.aboutVersionLabel),
-                        value: version ?? l10n.string(.aboutDevelopmentEnvironment)
-                    )
-                    versionRow(
-                        title: l10n.string(.aboutBuildLabel),
-                        value: build ?? l10n.string(.aboutBuildUnavailable)
-                    )
-                }
+                versionRow(
+                    title: l10n.string(.aboutVersionLabel),
+                    value: versionDisplayValue
+                )
             }
         }
+    }
+
+    private var versionDisplayValue: String {
+        version ?? l10n.string(.aboutDevelopmentEnvironment)
     }
 
     private func versionRow(title: String, value: String) -> some View {
