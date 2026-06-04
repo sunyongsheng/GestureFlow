@@ -119,6 +119,8 @@ enum L10nStringsEn {
         .gesturesRecordingCanvasHint: "Draw with the left button on the canvas (up to %d segments)",
         .gesturesNewGestureName: "New Gesture",
 
+        .aboutTagline: "Mouse gesture productivity tool",
+        .aboutOpenSourceTitle: "Open Source",
         .aboutVersionLabel: "Version",
         .aboutDevelopmentEnvironment: "Development",
         .aboutAutomaticUpdateTitle: "Automatic Updates",

@@ -57,10 +57,12 @@ final class GestureEngine {
     }
 
     @discardableResult
-    func start() -> Bool {
+    func start(promptIfUntrusted: Bool = true) -> Bool {
         guard !isRunning else { return true }
         guard permissionService.isAccessibilityTrusted else {
-            permissionService.promptForAccessibilityPermission()
+            if promptIfUntrusted {
+                permissionService.promptForAccessibilityPermission()
+            }
             return false
         }
 

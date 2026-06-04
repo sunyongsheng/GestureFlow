@@ -119,6 +119,8 @@ enum L10nStringsHi {
         .gesturesRecordingCanvasHint: "कैनवास पर बाएँ बटन से बनाएँ (अधिकतम %d खंड)",
         .gesturesNewGestureName: "नया जेस्चर",
 
+        .aboutTagline: "माउस जेस्चर उत्पादकता टूल",
+        .aboutOpenSourceTitle: "ओपन सोर्स",
         .aboutVersionLabel: "संस्करण",
         .aboutDevelopmentEnvironment: "विकास",
         .aboutAutomaticUpdateTitle: "स्वचालित अपडेट",

@@ -119,6 +119,8 @@ enum L10nStringsZhHant {
         .gesturesRecordingCanvasHint: "使用左鍵在畫布內繪製手勢（最多 %d 段）",
         .gesturesNewGestureName: "新手勢",
 
+        .aboutTagline: "滑鼠手勢效率工具",
+        .aboutOpenSourceTitle: "開源地址",
         .aboutVersionLabel: "版本",
         .aboutDevelopmentEnvironment: "開發環境",
         .aboutAutomaticUpdateTitle: "自動更新",

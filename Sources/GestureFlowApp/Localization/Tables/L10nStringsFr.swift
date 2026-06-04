@@ -119,6 +119,8 @@ enum L10nStringsFr {
         .gesturesRecordingCanvasHint: "Dessinez avec le bouton gauche sur le canevas (jusqu’à %d segments)",
         .gesturesNewGestureName: "Nouveau geste",
 
+        .aboutTagline: "Outil de productivité par gestes de souris",
+        .aboutOpenSourceTitle: "Code source ouvert",
         .aboutVersionLabel: "Version",
         .aboutDevelopmentEnvironment: "Développement",
         .aboutAutomaticUpdateTitle: "Mises à jour automatiques",

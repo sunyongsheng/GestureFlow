@@ -47,6 +47,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private var settingsViewModel: SettingsViewModel?
     private(set) var statusBarController: StatusBarController?
     private var gestureRecognitionWasRunningBeforeRecordingPause = false
+    private let autoPromptAccessibilityOnLaunch: Bool
 
     var isGestureFlowRunning: Bool {
         configuration.isEnabled
@@ -67,9 +68,17 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         terminationNotificationName: Notification.Name = NSApplication.willTerminateNotification,
         terminateApplication: @escaping (NSApplication) -> Void = { $0.terminate(nil) },
         showSettings: @escaping (SettingsViewModel, SettingsPresentationSource) -> Void = { _, _ in },
-        scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }
+        scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) },
+        autoPromptAccessibilityOnLaunch: Bool = {
+            #if DEBUG
+            false
+            #else
+            true
+            #endif
+        }()
     ) {
         self.application = application
+        self.autoPromptAccessibilityOnLaunch = autoPromptAccessibilityOnLaunch
         let resolvedResolver = configurationDirectoryResolver ?? ConfigurationDirectoryResolver.bootstrap()
         let resolvedAppConfigurationStore = appConfigurationStore ?? resolvedResolver.makeAppConfigurationStore()
         let resolvedGestureService = gestureConfigurationService
@@ -415,7 +424,12 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private func reconcilePersistedRunningState() {
         guard configuration.isEnabled else { return }
 
-        guard permissionService.isAccessibilityTrusted, gestureEngine.start() else {
+        guard permissionService.isAccessibilityTrusted else {
+            setGestureFlowEnabled(false)
+            return
+        }
+
+        guard gestureEngine.start(promptIfUntrusted: false) else {
             setGestureFlowEnabled(false)
             return
         }
@@ -470,6 +484,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     }
 
     private func scheduleLaunchPermissionPromptIfNeeded() {
+        guard autoPromptAccessibilityOnLaunch else { return }
         guard !permissionService.isAccessibilityTrusted else { return }
 
         scheduleOnMain { [weak self] in

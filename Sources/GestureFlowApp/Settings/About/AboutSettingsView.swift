@@ -13,7 +13,7 @@ struct AboutSettingsView: View {
         SettingsPage {
             SettingsCard(
                 title: appName,
-                description: nil
+                description: l10n.string(.aboutTagline)
             ) {
                 VStack(alignment: .leading, spacing: 18) {
                     SettingsValueRow(
@@ -23,7 +23,7 @@ struct AboutSettingsView: View {
                     ) {
                         HStack(spacing: 10) {
                             Text(versionDisplayValue)
-                                .font(.body.weight(.medium))
+                                .foregroundColor(.secondary)
 
                             Button(action: {
                                 viewModel.checkForUpdates()
@@ -41,6 +41,7 @@ struct AboutSettingsView: View {
                             .disabled(!viewModel.canCheckForUpdates || viewModel.isCheckingForUpdates)
                         }
                     }
+                    .frame(height: 24)
 
                     Divider()
 
@@ -53,6 +54,23 @@ struct AboutSettingsView: View {
                             .labelsHidden()
                             .toggleStyle(.switch)
                     }
+                    .frame(height: 24)
+
+                    Divider()
+
+                    Link(destination: GitHubReleaseClient.repositoryWebURL) {
+                        SettingsValueRow(
+                            title: l10n.string(.aboutOpenSourceTitle),
+                            description: nil,
+                            statusText: nil
+                        ) {
+                            Image(systemName: "arrow.up.right.square")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.primary)
+                    .frame(height: 24)
                 }
             }
 

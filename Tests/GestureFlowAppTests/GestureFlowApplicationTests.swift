@@ -80,7 +80,8 @@ final class GestureFlowApplicationTests: XCTestCase {
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in },
-            scheduleOnMain: { scheduledPrompt = $0 }
+            scheduleOnMain: { scheduledPrompt = $0 },
+            autoPromptAccessibilityOnLaunch: true
         )
 
         application.launch()
@@ -114,7 +115,8 @@ final class GestureFlowApplicationTests: XCTestCase {
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in events.append("settings") },
-            scheduleOnMain: { scheduledPrompt = $0 }
+            scheduleOnMain: { scheduledPrompt = $0 },
+            autoPromptAccessibilityOnLaunch: true
         )
 
         application.launch()

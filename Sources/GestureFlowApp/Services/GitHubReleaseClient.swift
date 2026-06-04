@@ -20,6 +20,7 @@ protocol GitHubReleaseFetching: Sendable {
 
 final class GitHubReleaseClient: GitHubReleaseFetching, @unchecked Sendable {
     static let repository = "sunyongsheng/GestureFlow"
+    static let repositoryWebURL = URL(string: "https://github.com/sunyongsheng/GestureFlow")!
     static let appcastAssetName = "appcast.xml"
     /// Avoids GitHub REST API rate limits (403 when unauthenticated quota is exhausted).
     static let latestAppcastURL = URL(

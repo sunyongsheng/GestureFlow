@@ -119,6 +119,8 @@ enum L10nStringsJa {
         .gesturesRecordingCanvasHint: "キャンバス上で左ボタンを使って描画（最大 %d セグメント）",
         .gesturesNewGestureName: "新しいジェスチャ",
 
+        .aboutTagline: "マウスジェスチャー効率化ツール",
+        .aboutOpenSourceTitle: "オープンソース",
         .aboutVersionLabel: "バージョン",
         .aboutDevelopmentEnvironment: "開発",
         .aboutAutomaticUpdateTitle: "自動更新",

@@ -119,6 +119,8 @@ enum L10nStringsKo {
         .gesturesRecordingCanvasHint: "캔버스에서 왼쪽 버튼으로 그리기(최대 %d개 세그먼트)",
         .gesturesNewGestureName: "새 제스처",
 
+        .aboutTagline: "마우스 제스처 생산성 도구",
+        .aboutOpenSourceTitle: "오픈 소스",
         .aboutVersionLabel: "버전",
         .aboutDevelopmentEnvironment: "개발",
         .aboutAutomaticUpdateTitle: "자동 업데이트",

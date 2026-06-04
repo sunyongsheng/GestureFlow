@@ -119,6 +119,8 @@ enum L10nStringsEs {
         .gesturesRecordingCanvasHint: "Dibuja con el botón izquierdo en el lienzo (hasta %d segmentos)",
         .gesturesNewGestureName: "Gesto nuevo",
 
+        .aboutTagline: "Herramienta de productividad con gestos del ratón",
+        .aboutOpenSourceTitle: "Código abierto",
         .aboutVersionLabel: "Versión",
         .aboutDevelopmentEnvironment: "Desarrollo",
         .aboutAutomaticUpdateTitle: "Actualizaciones automáticas",
