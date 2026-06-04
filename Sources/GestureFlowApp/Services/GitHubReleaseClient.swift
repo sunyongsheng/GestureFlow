@@ -74,9 +74,11 @@ final class GitHubReleaseClient: GitHubReleaseFetching, @unchecked Sendable {
     }
 
     private static func sparkleVersion(in xml: String) -> String? {
+        // Prefer shortVersionString (marketing semver) for our pre-Sparkle check.
+        // sparkle:version matches CFBundleVersion and is only used by Sparkle internally.
         let patterns = [
-            "<sparkle:version>\\s*([^<]+?)\\s*</sparkle:version>",
-            "<sparkle:shortVersionString>\\s*([^<]+?)\\s*</sparkle:shortVersionString>"
+            "<sparkle:shortVersionString>\\s*([^<]+?)\\s*</sparkle:shortVersionString>",
+            "<sparkle:version>\\s*([^<]+?)\\s*</sparkle:version>"
         ]
         for pattern in patterns {
             guard let regex = try? NSRegularExpression(pattern: pattern),

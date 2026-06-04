@@ -2,6 +2,10 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.3] - 2026-06-04
+
+- Fix Sparkle falsely reporting “up to date” when a newer release exists: write `CFBundleVersion` to `sparkle:version` in `appcast.xml` and use `sparkle:shortVersionString` for marketing version checks.
+
 ## [0.2.2] - 2026-06-04
 
 - Fetch the latest `appcast.xml` via GitHub release download URL instead of the REST API to avoid HTTP 403 rate limits.
