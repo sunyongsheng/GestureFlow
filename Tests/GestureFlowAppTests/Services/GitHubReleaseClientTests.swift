@@ -2,66 +2,60 @@ import XCTest
 @testable import GestureFlowApp
 
 final class GitHubReleaseClientTests: XCTestCase {
-    func testParsesLatestReleaseFixture() throws {
+    func testParsesAppcastFixture() throws {
         let fixture = """
-        {
-          "tag_name": "release/v0.2.0",
-          "assets": [
-            {
-              "name": "GestureFlow-0.2.0-macos.zip",
-              "browser_download_url": "https://example.com/app.zip"
-            },
-            {
-              "name": "appcast.xml",
-              "browser_download_url": "https://example.com/appcast.xml"
-            }
-          ]
-        }
+        <?xml version="1.0" encoding="utf-8"?>
+        <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+          <channel>
+            <item>
+              <title>Version 0.2.1</title>
+              <sparkle:version>0.2.1</sparkle:version>
+              <sparkle:shortVersionString>0.2.1</sparkle:shortVersionString>
+            </item>
+          </channel>
+        </rss>
         """.data(using: .utf8)!
 
         let client = GitHubReleaseClient(currentAppVersion: "0.1.1")
-        let release = try client.parseReleaseData(fixture)
+        let release = try client.parseAppcastData(fixture)
 
-        XCTAssertEqual(release.tagName, "release/v0.2.0")
-        XCTAssertEqual(release.version.description, "0.2.0")
-        XCTAssertEqual(release.appcastURL.absoluteString, "https://example.com/appcast.xml")
+        XCTAssertEqual(release.tagName, "release/v0.2.1")
+        XCTAssertEqual(release.version.description, "0.2.1")
+        XCTAssertEqual(
+            release.appcastURL.absoluteString,
+            GitHubReleaseClient.latestAppcastURL.absoluteString
+        )
     }
 
-    func testMissingAppcastThrows() {
+    func testMissingVersionInAppcastThrows() {
         let fixture = """
-        {
-          "tag_name": "release/v0.2.0",
-          "assets": [
-            {
-              "name": "GestureFlow-0.2.0-macos.zip",
-              "browser_download_url": "https://example.com/app.zip"
-            }
-          ]
-        }
+        <?xml version="1.0" encoding="utf-8"?>
+        <rss version="2.0">
+          <channel><item><title>empty</title></item></channel>
+        </rss>
         """.data(using: .utf8)!
 
         let client = GitHubReleaseClient(currentAppVersion: "0.1.1")
-        XCTAssertThrowsError(try client.parseReleaseData(fixture)) { error in
+        XCTAssertThrowsError(try client.parseAppcastData(fixture)) { error in
             XCTAssertEqual(error as? GitHubReleaseClientError, .missingAppcastAsset)
         }
     }
 
-    func testInvalidTagNameThrows() {
+    func testInvalidVersionInAppcastThrows() {
         let fixture = """
-        {
-          "tag_name": "broken-tag",
-          "assets": [
-            {
-              "name": "appcast.xml",
-              "browser_download_url": "https://example.com/appcast.xml"
-            }
-          ]
-        }
+        <?xml version="1.0" encoding="utf-8"?>
+        <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+          <channel>
+            <item>
+              <sparkle:version>not-a-version</sparkle:version>
+            </item>
+          </channel>
+        </rss>
         """.data(using: .utf8)!
 
         let client = GitHubReleaseClient(currentAppVersion: "0.1.1")
-        XCTAssertThrowsError(try client.parseReleaseData(fixture)) { error in
-            XCTAssertEqual(error as? GitHubReleaseClientError, .invalidTagName("broken-tag"))
+        XCTAssertThrowsError(try client.parseAppcastData(fixture)) { error in
+            XCTAssertEqual(error as? GitHubReleaseClientError, .invalidTagName("not-a-version"))
         }
     }
 }

@@ -50,7 +50,8 @@ final class AppUpdateServiceTests: XCTestCase {
             updateController: controller,
             preferencesStore: makePreferencesStore(),
             scheduler: UpdateScheduler(),
-            currentAppVersion: "0.2.0"
+            currentAppVersion: "0.2.0",
+            allowsSparkleInstall: true
         )
 
         var outcome: ManualUpdateCheckOutcome?
@@ -58,6 +59,36 @@ final class AppUpdateServiceTests: XCTestCase {
 
         XCTAssertEqual(outcome, .delegatedToSparkle)
         XCTAssertEqual(controller.lastAppcastURL, appcastURL)
+    }
+
+    func testManualCheckBlocksSparkleInstallWhenDisabled() async {
+        let client = MockReleaseClient(
+            result: .success(
+                GitHubReleaseInfo(
+                    tagName: "release/v0.3.0",
+                    version: SemanticVersion(major: 0, minor: 3, patch: 0),
+                    appcastURL: URL(string: "https://example.com/appcast.xml")!
+                )
+            )
+        )
+        let controller = MockUpdateController()
+        let service = AppUpdateService(
+            releaseClient: client,
+            updateController: controller,
+            preferencesStore: makePreferencesStore(),
+            scheduler: UpdateScheduler(),
+            currentAppVersion: "0.2.0",
+            allowsSparkleInstall: false
+        )
+
+        var outcome: ManualUpdateCheckOutcome?
+        await service.checkForUpdatesIfNeeded(force: true, onManualOutcome: { outcome = $0 })
+
+        XCTAssertEqual(
+            outcome,
+            .installUnavailableInDevelopment(latestVersion: SemanticVersion(major: 0, minor: 3, patch: 0))
+        )
+        XCTAssertNil(controller.lastAppcastURL)
     }
 
     func testManualCheckSurfacesGitHubError() async {

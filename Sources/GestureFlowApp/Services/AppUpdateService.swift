@@ -5,6 +5,7 @@ import os
 enum ManualUpdateCheckOutcome: Equatable {
     case upToDate
     case delegatedToSparkle
+    case installUnavailableInDevelopment(latestVersion: SemanticVersion)
     case failed(GitHubReleaseClientError)
 }
 
@@ -16,13 +17,21 @@ final class AppUpdateService {
     private let preferencesStore: UpdatePreferencesStore
     private let scheduler: UpdateScheduler
     private let currentVersion: SemanticVersion
+    private let allowsSparkleInstall: Bool
 
     init(
         releaseClient: GitHubReleaseFetching,
         updateController: AppUpdateControlling,
         preferencesStore: UpdatePreferencesStore,
         scheduler: UpdateScheduler,
-        currentAppVersion: String
+        currentAppVersion: String,
+        allowsSparkleInstall: Bool = {
+            #if DEBUG
+            false
+            #else
+            true
+            #endif
+        }()
     ) {
         self.releaseClient = releaseClient
         self.updateController = updateController
@@ -30,6 +39,7 @@ final class AppUpdateService {
         self.scheduler = scheduler
         self.currentVersion = (try? SemanticVersion(parsing: currentAppVersion))
             ?? SemanticVersion(major: 0, minor: 0, patch: 0)
+        self.allowsSparkleInstall = allowsSparkleInstall
     }
 
     var canCheckForUpdates: Bool {
@@ -95,6 +105,10 @@ final class AppUpdateService {
 
             if release.version <= currentVersion {
                 return force ? .upToDate : nil
+            }
+
+            guard allowsSparkleInstall else {
+                return force ? .installUnavailableInDevelopment(latestVersion: release.version) : nil
             }
 
             await MainActor.run {

@@ -124,11 +124,14 @@ enum L10nKey: String, CaseIterable {
     case aboutAutomaticUpdateDescription
     case aboutCheckForUpdatesButton
     case aboutUpdateUnavailableInDevelopment
+    case aboutUpdateAvailableInDevelopmentTitle
+    case aboutUpdateAvailableInDevelopmentMessage
     case aboutUpdateUpToDateTitle
     case aboutUpdateUpToDateMessage
     case aboutUpdateCheckFailedTitle
     case aboutUpdateCheckFailedMissingAppcast
     case aboutUpdateCheckFailedHTTP
+    case aboutUpdateCheckFailedRateLimited
     case aboutUpdateCheckFailedInvalidRelease
     case aboutUpdateCheckFailedGeneric
 

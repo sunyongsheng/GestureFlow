@@ -27,6 +27,9 @@ final class LocalizationManager: ObservableObject {
         case .missingAppcastAsset:
             return string(.aboutUpdateCheckFailedMissingAppcast)
         case .httpError(let statusCode):
+            if statusCode == 403 {
+                return string(.aboutUpdateCheckFailedRateLimited)
+            }
             return format(.aboutUpdateCheckFailedHTTP, statusCode)
         case .invalidTagName:
             return string(.aboutUpdateCheckFailedInvalidRelease)

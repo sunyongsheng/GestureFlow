@@ -21,6 +21,10 @@ protocol GitHubReleaseFetching: Sendable {
 final class GitHubReleaseClient: GitHubReleaseFetching, @unchecked Sendable {
     static let repository = "sunyongsheng/GestureFlow"
     static let appcastAssetName = "appcast.xml"
+    /// Avoids GitHub REST API rate limits (403 when unauthenticated quota is exhausted).
+    static let latestAppcastURL = URL(
+        string: "https://github.com/sunyongsheng/GestureFlow/releases/latest/download/appcast.xml"
+    )!
 
     private let session: URLSession
     private let currentAppVersion: String
@@ -31,9 +35,7 @@ final class GitHubReleaseClient: GitHubReleaseFetching, @unchecked Sendable {
     }
 
     func fetchLatestRelease() async throws -> GitHubReleaseInfo {
-        let url = URL(string: "https://api.github.com/repos/\(Self.repository)/releases/latest")!
-        var request = URLRequest(url: url)
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        var request = URLRequest(url: Self.latestAppcastURL)
         request.setValue("GestureFlow/\(currentAppVersion)", forHTTPHeaderField: "User-Agent")
 
         let (data, response) = try await session.data(for: request)
@@ -44,39 +46,51 @@ final class GitHubReleaseClient: GitHubReleaseFetching, @unchecked Sendable {
             throw GitHubReleaseClientError.httpError(statusCode: httpResponse.statusCode)
         }
 
-        return try parseReleaseData(data)
+        return try parseAppcastData(data)
     }
 
-    func parseReleaseData(_ data: Data) throws -> GitHubReleaseInfo {
-        let json = try JSONSerialization.jsonObject(with: data)
-        guard let object = json as? [String: Any],
-              let tagName = object["tag_name"] as? String else {
+    func parseAppcastData(_ data: Data) throws -> GitHubReleaseInfo {
+        guard let xml = String(data: data, encoding: .utf8) else {
             throw GitHubReleaseClientError.invalidResponse
+        }
+
+        guard let versionString = Self.sparkleVersion(in: xml) else {
+            throw GitHubReleaseClientError.missingAppcastAsset
         }
 
         let version: SemanticVersion
         do {
-            version = try SemanticVersion(parsing: tagName)
+            version = try SemanticVersion(parsing: versionString)
         } catch {
-            throw GitHubReleaseClientError.invalidTagName(tagName)
+            throw GitHubReleaseClientError.invalidTagName(versionString)
         }
 
-        guard let assets = object["assets"] as? [[String: Any]] else {
-            throw GitHubReleaseClientError.missingAppcastAsset
-        }
+        let tagName = "release/v\(version)"
+        return GitHubReleaseInfo(
+            tagName: tagName,
+            version: version,
+            appcastURL: Self.latestAppcastURL
+        )
+    }
 
-        guard let appcastURL = assets.compactMap({ asset -> URL? in
-            guard let name = asset["name"] as? String,
-                  name == Self.appcastAssetName,
-                  let urlString = asset["browser_download_url"] as? String else {
-                return nil
+    private static func sparkleVersion(in xml: String) -> String? {
+        let patterns = [
+            "<sparkle:version>\\s*([^<]+?)\\s*</sparkle:version>",
+            "<sparkle:shortVersionString>\\s*([^<]+?)\\s*</sparkle:shortVersionString>"
+        ]
+        for pattern in patterns {
+            guard let regex = try? NSRegularExpression(pattern: pattern),
+                  let match = regex.firstMatch(in: xml, range: NSRange(xml.startIndex..., in: xml)),
+                  match.numberOfRanges > 1,
+                  let range = Range(match.range(at: 1), in: xml) else {
+                continue
             }
-            return URL(string: urlString)
-        }).first else {
-            throw GitHubReleaseClientError.missingAppcastAsset
+            let value = String(xml[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !value.isEmpty {
+                return value
+            }
         }
-
-        return GitHubReleaseInfo(tagName: tagName, version: version, appcastURL: appcastURL)
+        return nil
     }
 }
 

@@ -2,6 +2,11 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.2] - 2026-06-04
+
+- Fetch the latest `appcast.xml` via GitHub release download URL instead of the REST API to avoid HTTP 403 rate limits.
+- Allow **Check for Updates** in development builds (appcast check and alerts); Sparkle install remains disabled in Debug.
+
 ## [0.2.1] - 2026-06-04
 
 - Fix manual **Check for Updates** on the About page: show a loading indicator, an up-to-date alert, and clear error messages when the GitHub release or appcast metadata is unavailable.

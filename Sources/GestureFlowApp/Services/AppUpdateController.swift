@@ -20,16 +20,16 @@ final class AppUpdateController: NSObject, AppUpdateControlling, SPUUpdaterDeleg
     }()
 
     var canCheckForUpdates: Bool {
-        #if DEBUG
-        return false
-        #else
-        return updaterController.updater.canCheckForUpdates
-        #endif
+        updaterController.updater.canCheckForUpdates
     }
 
     func checkForUpdates(appcastURL: URL) {
+        #if DEBUG
+        // Sparkle install is disabled in development builds.
+        #else
         pendingFeedURL = appcastURL
         updaterController.checkForUpdates(nil)
+        #endif
     }
 
     func feedURLString(for updater: SPUUpdater) -> String? {
