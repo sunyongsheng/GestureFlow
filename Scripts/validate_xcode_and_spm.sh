@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
+# Smoke-test both build entry points: Xcode (primary app) and Swift Package Manager (compat).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PROJECT_PATH="${REPO_ROOT}/GestureFlow.xcodeproj"
-SCHEME_NAME="GestureFlowApp"
+SCHEME_NAME="GestureFlow"
 
 echo "[1/4] xcodebuild build"
 xcodebuild \
@@ -26,4 +27,4 @@ swift build --package-path "${REPO_ROOT}" >/dev/null
 echo "[4/4] swift test"
 swift test --package-path "${REPO_ROOT}" >/dev/null
 
-echo "All build paths validated."
+echo "Xcode and SwiftPM build/test checks passed."

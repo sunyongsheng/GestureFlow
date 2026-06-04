@@ -1,0 +1,145 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build macOS App
+    runs-on: macos-latest
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+      artifact_name: ${{ steps.package.outputs.artifact_name }}
+      artifact_sha256: ${{ steps.package.outputs.artifact_sha256 }}
+      dmg_name: ${{ steps.package.outputs.dmg_name }}
+      dmg_sha256: ${{ steps.package.outputs.dmg_sha256 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing version: $VERSION (tag: $TAG)"
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Show toolchain info
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project GestureFlow.xcodeproj \
+            -scheme GestureFlow \
+            -destination "platform=macOS" \
+            test
+
+      - name: Package release
+        id: package
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          REQUIRE_SIGNING: "1"
+        run: |
+          set -euo pipefail
+          if [ -z "${MACOS_CERTIFICATE:-}" ]; then
+            echo "error: MACOS_CERTIFICATE secret is required for release builds" >&2
+            exit 1
+          fi
+          : "${MACOS_CERTIFICATE_PWD:?MACOS_CERTIFICATE_PWD secret is required}"
+          : "${MACOS_SIGNING_IDENTITY:?MACOS_SIGNING_IDENTITY secret is required}"
+          : "${KEYCHAIN_PASSWORD:?KEYCHAIN_PASSWORD secret is required}"
+          Scripts/package_release.sh "${{ steps.version.outputs.version }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gestureflow-${{ steps.version.outputs.version }}
+          path: |
+            dist/${{ steps.package.outputs.artifact_name }}
+            dist/${{ steps.package.outputs.artifact_name }}.sha256
+            dist/${{ steps.package.outputs.dmg_name }}
+            dist/${{ steps.package.outputs.dmg_name }}.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gestureflow-${{ needs.build.outputs.version }}
+          path: dist
+
+      - name: Extract release notes
+        id: notes
+        run: |
+          set -euo pipefail
+          VERSION="${{ needs.build.outputs.version }}"
+          NOTES_FILE="release-notes.md"
+
+          if [ -f CHANGELOG.md ]; then
+            awk -v ver="$VERSION" '
+              BEGIN { found = 0 }
+              /^## \[/ {
+                if (found) { exit }
+                if ($0 ~ ("\\[" ver "\\]")) { found = 1; next }
+              }
+              found { print }
+            ' CHANGELOG.md > "$NOTES_FILE"
+          fi
+
+          if [ ! -s "$NOTES_FILE" ]; then
+            {
+              echo "Release v${VERSION}"
+              echo
+              echo "_See commit history for details._"
+            } > "$NOTES_FILE"
+          fi
+
+          echo "---- release notes ----"
+          cat "$NOTES_FILE"
+          echo "-----------------------"
+          echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: v${{ needs.build.outputs.version }}
+          body_path: ${{ steps.notes.outputs.notes_file }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          files: |
+            dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

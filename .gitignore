@@ -1,9 +1,15 @@
 .worktrees/
 .build/
 build/
+dist/
 DerivedData/
 .swiftpm/
 xcuserdata/
 *.xcuserdatad
 *.xcworkspace/xcuserdata/
 .DS_Store
+*.p12
+*.p12.base64
+gestureflow-signing.p12
+gestureflow-signing.p12.base64
+certificate.p12
