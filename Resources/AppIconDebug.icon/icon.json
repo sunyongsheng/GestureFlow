@@ -4,6 +4,19 @@
     {
       "layers" : [
         {
+          "glass" : false,
+          "image-name" : "SVG Image 2.svg",
+          "name" : "DebugFlag",
+          "position" : {
+            "scale" : 3.33,
+            "translation-in-points" : [
+              227.7109375,
+              321.7890625
+            ]
+          }
+        },
+        {
+          "glass" : false,
           "image-name" : "Image.jpeg",
           "name" : "Image",
           "position" : {
