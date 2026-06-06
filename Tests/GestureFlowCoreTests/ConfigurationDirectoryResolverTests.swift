@@ -36,6 +36,45 @@ final class ConfigurationDirectoryResolverTests: XCTestCase {
         )
     }
 
+    func testDisplayPathUsesStoredSymlinkPathWhenItResolvesToCurrentDirectory() throws {
+        let isolated = makeIsolatedStore()
+        let root = try makeTemporaryBootstrapDirectory()
+        let realDirectory = root.appendingPathComponent("real", isDirectory: true)
+        let symlinkDirectory = root.appendingPathComponent("linked", isDirectory: true)
+        try FileManager.default.createDirectory(at: realDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(at: symlinkDirectory, withDestinationURL: realDirectory)
+        try isolated.store.save(configurationDirectory: symlinkDirectory.path)
+
+        let resolver = ConfigurationDirectoryResolver.bootstrap(
+            configurationDirectoryStore: isolated.store
+        )
+
+        XCTAssertEqual(
+            resolver.configurationDirectoryURL,
+            realDirectory.standardizedFileURL.resolvingSymlinksInPath()
+        )
+        XCTAssertEqual(resolver.displayPath(), symlinkDirectory.path)
+    }
+
+    func testDisplayPathUsesStoredTildePathWhenItResolvesToCurrentDirectory() throws {
+        let isolated = makeIsolatedStore()
+        let homeDirectory = try makeTemporaryBootstrapDirectory()
+        let customDirectory = homeDirectory.appendingPathComponent("config/gestureflow", isDirectory: true)
+        try FileManager.default.createDirectory(at: customDirectory, withIntermediateDirectories: true)
+        try isolated.store.save(configurationDirectory: "~/config/gestureflow")
+
+        let resolver = ConfigurationDirectoryResolver.bootstrap(
+            configurationDirectoryStore: isolated.store,
+            homeDirectory: homeDirectory
+        )
+
+        XCTAssertEqual(
+            resolver.configurationDirectoryURL,
+            customDirectory.standardizedFileURL.resolvingSymlinksInPath()
+        )
+        XCTAssertEqual(resolver.displayPath(), "~/config/gestureflow")
+    }
+
     func testXDGConfigurationDirectoryUsesDefaultConfigHomeWhenEnvUnset() throws {
         let homeDirectory = try makeTemporaryBootstrapDirectory()
 

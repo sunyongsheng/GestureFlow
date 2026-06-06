@@ -128,7 +128,16 @@ public struct ConfigurationDirectoryResolver {
     }
 
     public func displayPath() -> String {
-        ConfigurationPathFormatting.shortenHomePath(
+        if let savedPath = configurationDirectoryStore.load(),
+           let savedDirectory = ConfigurationPathFormatting.normalizedDirectoryURL(
+               from: savedPath,
+               homeDirectory: homeDirectory
+           ),
+           savedDirectory == configurationDirectoryURL {
+            return savedPath.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        return ConfigurationPathFormatting.shortenHomePath(
             configurationDirectoryURL.path,
             homeDirectory: homeDirectory
         )

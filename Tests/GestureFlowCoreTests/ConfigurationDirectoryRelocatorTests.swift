@@ -69,6 +69,60 @@ final class ConfigurationDirectoryRelocatorTests: XCTestCase {
         XCTAssertEqual(isolated.store.load(), newDirectory.path)
     }
 
+    func testRelocatePersistsRequestedSymlinkPathForDisplay() throws {
+        let root = try makeTemporaryRoot()
+        let oldDirectory = root.appendingPathComponent("old", isDirectory: true)
+        let realDirectory = root.appendingPathComponent("real", isDirectory: true)
+        let symlinkDirectory = root.appendingPathComponent("linked", isDirectory: true)
+        try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: realDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(at: symlinkDirectory, withDestinationURL: realDirectory)
+
+        try writeValidAppConfiguration(to: oldDirectory.appendingPathComponent("config.yaml"))
+
+        let isolated = makeIsolatedStore()
+        let relocator = ConfigurationDirectoryRelocator(
+            configurationDirectoryStore: isolated.store
+        )
+
+        let resolvedNewDirectory = try relocator.relocate(
+            from: oldDirectory,
+            to: symlinkDirectory.path,
+            mode: .copyCurrentToEmptyTarget
+        )
+
+        XCTAssertEqual(resolvedNewDirectory, realDirectory.standardizedFileURL.resolvingSymlinksInPath())
+        XCTAssertTrue(FileManager.default.fileExists(atPath: realDirectory.appendingPathComponent("config.yaml").path))
+        XCTAssertEqual(isolated.store.load(), symlinkDirectory.path)
+    }
+
+    func testRelocatePersistsRequestedTildePathForDisplay() throws {
+        let root = try makeTemporaryRoot()
+        let homeDirectory = root.appendingPathComponent("home", isDirectory: true)
+        let oldDirectory = root.appendingPathComponent("old", isDirectory: true)
+        let targetDirectory = homeDirectory.appendingPathComponent("config/gestureflow", isDirectory: true)
+        try FileManager.default.createDirectory(at: oldDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: targetDirectory, withIntermediateDirectories: true)
+
+        try writeValidAppConfiguration(to: oldDirectory.appendingPathComponent("config.yaml"))
+
+        let isolated = makeIsolatedStore()
+        let relocator = ConfigurationDirectoryRelocator(
+            configurationDirectoryStore: isolated.store,
+            homeDirectory: homeDirectory
+        )
+
+        let resolvedNewDirectory = try relocator.relocate(
+            from: oldDirectory,
+            to: "~/config/gestureflow",
+            mode: .copyCurrentToEmptyTarget
+        )
+
+        XCTAssertEqual(resolvedNewDirectory, targetDirectory.standardizedFileURL.resolvingSymlinksInPath())
+        XCTAssertTrue(FileManager.default.fileExists(atPath: targetDirectory.appendingPathComponent("config.yaml").path))
+        XCTAssertEqual(isolated.store.load(), "~/config/gestureflow")
+    }
+
     func testAdoptKeepsTargetConfigAndMergesMissingGesturesFromOldDirectory() throws {
         let root = try makeTemporaryRoot()
         let oldDirectory = root.appendingPathComponent("old", isDirectory: true)

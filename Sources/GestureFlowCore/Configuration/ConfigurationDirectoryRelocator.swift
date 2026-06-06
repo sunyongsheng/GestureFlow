@@ -80,7 +80,7 @@ public struct ConfigurationDirectoryRelocator {
         }
 
         do {
-            try configurationDirectoryStore.save(configurationDirectory: newDirectory.path)
+            try configurationDirectoryStore.save(configurationDirectory: newDirectoryPath)
         } catch {
             throw ConfigurationDirectoryRelocationError.configurationDirectoryWriteFailed
         }
