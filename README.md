@@ -55,6 +55,14 @@ GestureFlow 是一款原生 macOS 鼠标手势工具。按住鼠标按键绘制�
 open GestureFlow.xcodeproj
 ```
 
+首次 clone 后如需覆盖 Debug 签名（默认 ad-hoc，见 `Config/GestureFlowApp-Debug.xcconfig`），可创建本地配置：
+
+```bash
+Scripts/setup_local_xcconfig.sh
+```
+
+按 `Config/Local.xcconfig.example` 中的注释填入 `DEVELOPMENT_TEAM` 等项；`Config/Local.xcconfig` 不进仓库。
+
 本地主要工作流：
 
 - 在 Xcode 中运行 `GestureFlowApp` scheme

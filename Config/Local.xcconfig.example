@@ -1,0 +1,9 @@
+// Copy to Local.xcconfig to override Debug signing (optional).
+//
+//   cp Config/Local.xcconfig.example Config/Local.xcconfig
+//
+// Example: stable Developer signing (uncomment and set your Team ID)
+//
+// DEVELOPMENT_TEAM = YOUR_TEAM_ID
+// CODE_SIGN_STYLE = Automatic
+// CODE_SIGN_IDENTITY = Apple Development

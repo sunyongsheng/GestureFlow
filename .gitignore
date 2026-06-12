@@ -13,3 +13,4 @@ xcuserdata/
 gestureflow-signing.p12
 gestureflow-signing.p12.base64
 certificate.p12
+Config/Local.xcconfig

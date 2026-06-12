@@ -62,6 +62,16 @@ Open the standard macOS app project:
 open GestureFlow.xcodeproj
 ```
 
+To override Debug signing after your first clone (ad-hoc by default; see
+`Config/GestureFlowApp-Debug.xcconfig`), create a local config:
+
+```bash
+Scripts/setup_local_xcconfig.sh
+```
+
+Follow the comments in `Config/Local.xcconfig.example` to set `DEVELOPMENT_TEAM`
+and related keys. `Config/Local.xcconfig` is not committed.
+
 Primary local workflow:
 
 - Run the `GestureFlowApp` scheme from Xcode

@@ -1,0 +1,5 @@
+// Default: ad-hoc (no Team required). Override in Local.xcconfig if needed.
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = -
+
+#include "Local.xcconfig"
