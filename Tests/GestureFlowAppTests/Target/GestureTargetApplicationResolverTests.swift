@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import XCTest
 @testable import GestureFlowApp
@@ -309,6 +310,219 @@ final class GestureTargetApplicationResolverTests: XCTestCase {
         XCTAssertEqual(resolved.processIdentifier, 400)
     }
 
+    func testUnderMouseSkipsElectronHelperOverlayToReachChromeBelow() {
+        let windowList = SpyWindowListQuery()
+        windowList.windows = [
+            WindowListEntry(
+                windowNumber: 10,
+                bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+                layer: 0,
+                alpha: 1,
+                ownerPID: 500,
+                ownerName: "Cursor",
+                isOnScreen: true
+            ),
+            WindowListEntry(
+                windowNumber: 11,
+                bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+                layer: 0,
+                alpha: 1,
+                ownerPID: 400,
+                ownerName: "Google Chrome",
+                isOnScreen: true
+            )
+        ]
+        let runningApplications = SpyRunningApplicationQuery()
+        runningApplications.bundleIdentifiersByPID[500] = "com.cursor.app.helper"
+        runningApplications.bundleIdentifiersByPID[400] = "com.google.Chrome"
+        runningApplications.activationPoliciesByPID[500] = .prohibited
+        runningApplications.activationPoliciesByPID[400] = .regular
+        runningApplications.regularBundleIdentifiers = ["com.cursor.app", "com.google.Chrome"]
+        let windowNumberQuery = SpyWindowNumberQuery()
+        windowNumberQuery.windowNumbersAtPoint = [10, 11]
+        let resolver = makeResolver(
+            workspace: SpyWorkspaceForegroundQuery(),
+            windowList: windowList,
+            windowNumberQuery: windowNumberQuery,
+            runningApplications: runningApplications,
+            screenFrames: [CGRect(x: 0, y: 0, width: 1920, height: 1080)]
+        )
+
+        let resolved = resolver.resolve(policy: .underMouse, at: GesturePoint(x: 100, y: 100))
+
+        XCTAssertEqual(resolved.bundleIdentifier, "com.google.Chrome")
+        XCTAssertEqual(resolved.processIdentifier, 400)
+    }
+
+    func testUnderMouseTargetsElectronWhenOnlyRendererWindowAtPoint() {
+        let windowList = SpyWindowListQuery()
+        windowList.windows = [
+            WindowListEntry(
+                windowNumber: 10,
+                bounds: CGRect(x: 0, y: 200, width: 1200, height: 800),
+                layer: 0,
+                alpha: 1,
+                ownerPID: 500,
+                ownerName: "Cursor",
+                isOnScreen: true
+            )
+        ]
+        let runningApplications = SpyRunningApplicationQuery()
+        runningApplications.bundleIdentifiersByPID[500] = "com.cursor.app.helper"
+        runningApplications.activationPoliciesByPID[500] = .prohibited
+        runningApplications.regularBundleIdentifiers = ["com.cursor.app"]
+        let windowNumberQuery = SpyWindowNumberQuery()
+        windowNumberQuery.windowNumbersAtPoint = [10]
+        let resolver = makeResolver(
+            workspace: SpyWorkspaceForegroundQuery(),
+            windowList: windowList,
+            windowNumberQuery: windowNumberQuery,
+            runningApplications: runningApplications,
+            screenFrames: [CGRect(x: 0, y: 0, width: 1920, height: 1080)]
+        )
+
+        let resolved = resolver.resolve(policy: .underMouse, at: GesturePoint(x: 100, y: 300))
+
+        XCTAssertEqual(resolved.bundleIdentifier, "com.cursor.app")
+        XCTAssertEqual(resolved.processIdentifier, 500)
+    }
+
+    func testUnderMouseSkipsTransparentOverlayToReachChromeBelow() {
+        let windowList = SpyWindowListQuery()
+        windowList.windows = [
+            WindowListEntry(
+                windowNumber: 10,
+                bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+                layer: 0,
+                alpha: 0.5,
+                ownerPID: 300,
+                ownerName: "Notes",
+                isOnScreen: true
+            ),
+            WindowListEntry(
+                windowNumber: 11,
+                bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+                layer: 0,
+                alpha: 1,
+                ownerPID: 400,
+                ownerName: "Google Chrome",
+                isOnScreen: true
+            )
+        ]
+        let runningApplications = SpyRunningApplicationQuery()
+        runningApplications.bundleIdentifiersByPID[300] = "com.apple.Notes"
+        runningApplications.bundleIdentifiersByPID[400] = "com.google.Chrome"
+        runningApplications.activationPoliciesByPID[300] = .regular
+        runningApplications.activationPoliciesByPID[400] = .regular
+        runningApplications.regularBundleIdentifiers = ["com.apple.Notes", "com.google.Chrome"]
+        let windowNumberQuery = SpyWindowNumberQuery()
+        windowNumberQuery.windowNumbersAtPoint = [10, 11]
+        let resolver = makeResolver(
+            workspace: SpyWorkspaceForegroundQuery(),
+            windowList: windowList,
+            windowNumberQuery: windowNumberQuery,
+            runningApplications: runningApplications,
+            screenFrames: [CGRect(x: 0, y: 0, width: 1920, height: 1080)]
+        )
+
+        let resolved = resolver.resolve(policy: .underMouse, at: GesturePoint(x: 100, y: 100))
+
+        XCTAssertEqual(resolved.bundleIdentifier, "com.google.Chrome")
+        XCTAssertEqual(resolved.processIdentifier, 400)
+    }
+
+    func testUnderMousePrefersAccessibilityTargetWhenRegularOverlaySitsAboveChrome() {
+        let windowList = SpyWindowListQuery()
+        windowList.windows = [
+            WindowListEntry(
+                windowNumber: 10,
+                bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+                layer: 0,
+                alpha: 1,
+                ownerPID: 500,
+                ownerName: "Cursor",
+                isOnScreen: true
+            ),
+            WindowListEntry(
+                windowNumber: 11,
+                bounds: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+                layer: 0,
+                alpha: 1,
+                ownerPID: 400,
+                ownerName: "Google Chrome",
+                isOnScreen: true
+            )
+        ]
+        let runningApplications = SpyRunningApplicationQuery()
+        runningApplications.bundleIdentifiersByPID[500] = "com.todesktop.230313mzl4w4u92"
+        runningApplications.bundleIdentifiersByPID[400] = "com.google.Chrome"
+        runningApplications.activationPoliciesByPID[500] = .regular
+        runningApplications.activationPoliciesByPID[400] = .regular
+        runningApplications.regularBundleIdentifiers = [
+            "com.todesktop.230313mzl4w4u92",
+            "com.google.Chrome"
+        ]
+        let windowNumberQuery = SpyWindowNumberQuery()
+        windowNumberQuery.windowNumbersAtPoint = [10, 11]
+        let accessibilityQuery = SpyAccessibilityApplicationQuery()
+        accessibilityQuery.targetsByPoint[CGPoint(x: 100, y: 100)] = ResolvedGestureTarget(
+            bundleIdentifier: "com.google.Chrome",
+            processIdentifier: 400
+        )
+        let resolver = makeResolver(
+            workspace: SpyWorkspaceForegroundQuery(),
+            windowList: windowList,
+            windowNumberQuery: windowNumberQuery,
+            runningApplications: runningApplications,
+            accessibilityQuery: accessibilityQuery,
+            screenFrames: [CGRect(x: 0, y: 0, width: 1920, height: 1080)]
+        )
+
+        let resolved = resolver.resolve(policy: .underMouse, at: GesturePoint(x: 100, y: 100))
+
+        XCTAssertEqual(resolved.bundleIdentifier, "com.google.Chrome")
+        XCTAssertEqual(resolved.processIdentifier, 400)
+    }
+
+    func testUnderMouseKeepsStackTargetWhenAccessibilityAgreesOnSingleWindow() {
+        let windowList = SpyWindowListQuery()
+        windowList.windows = [
+            WindowListEntry(
+                windowNumber: 10,
+                bounds: CGRect(x: 0, y: 200, width: 1200, height: 800),
+                layer: 0,
+                alpha: 1,
+                ownerPID: 500,
+                ownerName: "Cursor",
+                isOnScreen: true
+            )
+        ]
+        let runningApplications = SpyRunningApplicationQuery()
+        runningApplications.bundleIdentifiersByPID[500] = "com.todesktop.230313mzl4w4u92"
+        runningApplications.activationPoliciesByPID[500] = .regular
+        runningApplications.regularBundleIdentifiers = ["com.todesktop.230313mzl4w4u92"]
+        let windowNumberQuery = SpyWindowNumberQuery()
+        windowNumberQuery.windowNumbersAtPoint = [10]
+        let accessibilityQuery = SpyAccessibilityApplicationQuery()
+        accessibilityQuery.targetsByPoint[CGPoint(x: 100, y: 300)] = ResolvedGestureTarget(
+            bundleIdentifier: "com.todesktop.230313mzl4w4u92",
+            processIdentifier: 500
+        )
+        let resolver = makeResolver(
+            workspace: SpyWorkspaceForegroundQuery(),
+            windowList: windowList,
+            windowNumberQuery: windowNumberQuery,
+            runningApplications: runningApplications,
+            accessibilityQuery: accessibilityQuery,
+            screenFrames: [CGRect(x: 0, y: 0, width: 1920, height: 1080)]
+        )
+
+        let resolved = resolver.resolve(policy: .underMouse, at: GesturePoint(x: 100, y: 300))
+
+        XCTAssertEqual(resolved.bundleIdentifier, "com.todesktop.230313mzl4w4u92")
+        XCTAssertEqual(resolved.processIdentifier, 500)
+    }
+
     func testUnderMouseReturnsInvalidWhenNoWindow() {
         let resolver = makeResolver(
             workspace: SpyWorkspaceForegroundQuery(),
@@ -326,6 +540,7 @@ final class GestureTargetApplicationResolverTests: XCTestCase {
         windowList: SpyWindowListQuery = SpyWindowListQuery(),
         windowNumberQuery: WindowNumberQuerying = SpyWindowNumberQuery(),
         runningApplications: SpyRunningApplicationQuery = SpyRunningApplicationQuery(),
+        accessibilityQuery: AccessibilityApplicationQuerying = SpyAccessibilityApplicationQuery(),
         screenFrames: [CGRect] = [CGRect(x: 0, y: 0, width: 100, height: 100)],
         desktopFrame: CGRect = CGRect(x: 0, y: 0, width: 1920, height: 1080),
         ownProcessIdentifier: Int32 = 1
@@ -336,6 +551,7 @@ final class GestureTargetApplicationResolverTests: XCTestCase {
             windowList: windowList,
             windowNumberQuery: windowNumberQuery,
             runningApplicationQuery: runningApplications,
+            accessibilityQuery: accessibilityQuery,
             screenFramesProvider: { screenFrames },
             desktopFrameProvider: { desktopFrame }
         )
@@ -373,10 +589,28 @@ private final class SpyWindowNumberQuery: WindowNumberQuerying {
     }
 }
 
+private final class SpyAccessibilityApplicationQuery: AccessibilityApplicationQuerying {
+    var targetsByPoint: [CGPoint: ResolvedGestureTarget] = [:]
+
+    func applicationAtScreenPoint(_ point: CGPoint) -> ResolvedGestureTarget? {
+        targetsByPoint[point]
+    }
+}
+
 private final class SpyRunningApplicationQuery: RunningApplicationQuerying {
     var bundleIdentifiersByPID: [Int32: String] = [:]
+    var activationPoliciesByPID: [Int32: NSApplication.ActivationPolicy] = [:]
+    var regularBundleIdentifiers: Set<String> = []
 
     func bundleIdentifier(forProcessIdentifier processIdentifier: Int32) -> String? {
         bundleIdentifiersByPID[processIdentifier]
+    }
+
+    func activationPolicy(forProcessIdentifier processIdentifier: Int32) -> NSApplication.ActivationPolicy? {
+        activationPoliciesByPID[processIdentifier]
+    }
+
+    func hasRegularRunningApplication(withBundleIdentifier bundleIdentifier: String) -> Bool {
+        regularBundleIdentifiers.contains(bundleIdentifier)
     }
 }

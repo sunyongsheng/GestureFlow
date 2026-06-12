@@ -223,7 +223,8 @@ final class GestureEngine {
         do {
             try actionExecutor.execute(
                 .keyboardShortcut(gesture.shortcut),
-                targetProcessIdentifier: targetProcessIdentifier
+                targetProcessIdentifier: targetProcessIdentifier,
+                targetBundleIdentifier: resolvedTarget.bundleIdentifier
             )
         } catch {
             reportGestureFailure(

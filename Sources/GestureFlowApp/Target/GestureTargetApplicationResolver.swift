@@ -1,4 +1,5 @@
 import AppKit
+import ApplicationServices
 import CoreGraphics
 import Foundation
 import GestureFlowCore
@@ -28,10 +29,16 @@ struct WindowListEntry: Equatable {
 
 protocol RunningApplicationQuerying {
     func bundleIdentifier(forProcessIdentifier processIdentifier: Int32) -> String?
+    func activationPolicy(forProcessIdentifier processIdentifier: Int32) -> NSApplication.ActivationPolicy?
+    func hasRegularRunningApplication(withBundleIdentifier bundleIdentifier: String) -> Bool
 }
 
 protocol WindowNumberQuerying {
     func windowNumber(at screenPoint: CGPoint, belowWindowNumber: Int) -> Int
+}
+
+protocol AccessibilityApplicationQuerying {
+    func applicationAtScreenPoint(_ point: CGPoint) -> ResolvedGestureTarget?
 }
 
 enum GestureTargetWindowGeometry {
@@ -52,6 +59,7 @@ final class GestureTargetApplicationResolver: GestureTargetResolving, @unchecked
     private let windowList: WindowListQuerying
     private let windowNumberQuery: WindowNumberQuerying
     private let runningApplicationQuery: RunningApplicationQuerying
+    private let accessibilityQuery: AccessibilityApplicationQuerying
     private let screenFramesProvider: () -> [CGRect]
     private let desktopFrameProvider: () -> CGRect
     private let excludedOwnerNames: Set<String>
@@ -62,6 +70,7 @@ final class GestureTargetApplicationResolver: GestureTargetResolving, @unchecked
         windowList: WindowListQuerying = CGWindowListQuery(),
         windowNumberQuery: WindowNumberQuerying = NSWindowNumberQuery(),
         runningApplicationQuery: RunningApplicationQuerying = NSRunningApplicationQuery(),
+        accessibilityQuery: AccessibilityApplicationQuerying = AXApplicationQuery(),
         screenFramesProvider: @escaping () -> [CGRect] = {
             NSScreen.screens.map(\.frame)
         },
@@ -77,6 +86,7 @@ final class GestureTargetApplicationResolver: GestureTargetResolving, @unchecked
         self.windowList = windowList
         self.windowNumberQuery = windowNumberQuery
         self.runningApplicationQuery = runningApplicationQuery
+        self.accessibilityQuery = accessibilityQuery
         self.screenFramesProvider = screenFramesProvider
         self.desktopFrameProvider = desktopFrameProvider
         self.excludedOwnerNames = excludedOwnerNames
@@ -107,13 +117,29 @@ final class GestureTargetApplicationResolver: GestureTargetResolving, @unchecked
     /// Top-to-bottom hit test at the press point: first eligible window whose bounds contain the point wins.
     private func resolveUnderMouse(at startPoint: GesturePoint) -> ResolvedGestureTarget {
         let screenPoint = CGPoint(x: startPoint.x, y: startPoint.y)
+        let windowNumbers = windowNumbersAtPoint(screenPoint)
+        let stackTarget = resolveFromWindowStack(
+            at: screenPoint,
+            windowNumbers: windowNumbers
+        )
+        return reconcileWithAccessibilityTarget(
+            stackTarget: stackTarget,
+            at: screenPoint,
+            windowCountAtPoint: windowNumbers.count
+        )
+    }
+
+    private func resolveFromWindowStack(
+        at screenPoint: CGPoint,
+        windowNumbers: [Int]
+    ) -> ResolvedGestureTarget {
         let screenFrame = screenFrame(containing: screenPoint)
         let desktopFrame = desktopFrameProvider()
         let windowsByNumber = Dictionary(
             uniqueKeysWithValues: windowList.onScreenWindows().map { ($0.windowNumber, $0) }
         )
 
-        for windowNumber in windowNumbersAtPoint(screenPoint) {
+        for (index, windowNumber) in windowNumbers.enumerated() {
             guard let window = windowsByNumber[windowNumber],
                   eligibilityRejectionReason(for: window, desktopFrame: desktopFrame) == nil else {
                 continue
@@ -124,19 +150,88 @@ final class GestureTargetApplicationResolver: GestureTargetResolving, @unchecked
                 in: screenFrame
             )
             guard appKitBounds.contains(screenPoint),
-                  let bundleIdentifier = runningApplicationQuery.bundleIdentifier(
-                      forProcessIdentifier: window.ownerPID
-                  ) else {
+                  let target = makeResolvedTarget(for: window) else {
                 continue
             }
 
-            return ResolvedGestureTarget(
-                bundleIdentifier: bundleIdentifier,
-                processIdentifier: window.ownerPID
-            )
+            let remainingWindowNumbers = Array(windowNumbers.dropFirst(index + 1))
+            if shouldDeferTarget(
+                window: window,
+                inFavorOfWindowsBelow: remainingWindowNumbers
+            ) {
+                continue
+            }
+
+            return target
         }
 
         return .invalid
+    }
+
+    private func reconcileWithAccessibilityTarget(
+        stackTarget: ResolvedGestureTarget,
+        at screenPoint: CGPoint,
+        windowCountAtPoint: Int
+    ) -> ResolvedGestureTarget {
+        guard let accessibilityTarget = accessibilityQuery.applicationAtScreenPoint(screenPoint),
+              accessibilityTarget.isValid else {
+            return stackTarget
+        }
+
+        guard stackTarget.isValid else {
+            return accessibilityTarget
+        }
+
+        if stackTarget.bundleIdentifier != accessibilityTarget.bundleIdentifier,
+           windowCountAtPoint >= 2 {
+            return accessibilityTarget
+        }
+
+        return stackTarget
+    }
+
+    private func makeResolvedTarget(for window: WindowListEntry) -> ResolvedGestureTarget? {
+        guard let ownerBundleIdentifier = runningApplicationQuery.bundleIdentifier(
+            forProcessIdentifier: window.ownerPID
+        ) else {
+            return nil
+        }
+
+        let bundleIdentifier = regularizedBundleIdentifier(forOwnerBundleIdentifier: ownerBundleIdentifier)
+        return ResolvedGestureTarget(
+            bundleIdentifier: bundleIdentifier,
+            processIdentifier: window.ownerPID
+        )
+    }
+
+    private func regularizedBundleIdentifier(forOwnerBundleIdentifier ownerBundleIdentifier: String) -> String {
+        guard let parentBundleIdentifier = ApplicationBundleIdentifierSupport.parentBundleIdentifier(
+            forHelperBundleIdentifier: ownerBundleIdentifier
+        ),
+            runningApplicationQuery.hasRegularRunningApplication(withBundleIdentifier: parentBundleIdentifier)
+        else {
+            return ownerBundleIdentifier
+        }
+        return parentBundleIdentifier
+    }
+
+    private func shouldDeferTarget(
+        window: WindowListEntry,
+        inFavorOfWindowsBelow remainingWindowNumbers: [Int]
+    ) -> Bool {
+        guard !remainingWindowNumbers.isEmpty else { return false }
+
+        if window.alpha < 0.95 {
+            return true
+        }
+
+        guard let activationPolicy = runningApplicationQuery.activationPolicy(
+            forProcessIdentifier: window.ownerPID
+        ) else {
+            return false
+        }
+
+        return activationPolicy != .regular
     }
 
     private func windowNumbersAtPoint(_ screenPoint: CGPoint) -> [Int] {
@@ -188,6 +283,16 @@ private struct NSRunningApplicationQuery: RunningApplicationQuerying {
     func bundleIdentifier(forProcessIdentifier processIdentifier: Int32) -> String? {
         NSRunningApplication(processIdentifier: pid_t(processIdentifier))?.bundleIdentifier
     }
+
+    func activationPolicy(forProcessIdentifier processIdentifier: Int32) -> NSApplication.ActivationPolicy? {
+        NSRunningApplication(processIdentifier: pid_t(processIdentifier))?.activationPolicy
+    }
+
+    func hasRegularRunningApplication(withBundleIdentifier bundleIdentifier: String) -> Bool {
+        NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).contains {
+            $0.activationPolicy == .regular
+        }
+    }
 }
 
 private struct NSWorkspaceForegroundQuery: WorkspaceForegroundQuerying {
@@ -199,6 +304,48 @@ private struct NSWorkspaceForegroundQuery: WorkspaceForegroundQuerying {
             bundleIdentifier: application.bundleIdentifier,
             processIdentifier: application.processIdentifier
         )
+    }
+}
+
+private struct AXApplicationQuery: AccessibilityApplicationQuerying {
+    func applicationAtScreenPoint(_ point: CGPoint) -> ResolvedGestureTarget? {
+        let systemWide = AXUIElementCreateSystemWide()
+        var element: AXUIElement?
+        let status = AXUIElementCopyElementAtPosition(
+            systemWide,
+            Float(point.x),
+            Float(point.y),
+            &element
+        )
+        guard status == .success, let element else {
+            return nil
+        }
+
+        var processIdentifier: pid_t = 0
+        guard AXUIElementGetPid(element, &processIdentifier) == .success,
+              let application = NSRunningApplication(processIdentifier: processIdentifier),
+              let bundleIdentifier = application.bundleIdentifier else {
+            return nil
+        }
+
+        let resolvedBundleIdentifier = regularizedBundleIdentifier(for: bundleIdentifier)
+        return ResolvedGestureTarget(
+            bundleIdentifier: resolvedBundleIdentifier,
+            processIdentifier: processIdentifier
+        )
+    }
+
+    private func regularizedBundleIdentifier(for ownerBundleIdentifier: String) -> String {
+        guard let parentBundleIdentifier = ApplicationBundleIdentifierSupport.parentBundleIdentifier(
+            forHelperBundleIdentifier: ownerBundleIdentifier
+        ),
+            NSRunningApplication.runningApplications(withBundleIdentifier: parentBundleIdentifier).contains(
+                where: { $0.activationPolicy == .regular }
+            )
+        else {
+            return ownerBundleIdentifier
+        }
+        return parentBundleIdentifier
     }
 }
 

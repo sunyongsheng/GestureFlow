@@ -912,7 +912,11 @@ private final class SpyActionExecutor: ActionExecuting {
         self.error = error
     }
 
-    func execute(_ action: GestureAction, targetProcessIdentifier: pid_t?) throws {
+    func execute(
+        _ action: GestureAction,
+        targetProcessIdentifier: pid_t?,
+        targetBundleIdentifier: String?
+    ) throws {
         executedActions.append(
             ExecutedActionCall(
                 action: action,

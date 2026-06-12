@@ -4,7 +4,11 @@ import Foundation
 import GestureFlowCore
 
 protocol ActionExecuting {
-    func execute(_ action: GestureAction, targetProcessIdentifier: pid_t?) throws
+    func execute(
+        _ action: GestureAction,
+        targetProcessIdentifier: pid_t?,
+        targetBundleIdentifier: String?
+    ) throws
 }
 
 enum ActionExecutionError: Error, Equatable {
@@ -58,10 +62,8 @@ protocol ApplicationActivating {
 }
 
 protocol ProcessActivating {
-    func frontmostProcessIdentifier() -> pid_t?
     @discardableResult
-    func activate(processIdentifier: pid_t) -> Bool
-    func scheduleRestoreFrontmost(processIdentifier: pid_t)
+    func activate(processIdentifier: pid_t, bundleIdentifier: String?) -> Bool
 }
 
 final class ActionExecutor: ActionExecuting {
@@ -88,10 +90,18 @@ final class ActionExecutor: ActionExecuting {
         self.currentProcessIdentifier = currentProcessIdentifier
     }
 
-    func execute(_ action: GestureAction, targetProcessIdentifier: pid_t? = nil) throws {
+    func execute(
+        _ action: GestureAction,
+        targetProcessIdentifier: pid_t? = nil,
+        targetBundleIdentifier: String? = nil
+    ) throws {
         switch action {
         case let .keyboardShortcut(shortcut):
-            try executeKeyboardShortcut(shortcut, targetProcessIdentifier: targetProcessIdentifier)
+            try executeKeyboardShortcut(
+                shortcut,
+                targetProcessIdentifier: targetProcessIdentifier,
+                targetBundleIdentifier: targetBundleIdentifier
+            )
         case let .openApplication(application):
             try openApplication(application)
         case let .openURL(urlAction):
@@ -103,7 +113,8 @@ final class ActionExecutor: ActionExecuting {
 
     private func executeKeyboardShortcut(
         _ shortcut: KeyboardShortcutAction,
-        targetProcessIdentifier: pid_t?
+        targetProcessIdentifier: pid_t?,
+        targetBundleIdentifier: String?
     ) throws {
         let flags = shortcut.modifiers.cgEventFlags
 
@@ -122,18 +133,16 @@ final class ActionExecutor: ActionExecuting {
             return
         }
 
-        let frontmostBeforeDelivery = processActivator.frontmostProcessIdentifier()
-        _ = processActivator.activate(processIdentifier: targetProcessIdentifier)
+        _ = processActivator.activate(
+            processIdentifier: targetProcessIdentifier,
+            bundleIdentifier: targetBundleIdentifier
+        )
 
         try postKeyboardShortcut(
             shortcut,
             flags: flags,
             targetProcessIdentifier: targetProcessIdentifier
         )
-
-        if let frontmostBeforeDelivery, frontmostBeforeDelivery != targetProcessIdentifier {
-            processActivator.scheduleRestoreFrontmost(processIdentifier: frontmostBeforeDelivery)
-        }
     }
 
     private func postKeyboardShortcut(
@@ -180,7 +189,8 @@ final class ActionExecutor: ActionExecuting {
         case .showDesktop:
             try executeKeyboardShortcut(
                 KeyboardShortcutAction(keyCode: 99, modifiers: [.command]),
-                targetProcessIdentifier: nil
+                targetProcessIdentifier: nil,
+                targetBundleIdentifier: nil
             )
         case .lockScreen:
             try runLockScreenCommand()
@@ -227,26 +237,137 @@ private struct CGKeyboardEventPoster: KeyboardEventPosting {
     }
 }
 
+private enum ApplicationActivationSupport {
+    static let foregroundOptions: NSApplication.ActivationOptions = [.activateAllWindows]
+
+    static func activatableApplication(
+        for application: NSRunningApplication
+    ) -> NSRunningApplication {
+        guard application.activationPolicy != .regular,
+              let bundleIdentifier = application.bundleIdentifier else {
+            return application
+        }
+
+        let candidateBundleIdentifiers = [
+            bundleIdentifier,
+            ApplicationBundleIdentifierSupport.parentBundleIdentifier(
+                forHelperBundleIdentifier: bundleIdentifier
+            )
+        ].compactMap { $0 }
+
+        for candidateBundleIdentifier in candidateBundleIdentifiers {
+            if let regularApplication = NSRunningApplication
+                .runningApplications(withBundleIdentifier: candidateBundleIdentifier)
+                .first(where: { $0.activationPolicy == .regular })
+            {
+                return regularApplication
+            }
+        }
+
+        return application
+    }
+
+    @discardableResult
+    static func activateTarget(application: NSRunningApplication) -> Bool {
+        NSApp.yieldActivation(to: application)
+        if let bundleIdentifier = application.bundleIdentifier {
+            NSApp.yieldActivation(toApplicationWithBundleIdentifier: bundleIdentifier)
+        }
+        if application.activate(options: foregroundOptions) {
+            return true
+        }
+        return forceActivate(application)
+    }
+
+    @discardableResult
+    static func activateTarget(processIdentifier: pid_t) -> Bool {
+        guard let application = NSRunningApplication(processIdentifier: processIdentifier) else {
+            return false
+        }
+        return activateTarget(application: activatableApplication(for: application))
+    }
+
+    @discardableResult
+    static func activateTarget(bundleIdentifier: String) -> Bool {
+        if let application = NSRunningApplication
+            .runningApplications(withBundleIdentifier: bundleIdentifier)
+            .first(where: { $0.activationPolicy == .regular }),
+            activateTarget(application: application),
+            isTargetFrontmost(bundleIdentifier: bundleIdentifier)
+        {
+            return true
+        }
+
+        if activateViaWorkspace(bundleIdentifier: bundleIdentifier),
+           isTargetFrontmost(bundleIdentifier: bundleIdentifier)
+        {
+            return true
+        }
+
+        return false
+    }
+
+    static func isTargetFrontmost(bundleIdentifier: String) -> Bool {
+        NSWorkspace.shared.frontmostApplication?.bundleIdentifier == bundleIdentifier
+    }
+
+    @discardableResult
+    private static func activateViaWorkspace(bundleIdentifier: String) -> Bool {
+        guard let applicationURL = NSWorkspace.shared.urlForApplication(
+            withBundleIdentifier: bundleIdentifier
+        ) else {
+            return false
+        }
+
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        configuration.createsNewApplicationInstance = false
+        configuration.addsToRecentItems = false
+
+        final class ActivationState: @unchecked Sendable {
+            var completed = false
+            var error: Error?
+        }
+
+        let state = ActivationState()
+        NSWorkspace.shared.openApplication(at: applicationURL, configuration: configuration) { _, error in
+            state.error = error
+            state.completed = true
+        }
+
+        let deadline = Date().addingTimeInterval(0.5)
+        while !state.completed, Date() < deadline {
+            RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: 0.01))
+        }
+        return state.completed && state.error == nil
+    }
+
+    @discardableResult
+    private static func forceActivate(_ application: NSRunningApplication) -> Bool {
+        application.activate(options: foregroundOptions.union(.activateIgnoringOtherApps))
+    }
+}
+
 private struct NSApplicationActivator: ApplicationActivating {
     func activateCurrentApplication() {
-        NSRunningApplication.current.activate()
+        NSRunningApplication.current.activate(options: ApplicationActivationSupport.foregroundOptions)
     }
 }
 
 private struct NSProcessActivator: ProcessActivating {
-    func frontmostProcessIdentifier() -> pid_t? {
-        NSWorkspace.shared.frontmostApplication?.processIdentifier
-    }
-
     @discardableResult
-    func activate(processIdentifier: pid_t) -> Bool {
-        NSRunningApplication(processIdentifier: processIdentifier)?.activate() ?? false
-    }
-
-    func scheduleRestoreFrontmost(processIdentifier: pid_t) {
-        DispatchQueue.main.async {
-            _ = NSRunningApplication(processIdentifier: processIdentifier)?.activate()
+    func activate(processIdentifier: pid_t, bundleIdentifier: String?) -> Bool {
+        _ = ApplicationActivationSupport.activateTarget(processIdentifier: processIdentifier)
+        if let bundleIdentifier,
+           ApplicationActivationSupport.isTargetFrontmost(bundleIdentifier: bundleIdentifier)
+        {
+            return true
         }
+        guard let bundleIdentifier else {
+            return NSRunningApplication(processIdentifier: processIdentifier) != nil
+                && NSWorkspace.shared.frontmostApplication?.processIdentifier == processIdentifier
+        }
+        return ApplicationActivationSupport.activateTarget(bundleIdentifier: bundleIdentifier)
     }
 }
 

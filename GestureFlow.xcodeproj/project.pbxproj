@@ -36,6 +36,7 @@
 		5AB87EDE8EECB1DCD4846165 /* MouseEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C6F466E4BEE66AFAD08DB88 /* MouseEventTap.swift */; };
 		5DBDDA546B791ECFCB0113EE /* GestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F7F98199CD95F7F6525DE2 /* GestureRecognizer.swift */; };
 		5F04BEB2F86F48FB90712B05 /* Target/GestureTargetApplicationResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B67DD55B4F145CE92B7F3DC /* Target/GestureTargetApplicationResolverTests.swift */; };
+		5E04BEB2F86F48FB90712B06 /* Target/ApplicationBundleIdentifierSupportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C67DD55B4F145CE92B7F3DC /* Target/ApplicationBundleIdentifierSupportTests.swift */; };
 		611196397B4448BA88DB8BE3 /* GestureRecognizerRecordingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 006689728BD44106A4708118 /* GestureRecognizerRecordingTests.swift */; };
 		6468F728BA9D4279B725AB38 /* Localization/L10nTablesCompletenessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4591C28433C42178173EEDB /* Localization/L10nTablesCompletenessTests.swift */; };
 		68BBEC88850D4E929AC19501 /* YAMLConfigurationCoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87487E238A434246B38032E6 /* YAMLConfigurationCoderTests.swift */; };
@@ -140,6 +141,7 @@
 		BD000000000000000000000D /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000D /* LaunchAtLoginService.swift */; };
 		BD000000000000000000000E /* GestureFeedbackCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000E /* GestureFeedbackCardView.swift */; };
 		BD000000000000000000000F /* GestureTargetApplicationResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000F /* GestureTargetApplicationResolver.swift */; };
+		BD0000000000000000000026 /* ApplicationBundleIdentifierSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000026 /* ApplicationBundleIdentifierSupport.swift */; };
 		BD0000000000000000000020 /* GestureActivationGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000020 /* GestureActivationGate.swift */; };
 		BD0000000000000000000021 /* GitHubReleaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000021 /* GitHubReleaseClient.swift */; };
 		BD0000000000000000000022 /* UpdatePreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000022 /* UpdatePreferencesStore.swift */; };
@@ -259,6 +261,7 @@
 		505E58F99B9CD49F65E9E296 /* ConflictDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConflictDetector.swift; sourceTree = "<group>"; };
 		529DBB0F913C4B76A5B23465 /* GestureSignatureLookupTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureSignatureLookupTests.swift; sourceTree = "<group>"; };
 		5B67DD55B4F145CE92B7F3DC /* Target/GestureTargetApplicationResolverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Target/GestureTargetApplicationResolverTests.swift; sourceTree = "<group>"; };
+		5C67DD55B4F145CE92B7F3DC /* Target/ApplicationBundleIdentifierSupportTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Target/ApplicationBundleIdentifierSupportTests.swift; sourceTree = "<group>"; };
 		5B9D7775F78D4BA59AE8FB91 /* Settings/Gestures/GestureShortcutFormattingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Settings/Gestures/GestureShortcutFormattingTests.swift; sourceTree = "<group>"; };
 		5D316F2D45E3E76F350724CB /* PermissionService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PermissionService.swift; sourceTree = "<group>"; };
 		5D8F2E209E88A880F6D8497B /* GestureEngineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureEngineTests.swift; sourceTree = "<group>"; };
@@ -355,6 +358,7 @@
 		AD000000000000000000000D /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
 		AD000000000000000000000E /* GestureFeedbackCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFeedbackCardView.swift; sourceTree = "<group>"; };
 		AD000000000000000000000F /* GestureTargetApplicationResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureTargetApplicationResolver.swift; sourceTree = "<group>"; };
+		AD0000000000000000000026 /* ApplicationBundleIdentifierSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ApplicationBundleIdentifierSupport.swift; sourceTree = "<group>"; };
 		AD0000000000000000000020 /* GestureActivationGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureActivationGate.swift; sourceTree = "<group>"; };
 		AD0000000000000000000021 /* GitHubReleaseClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GitHubReleaseClient.swift; sourceTree = "<group>"; };
 		AD0000000000000000000022 /* UpdatePreferencesStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UpdatePreferencesStore.swift; sourceTree = "<group>"; };
@@ -572,6 +576,7 @@
 				B41D13BBEDF54E4EA44E8DDE /* Settings/Shell/MainSettingsViewTests.swift */,
 				B2C8404682CC45B685AB66CC /* Settings/Window/Layout/SettingsWindowFramePersistenceTests.swift */,
 				0F2BDA1623D54A4C90226C5D /* Target/GestureActivationGateTests.swift */,
+				5C67DD55B4F145CE92B7F3DC /* Target/ApplicationBundleIdentifierSupportTests.swift */,
 				5B67DD55B4F145CE92B7F3DC /* Target/GestureTargetApplicationResolverTests.swift */,
 			);
 			path = GestureFlowAppTests;
@@ -890,6 +895,7 @@
 		CE0000000000000000000004 /* Target */ = {
 			isa = PBXGroup;
 			children = (
+				AD0000000000000000000026 /* ApplicationBundleIdentifierSupport.swift */,
 				AD000000000000000000000F /* GestureTargetApplicationResolver.swift */,
 				AD0000000000000000000020 /* GestureActivationGate.swift */,
 			);
@@ -1191,6 +1197,7 @@
 				D2D29EEE2A2E47FBA254D803 /* Settings/Shell/MainSettingsViewTests.swift in Sources */,
 				735FA570FF1640E798E27F68 /* Settings/Window/Layout/SettingsWindowFramePersistenceTests.swift in Sources */,
 				9691640668D04A0BBFCA22A3 /* Target/GestureActivationGateTests.swift in Sources */,
+				5E04BEB2F86F48FB90712B06 /* Target/ApplicationBundleIdentifierSupportTests.swift in Sources */,
 				5F04BEB2F86F48FB90712B05 /* Target/GestureTargetApplicationResolverTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1214,6 +1221,7 @@
 				AE91F24309E20B1AEC917E3E /* GestureOverlayGeometry.swift in Sources */,
 				1CF3A3C6F1444B984D7898F2 /* GestureOverlayView.swift in Sources */,
 				EA7A2A3B417BBAE2DE8B961B /* GestureOverlayWindow.swift in Sources */,
+				BD0000000000000000000026 /* ApplicationBundleIdentifierSupport.swift in Sources */,
 				BD000000000000000000000F /* GestureTargetApplicationResolver.swift in Sources */,
 				BD0000000000000000000020 /* GestureActivationGate.swift in Sources */,
 				95FE636493DE4FE816976B00 /* PermissionService.swift in Sources */,

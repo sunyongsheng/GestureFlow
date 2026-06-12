@@ -16,7 +16,8 @@ final class ActionExecutorTests: XCTestCase {
                     modifiers: [.command, .shift, .option, .control]
                 )
             ),
-            targetProcessIdentifier: nil
+            targetProcessIdentifier: nil,
+            targetBundleIdentifier: nil
         )
 
         let expectedFlags: CGEventFlags = [
@@ -44,7 +45,8 @@ final class ActionExecutorTests: XCTestCase {
             .openApplication(
                 OpenApplicationAction(bundleIdentifier: "com.apple.finder")
             ),
-            targetProcessIdentifier: nil
+            targetProcessIdentifier: nil,
+            targetBundleIdentifier: nil
         )
 
         XCTAssertEqual(workspace.openedApplicationURLs, [appURL])
@@ -59,7 +61,8 @@ final class ActionExecutorTests: XCTestCase {
                 .openApplication(
                     OpenApplicationAction(bundleIdentifier: "missing.bundle")
                 ),
-                targetProcessIdentifier: nil
+                targetProcessIdentifier: nil,
+                targetBundleIdentifier: nil
             )
         ) { error in
             XCTAssertEqual(
@@ -74,7 +77,11 @@ final class ActionExecutorTests: XCTestCase {
         let url = URL(string: "https://example.com")!
         let executor = ActionExecutor(workspaceOpener: workspace)
 
-        try executor.execute(.openURL(OpenURLAction(url: url)), targetProcessIdentifier: nil)
+        try executor.execute(
+            .openURL(OpenURLAction(url: url)),
+            targetProcessIdentifier: nil,
+            targetBundleIdentifier: nil
+        )
 
         XCTAssertEqual(workspace.openedURLs, [url])
     }
@@ -91,7 +98,8 @@ final class ActionExecutorTests: XCTestCase {
 
         try executor.execute(
             .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
-            targetProcessIdentifier: currentPID
+            targetProcessIdentifier: currentPID,
+            targetBundleIdentifier: nil
         )
 
         XCTAssertEqual(applicationActivator.activateCount, 1)
@@ -101,9 +109,9 @@ final class ActionExecutorTests: XCTestCase {
         )
     }
 
-    func testKeyboardShortcutDoesNotRestoreWhenTargetWasAlreadyFrontmost() throws {
+    func testKeyboardShortcutActivatesTargetProcessBeforePosting() throws {
         let keyEventPoster = SpyKeyboardEventPoster()
-        let processActivator = SpyProcessActivator(frontmostPID: 432)
+        let processActivator = SpyProcessActivator()
         let executor = ActionExecutor(
             keyEventPoster: keyEventPoster,
             processActivator: processActivator
@@ -112,33 +120,11 @@ final class ActionExecutorTests: XCTestCase {
 
         try executor.execute(
             .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
-            targetProcessIdentifier: targetPID
+            targetProcessIdentifier: targetPID,
+            targetBundleIdentifier: "com.example.app"
         )
 
         XCTAssertEqual(processActivator.activatedProcessIdentifiers, [targetPID])
-        XCTAssertEqual(processActivator.scheduledRestoreProcessIdentifiers, [])
-        XCTAssertEqual(
-            keyEventPoster.postedEvents.map(\.targetProcessIdentifier),
-            [targetPID, targetPID]
-        )
-    }
-
-    func testKeyboardShortcutUsesTransientActivationAndRestoresFrontmost() throws {
-        let keyEventPoster = SpyKeyboardEventPoster()
-        let processActivator = SpyProcessActivator(frontmostPID: 100)
-        let executor = ActionExecutor(
-            keyEventPoster: keyEventPoster,
-            processActivator: processActivator
-        )
-        let targetPID: pid_t = 432
-
-        try executor.execute(
-            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
-            targetProcessIdentifier: targetPID
-        )
-
-        XCTAssertEqual(processActivator.activatedProcessIdentifiers, [targetPID])
-        XCTAssertEqual(processActivator.scheduledRestoreProcessIdentifiers, [100])
         XCTAssertEqual(
             keyEventPoster.postedEvents.map(\.targetProcessIdentifier),
             [targetPID, targetPID]
@@ -149,7 +135,11 @@ final class ActionExecutorTests: XCTestCase {
         let keyEventPoster = SpyKeyboardEventPoster()
         let executor = ActionExecutor(keyEventPoster: keyEventPoster)
 
-        try executor.execute(.systemCommand(.showDesktop), targetProcessIdentifier: nil)
+        try executor.execute(
+            .systemCommand(.showDesktop),
+            targetProcessIdentifier: nil,
+            targetBundleIdentifier: nil
+        )
 
         XCTAssertEqual(
             keyEventPoster.events,
@@ -164,7 +154,11 @@ final class ActionExecutorTests: XCTestCase {
         let commandRunner = SpySystemCommandRunner()
         let executor = ActionExecutor(systemCommandRunner: commandRunner)
 
-        try executor.execute(.systemCommand(.lockScreen), targetProcessIdentifier: nil)
+        try executor.execute(
+            .systemCommand(.lockScreen),
+            targetProcessIdentifier: nil,
+            targetBundleIdentifier: nil
+        )
 
         XCTAssertEqual(
             commandRunner.commands,
@@ -194,28 +188,12 @@ private final class SpyApplicationActivator: ApplicationActivating {
 }
 
 private final class SpyProcessActivator: ProcessActivating {
-    var frontmostPID: pid_t?
     private(set) var activatedProcessIdentifiers: [pid_t] = []
-    private(set) var scheduledRestoreProcessIdentifiers: [pid_t] = []
-
-    init(frontmostPID: pid_t? = nil) {
-        self.frontmostPID = frontmostPID
-    }
-
-    func frontmostProcessIdentifier() -> pid_t? {
-        frontmostPID
-    }
 
     @discardableResult
-    func activate(processIdentifier: pid_t) -> Bool {
+    func activate(processIdentifier: pid_t, bundleIdentifier: String?) -> Bool {
         activatedProcessIdentifiers.append(processIdentifier)
-        frontmostPID = processIdentifier
         return true
-    }
-
-    func scheduleRestoreFrontmost(processIdentifier: pid_t) {
-        scheduledRestoreProcessIdentifiers.append(processIdentifier)
-        frontmostPID = processIdentifier
     }
 }
 
