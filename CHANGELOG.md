@@ -2,6 +2,13 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.4] - 2026-06-22
+
+- Fix gesture trail and feedback popup not appearing on non-primary Spaces (virtual desktops).
+- Fix gesture trail and feedback popup not rendering on external displays by using per-screen overlay panels.
+- Fix gesture trail offset on non-primary screens when displays have different vertical positions.
+- Fix CI build failure caused by missing `Local.xcconfig`.
+
 ## [0.2.3] - 2026-06-04
 
 - Fix Sparkle falsely reporting “up to date” when a newer release exists: write `CFBundleVersion` to `sparkle:version` in `appcast.xml` and use `sparkle:shortVersionString` for marketing version checks.
