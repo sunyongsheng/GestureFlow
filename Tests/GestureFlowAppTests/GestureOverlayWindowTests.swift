@@ -221,15 +221,26 @@ final class GestureOverlayWindowTests: XCTestCase {
     }
 
     private func extractPanel(from overlayWindow: GestureOverlayWindow) -> NSPanel? {
-        Mirror(reflecting: overlayWindow).children
+        guard let firstOverlay = extractFirstScreenOverlay(from: overlayWindow) else { return nil }
+        return Mirror(reflecting: firstOverlay).children
             .first(where: { $0.label == "panel" })?
             .value as? NSPanel
     }
 
     private func extractOverlayView(from overlayWindow: GestureOverlayWindow) -> GestureOverlayView {
-        Mirror(reflecting: overlayWindow).children
+        guard let firstOverlay = extractFirstScreenOverlay(from: overlayWindow) else {
+            fatalError("No screen overlays found")
+        }
+        return Mirror(reflecting: firstOverlay).children
             .first(where: { $0.label == "overlayView" })?
             .value as! GestureOverlayView
+    }
+
+    private func extractFirstScreenOverlay(from overlayWindow: GestureOverlayWindow) -> Any? {
+        guard let overlays = Mirror(reflecting: overlayWindow).children
+            .first(where: { $0.label == "screenOverlays" })?
+            .value else { return nil }
+        return Mirror(reflecting: overlays).children.first?.value
     }
 
     private func extractMarker(from overlayView: GestureOverlayView) -> GestureOverlayMarker? {
