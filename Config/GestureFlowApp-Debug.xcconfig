@@ -2,4 +2,4 @@
 CODE_SIGN_STYLE = Manual
 CODE_SIGN_IDENTITY = -
 
-#include "Local.xcconfig"
+#include? "Local.xcconfig"

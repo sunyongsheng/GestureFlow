@@ -12,7 +12,7 @@ final class ConfigurationDirectoryRelocationIntegrationTests: XCTestCase {
         let isolated = makeIsolatedStore()
         try isolated.store.save(configurationDirectory: oldDirectory.path)
 
-        let configuration = AppConfiguration(isEnabled: true)
+        let configuration = AppConfiguration(isEnabled: false)
         let appConfigurationStore = AppConfigurationStore(
             fileURL: oldDirectory.appendingPathComponent("config.yaml")
         )

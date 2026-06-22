@@ -112,17 +112,26 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
             overlay.panel.orderOut(nil)
         }
 
-        screenOverlays = NSScreen.screens.map { screen in
+        let screens = NSScreen.screens
+        if screens.isEmpty {
+            let fallbackFrame = NSRect(x: 0, y: 0, width: 1920, height: 1080)
+            let overlayView = GestureOverlayView(frame: NSRect(origin: .zero, size: fallbackFrame.size), localization: localization)
+            let panel = Self.makePanel(frame: fallbackFrame, contentView: overlayView)
+            screenOverlays = [ScreenOverlay(panel: panel, overlayView: overlayView)]
+            return
+        }
+
+        screenOverlays = screens.map { screen in
             let viewFrame = NSRect(origin: .zero, size: screen.frame.size)
             let overlayView = GestureOverlayView(frame: viewFrame, localization: localization)
-            let panel = Self.makePanel(for: screen, contentView: overlayView)
+            let panel = Self.makePanel(frame: screen.frame, contentView: overlayView)
             return ScreenOverlay(panel: panel, overlayView: overlayView)
         }
     }
 
-    private static func makePanel(for screen: NSScreen, contentView: NSView) -> NSPanel {
+    private static func makePanel(frame: NSRect, contentView: NSView) -> NSPanel {
         let panel = NSPanel(
-            contentRect: screen.frame,
+            contentRect: frame,
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -140,9 +149,8 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
             .stationary
         ]
         panel.contentView = contentView
-        panel.setFrame(screen.frame, display: false)
+        panel.setFrame(frame, display: false)
         panel.alphaValue = 0
-        panel.orderFrontRegardless()
         return panel
     }
 
