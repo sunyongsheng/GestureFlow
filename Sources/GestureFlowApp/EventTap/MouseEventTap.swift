@@ -524,9 +524,15 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func appKitScreenPoint(from quartzPoint: CGPoint) -> GesturePoint {
-        let screenFrame = screenFramesProvider().first(where: { $0.contains(quartzPoint) }) ?? desktopFrameProvider()
-        let appKitY = screenFrame.maxY + screenFrame.minY - quartzPoint.y
+        let mainScreenHeight = Self.mainScreenHeight(from: screenFramesProvider())
+        let appKitY = mainScreenHeight - quartzPoint.y
         return GesturePoint(x: quartzPoint.x, y: appKitY)
+    }
+
+    private static func mainScreenHeight(from screenFrames: [CGRect]) -> CGFloat {
+        screenFrames.first(where: { $0.origin == .zero })?.height
+            ?? screenFrames.first?.height
+            ?? 0
     }
 
     private static func makeMouseButtonResetter(
@@ -534,11 +540,10 @@ final class MouseEventTap: MouseEventTapControlling {
         desktopFrameProvider: @escaping () -> CGRect
     ) -> (GestureTrigger, GesturePoint) -> Void {
         { trigger, point in
-            let screenPoint = CGPoint(x: point.x, y: point.y)
-            let screenFrame = screenFramesProvider().first(where: { $0.contains(screenPoint) }) ?? desktopFrameProvider()
+            let mainScreenHeight = mainScreenHeight(from: screenFramesProvider())
             let quartzPoint = CGPoint(
                 x: point.x,
-                y: screenFrame.maxY + screenFrame.minY - point.y
+                y: mainScreenHeight - point.y
             )
 
             let mouseType: CGEventType
@@ -573,11 +578,10 @@ final class MouseEventTap: MouseEventTapControlling {
         { trigger, point in
             guard trigger == .rightMouse else { return }
 
-            let screenPoint = CGPoint(x: point.x, y: point.y)
-            let screenFrame = screenFramesProvider().first(where: { $0.contains(screenPoint) }) ?? desktopFrameProvider()
+            let mainScreenHeight = mainScreenHeight(from: screenFramesProvider())
             let quartzPoint = CGPoint(
                 x: point.x,
-                y: screenFrame.maxY + screenFrame.minY - point.y
+                y: mainScreenHeight - point.y
             )
 
             let eventTypes: [CGEventType] = [.rightMouseDown, .rightMouseUp]
