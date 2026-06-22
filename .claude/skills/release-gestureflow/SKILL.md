@@ -1,0 +1,113 @@
+---
+name: release-gestureflow
+description: Release a new version of GestureFlow. Bumps version numbers, updates CHANGELOG, commits, tags, and pushes. Use when user says "发布版本", "更新版本", "更新一个小版本", "bump version", "release X.Y.Z", "发布 X.Y.Z".
+---
+
+# GestureFlow Release
+
+Automates the full release process for GestureFlow.
+
+## Trigger
+
+Activate when the user mentions any of:
+- 发布版本 / 发布 X.Y.Z / release X.Y.Z
+- 更新版本 / 更新一个小版本 / 更新一个大版本
+- bump version / new release / 发新版
+
+## Workflow
+
+### Step 1: Determine Version
+
+Read the current version from `Resources/Info.plist` (`CFBundleShortVersionString`).
+
+If the user provides a target version, require it to match `X.Y.Z` or `vX.Y.Z`; normalize it to `X.Y.Z` and reject any other format, asking for a valid version if needed.
+Otherwise, infer from context:
+- "小版本" / "patch" → bump patch (0.2.4 → 0.2.5)
+- "中版本" / "minor" → bump minor (0.2.4 → 0.3.0)
+- "大版本" / "major" → bump major (0.2.4 → 1.0.0)
+
+Default to **patch** if unspecified.
+
+Also increment `CFBundleVersion` (build number) by 1.
+
+### Step 2: Update Version in 3 Files
+
+| File | Field | Example |
+|------|-------|---------|
+| `Resources/Info.plist` | `CFBundleShortVersionString` | `0.2.5` |
+| `Resources/Info.plist` | `CFBundleVersion` | `7` (previous + 1) |
+| `GestureFlow.xcodeproj/project.pbxproj` | `MARKETING_VERSION` (2 occurrences) | `0.2.5` |
+
+### Step 3: Update CHANGELOG.md
+
+Insert a new section at the top (below the header), using today's date:
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+- <summarize changes from git log since last tag>
+```
+
+To generate the changelog entries:
+1. Find the previous release tag: `git describe --tags --abbrev=0 --match 'release/v*'`. If no prior release tag exists (command fails), this is the first release; create a changelog section without a commit range and note that this is the initial version.
+2. List commits since the previous tag: `git log <prev_tag>..HEAD --oneline`. For the first release, use: `git log --oneline`
+3. Summarize into user-facing bullet points (exclude CI fixes, docs-only changes)
+
+Ask the user to confirm or edit the changelog before proceeding. If the user does not confirm or edit the changelog, stop and do not commit, push, or tag.
+
+### Step 4: Commit
+
+```bash
+git add Resources/Info.plist GestureFlow.xcodeproj/project.pbxproj CHANGELOG.md
+git commit -m "chore: bump version to X.Y.Z"
+```
+
+### Step 5: Push
+
+```bash
+git push
+```
+
+### Step 6: Create and Push Tag
+
+Tag format is `release/vX.Y.Z`:
+
+```bash
+git tag release/vX.Y.Z
+git push origin release/vX.Y.Z
+```
+
+### Step 7: Report
+
+Tell the user:
+- The version that was released
+- That CI will automatically build, sign, and create the GitHub Release
+- Link: `https://github.com/sunyongsheng/GestureFlow/actions`
+
+## CI (Automated, No Action Needed)
+
+After the tag push, `.github/workflows/release.yml` automatically:
+1. Runs tests
+2. Signs and packages `.zip` + `.dmg`
+3. Generates Sparkle `appcast.xml`
+4. Creates GitHub Release with artifacts
+
+## Fixing a Failed Release
+
+If CI fails after tagging:
+1. Fix the issue and push to main
+2. Move the tag:
+```bash
+git tag -d release/vX.Y.Z
+git tag release/vX.Y.Z
+git push origin :refs/tags/release/vX.Y.Z
+git push origin release/vX.Y.Z
+```
+
+## Required Secrets (pre-configured in repo)
+
+- `MACOS_CERTIFICATE` — signing cert (base64 .p12)
+- `MACOS_CERTIFICATE_PWD` — cert password
+- `MACOS_SIGNING_IDENTITY` — code sign identity
+- `KEYCHAIN_PASSWORD` — temp keychain password
+- `SPARKLE_PRIVATE_KEY` — Sparkle EdDSA key (base64)
