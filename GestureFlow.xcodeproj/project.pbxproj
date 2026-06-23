@@ -1496,7 +1496,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.2.5;
+				MARKETING_VERSION = 0.2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = top.aengus.gestureflow.debug;
 				PRODUCT_MODULE_NAME = GestureFlowApp;
 				PRODUCT_NAME = GestureFlow;
@@ -1531,7 +1531,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 0.2.5;
+				MARKETING_VERSION = 0.2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = top.aengus.gestureflow;
 				PRODUCT_MODULE_NAME = GestureFlowApp;
 				PRODUCT_NAME = GestureFlow;

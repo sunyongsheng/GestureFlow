@@ -2,6 +2,10 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.6] - 2026-06-23
+
+- Fix gestures on inactive app windows being incorrectly dispatched to the app underneath due to a coordinate system mismatch in accessibility hit testing.
+
 ## [0.2.5] - 2026-06-23
 
 - Fix keyboard shortcuts being sent to the wrong window in apps with helper subprocesses: shortcuts like Cmd+W now correctly target the frontmost child window instead of the main window.
