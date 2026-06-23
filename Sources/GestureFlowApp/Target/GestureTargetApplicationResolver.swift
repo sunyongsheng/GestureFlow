@@ -309,12 +309,15 @@ private struct NSWorkspaceForegroundQuery: WorkspaceForegroundQuerying {
 
 private struct AXApplicationQuery: AccessibilityApplicationQuerying {
     func applicationAtScreenPoint(_ point: CGPoint) -> ResolvedGestureTarget? {
+        let mainScreenHeight = NSScreen.main?.frame.height ?? 0
+        let quartzY = mainScreenHeight - point.y
+
         let systemWide = AXUIElementCreateSystemWide()
         var element: AXUIElement?
         let status = AXUIElementCopyElementAtPosition(
             systemWide,
             Float(point.x),
-            Float(point.y),
+            Float(quartzY),
             &element
         )
         guard status == .success, let element else {
