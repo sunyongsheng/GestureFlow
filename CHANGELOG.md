@@ -2,6 +2,11 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.5] - 2026-06-23
+
+- Fix keyboard shortcuts being sent to the wrong window in apps with helper subprocesses: shortcuts like Cmd+W now correctly target the frontmost child window instead of the main window.
+- Fix Auto Layout constraint warnings on startup caused by the feedback card view being initialized with zero frame.
+
 ## [0.2.4] - 2026-06-22
 
 - Fix gesture trail and feedback popup not appearing on non-primary Spaces (virtual desktops).
