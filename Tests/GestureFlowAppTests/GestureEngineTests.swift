@@ -915,7 +915,8 @@ private final class SpyActionExecutor: ActionExecuting {
     func execute(
         _ action: GestureAction,
         targetProcessIdentifier: pid_t?,
-        targetBundleIdentifier: String?
+        targetBundleIdentifier: String?,
+        gestureOriginScreenPoint: CGPoint?
     ) throws {
         executedActions.append(
             ExecutedActionCall(

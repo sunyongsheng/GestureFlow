@@ -7,7 +7,8 @@ protocol ActionExecuting {
     func execute(
         _ action: GestureAction,
         targetProcessIdentifier: pid_t?,
-        targetBundleIdentifier: String?
+        targetBundleIdentifier: String?,
+        gestureOriginScreenPoint: CGPoint?
     ) throws
 }
 
@@ -66,12 +67,27 @@ protocol ProcessActivating {
     func activate(processIdentifier: pid_t, bundleIdentifier: String?) -> Bool
 }
 
+struct FrontmostApplicationInfo: Equatable {
+    var processIdentifier: pid_t
+    var bundleIdentifier: String?
+}
+
+protocol FrontmostApplicationQuerying {
+    func frontmostApplication() -> FrontmostApplicationInfo?
+}
+
+protocol TargetWindowRaising {
+    func raiseWindow(at screenPoint: CGPoint, for processIdentifier: pid_t)
+}
+
 final class ActionExecutor: ActionExecuting {
     private let keyEventPoster: KeyboardEventPosting
     private let workspaceOpener: WorkspaceOpening
     private let systemCommandRunner: SystemCommandRunning
     private let applicationActivator: ApplicationActivating
     private let processActivator: ProcessActivating
+    private let frontmostQuery: FrontmostApplicationQuerying
+    private let windowRaiser: TargetWindowRaising
     private let currentProcessIdentifier: Int32
 
     init(
@@ -80,6 +96,8 @@ final class ActionExecutor: ActionExecuting {
         systemCommandRunner: SystemCommandRunning = ProcessSystemCommandRunner(),
         applicationActivator: ApplicationActivating = NSApplicationActivator(),
         processActivator: ProcessActivating = NSProcessActivator(),
+        frontmostQuery: FrontmostApplicationQuerying = NSFrontmostApplicationQuery(),
+        windowRaiser: TargetWindowRaising = AXTargetWindowRaiser(),
         currentProcessIdentifier: Int32 = ProcessInfo.processInfo.processIdentifier
     ) {
         self.keyEventPoster = keyEventPoster
@@ -87,20 +105,24 @@ final class ActionExecutor: ActionExecuting {
         self.systemCommandRunner = systemCommandRunner
         self.applicationActivator = applicationActivator
         self.processActivator = processActivator
+        self.frontmostQuery = frontmostQuery
+        self.windowRaiser = windowRaiser
         self.currentProcessIdentifier = currentProcessIdentifier
     }
 
     func execute(
         _ action: GestureAction,
         targetProcessIdentifier: pid_t? = nil,
-        targetBundleIdentifier: String? = nil
+        targetBundleIdentifier: String? = nil,
+        gestureOriginScreenPoint: CGPoint? = nil
     ) throws {
         switch action {
         case let .keyboardShortcut(shortcut):
             try executeKeyboardShortcut(
                 shortcut,
                 targetProcessIdentifier: targetProcessIdentifier,
-                targetBundleIdentifier: targetBundleIdentifier
+                targetBundleIdentifier: targetBundleIdentifier,
+                gestureOriginScreenPoint: gestureOriginScreenPoint
             )
         case let .openApplication(application):
             try openApplication(application)
@@ -114,7 +136,8 @@ final class ActionExecutor: ActionExecuting {
     private func executeKeyboardShortcut(
         _ shortcut: KeyboardShortcutAction,
         targetProcessIdentifier: pid_t?,
-        targetBundleIdentifier: String?
+        targetBundleIdentifier: String?,
+        gestureOriginScreenPoint: CGPoint?
     ) throws {
         let flags = shortcut.modifiers.cgEventFlags
 
@@ -133,16 +156,60 @@ final class ActionExecutor: ActionExecuting {
             return
         }
 
-        _ = processActivator.activate(
-            processIdentifier: targetProcessIdentifier,
-            bundleIdentifier: targetBundleIdentifier
-        )
+        let frontmost = frontmostQuery.frontmostApplication()
+        let effectiveTargetPID: pid_t
+        let skipActivation: Bool
+
+        if frontmost?.processIdentifier == targetProcessIdentifier {
+            effectiveTargetPID = targetProcessIdentifier
+            skipActivation = true
+        } else if let frontmost,
+                  isFrontmostRelatedToTarget(frontmost: frontmost, targetBundleIdentifier: targetBundleIdentifier) {
+            effectiveTargetPID = frontmost.processIdentifier
+            skipActivation = true
+        } else {
+            effectiveTargetPID = targetProcessIdentifier
+            skipActivation = false
+        }
+
+        if !skipActivation {
+            _ = processActivator.activate(
+                processIdentifier: targetProcessIdentifier,
+                bundleIdentifier: targetBundleIdentifier
+            )
+
+            if let gestureOriginScreenPoint {
+                windowRaiser.raiseWindow(
+                    at: gestureOriginScreenPoint,
+                    for: targetProcessIdentifier
+                )
+            }
+        }
 
         try postKeyboardShortcut(
             shortcut,
             flags: flags,
-            targetProcessIdentifier: targetProcessIdentifier
+            targetProcessIdentifier: effectiveTargetPID
         )
+    }
+
+    private func isFrontmostRelatedToTarget(
+        frontmost: FrontmostApplicationInfo,
+        targetBundleIdentifier: String?
+    ) -> Bool {
+        guard let frontmostBundle = frontmost.bundleIdentifier,
+              let targetBundle = targetBundleIdentifier else {
+            return false
+        }
+        if frontmostBundle == targetBundle {
+            return true
+        }
+        if let parentOfFrontmost = ApplicationBundleIdentifierSupport.parentBundleIdentifier(
+            forHelperBundleIdentifier: frontmostBundle
+        ), parentOfFrontmost == targetBundle {
+            return true
+        }
+        return false
     }
 
     private func postKeyboardShortcut(
@@ -190,7 +257,8 @@ final class ActionExecutor: ActionExecuting {
             try executeKeyboardShortcut(
                 KeyboardShortcutAction(keyCode: 99, modifiers: [.command]),
                 targetProcessIdentifier: nil,
-                targetBundleIdentifier: nil
+                targetBundleIdentifier: nil,
+                gestureOriginScreenPoint: nil
             )
         case .lockScreen:
             try runLockScreenCommand()
@@ -345,6 +413,101 @@ private enum ApplicationActivationSupport {
     @discardableResult
     private static func forceActivate(_ application: NSRunningApplication) -> Bool {
         application.activate(options: foregroundOptions.union(.activateIgnoringOtherApps))
+    }
+}
+
+struct AXTargetWindowRaiser: TargetWindowRaising {
+    private let mainScreenHeightProvider: () -> CGFloat
+
+    init(mainScreenHeightProvider: @escaping () -> CGFloat = {
+        NSScreen.main?.frame.height ?? 0
+    }) {
+        self.mainScreenHeightProvider = mainScreenHeightProvider
+    }
+
+    /// Raises the topmost interactive window at the given AppKit screen point.
+    /// Skips non-interactive overlay windows (e.g. watermark widgets) that may
+    /// sit above the real content window.
+    func raiseWindow(at screenPoint: CGPoint, for processIdentifier: pid_t) {
+        let mainScreenHeight = mainScreenHeightProvider()
+        let quartzPoint = CGPoint(x: screenPoint.x, y: mainScreenHeight - screenPoint.y)
+
+        let app = AXUIElementCreateApplication(processIdentifier)
+        var windowsRef: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            app, kAXWindowsAttribute as CFString, &windowsRef
+        ) == .success,
+            let windows = windowsRef as? [AXUIElement] else {
+            return
+        }
+
+        var bestCandidate: AXUIElement?
+
+        for window in windows {
+            var positionRef: CFTypeRef?
+            var sizeRef: CFTypeRef?
+            guard AXUIElementCopyAttributeValue(
+                window, kAXPositionAttribute as CFString, &positionRef
+            ) == .success,
+                AXUIElementCopyAttributeValue(
+                    window, kAXSizeAttribute as CFString, &sizeRef
+                ) == .success else {
+                continue
+            }
+
+            var position = CGPoint.zero
+            var size = CGSize.zero
+            guard AXValueGetValue(positionRef as! AXValue, .cgPoint, &position),
+                  AXValueGetValue(sizeRef as! AXValue, .cgSize, &size) else {
+                continue
+            }
+
+            let windowFrame = CGRect(origin: position, size: size)
+            guard windowFrame.contains(quartzPoint) else { continue }
+
+            if isInteractiveWindow(window) {
+                AXUIElementPerformAction(window, kAXRaiseAction as CFString)
+                return
+            }
+
+            if bestCandidate == nil {
+                bestCandidate = window
+            }
+        }
+
+        if let fallback = bestCandidate {
+            AXUIElementPerformAction(fallback, kAXRaiseAction as CFString)
+        }
+    }
+
+    private func isInteractiveWindow(_ window: AXUIElement) -> Bool {
+        var subroleRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(
+            window, kAXSubroleAttribute as CFString, &subroleRef
+        ) == .success,
+            let subrole = subroleRef as? String,
+            subrole == (kAXStandardWindowSubrole as String) {
+            return true
+        }
+
+        var closeButtonRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(
+            window, kAXCloseButtonAttribute as CFString, &closeButtonRef
+        ) == .success {
+            return true
+        }
+
+        return false
+    }
+}
+
+private struct NSFrontmostApplicationQuery: FrontmostApplicationQuerying {
+    func frontmostApplication() -> FrontmostApplicationInfo? {
+        guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
+        return FrontmostApplicationInfo(
+            processIdentifier: app.processIdentifier,
+            bundleIdentifier: app.bundleIdentifier
+        )
     }
 }
 

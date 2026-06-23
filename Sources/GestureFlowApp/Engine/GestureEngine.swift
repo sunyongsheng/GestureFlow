@@ -220,11 +220,14 @@ final class GestureEngine {
             return
         }
 
+        let gestureOrigin = points.first.map { CGPoint(x: $0.x, y: $0.y) }
+
         do {
             try actionExecutor.execute(
                 .keyboardShortcut(gesture.shortcut),
                 targetProcessIdentifier: targetProcessIdentifier,
-                targetBundleIdentifier: resolvedTarget.bundleIdentifier
+                targetBundleIdentifier: resolvedTarget.bundleIdentifier,
+                gestureOriginScreenPoint: gestureOrigin
             )
         } catch {
             reportGestureFailure(

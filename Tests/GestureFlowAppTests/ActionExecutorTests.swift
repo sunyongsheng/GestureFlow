@@ -17,7 +17,8 @@ final class ActionExecutorTests: XCTestCase {
                 )
             ),
             targetProcessIdentifier: nil,
-            targetBundleIdentifier: nil
+            targetBundleIdentifier: nil,
+            gestureOriginScreenPoint: nil
         )
 
         let expectedFlags: CGEventFlags = [
@@ -46,7 +47,8 @@ final class ActionExecutorTests: XCTestCase {
                 OpenApplicationAction(bundleIdentifier: "com.apple.finder")
             ),
             targetProcessIdentifier: nil,
-            targetBundleIdentifier: nil
+            targetBundleIdentifier: nil,
+            gestureOriginScreenPoint: nil
         )
 
         XCTAssertEqual(workspace.openedApplicationURLs, [appURL])
@@ -62,7 +64,8 @@ final class ActionExecutorTests: XCTestCase {
                     OpenApplicationAction(bundleIdentifier: "missing.bundle")
                 ),
                 targetProcessIdentifier: nil,
-                targetBundleIdentifier: nil
+                targetBundleIdentifier: nil,
+                gestureOriginScreenPoint: nil
             )
         ) { error in
             XCTAssertEqual(
@@ -80,7 +83,8 @@ final class ActionExecutorTests: XCTestCase {
         try executor.execute(
             .openURL(OpenURLAction(url: url)),
             targetProcessIdentifier: nil,
-            targetBundleIdentifier: nil
+            targetBundleIdentifier: nil,
+            gestureOriginScreenPoint: nil
         )
 
         XCTAssertEqual(workspace.openedURLs, [url])
@@ -99,7 +103,8 @@ final class ActionExecutorTests: XCTestCase {
         try executor.execute(
             .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
             targetProcessIdentifier: currentPID,
-            targetBundleIdentifier: nil
+            targetBundleIdentifier: nil,
+            gestureOriginScreenPoint: nil
         )
 
         XCTAssertEqual(applicationActivator.activateCount, 1)
@@ -121,7 +126,8 @@ final class ActionExecutorTests: XCTestCase {
         try executor.execute(
             .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
             targetProcessIdentifier: targetPID,
-            targetBundleIdentifier: "com.example.app"
+            targetBundleIdentifier: "com.example.app",
+            gestureOriginScreenPoint: CGPoint(x: 100, y: 200)
         )
 
         XCTAssertEqual(processActivator.activatedProcessIdentifiers, [targetPID])
@@ -131,6 +137,51 @@ final class ActionExecutorTests: XCTestCase {
         )
     }
 
+    func testKeyboardShortcutRaisesWindowAtGestureOriginBeforePosting() throws {
+        let keyEventPoster = SpyKeyboardEventPoster()
+        let processActivator = SpyProcessActivator()
+        let windowRaiser = SpyTargetWindowRaiser()
+        let targetPID: pid_t = 432
+        let originPoint = CGPoint(x: 300, y: 400)
+        let executor = ActionExecutor(
+            keyEventPoster: keyEventPoster,
+            processActivator: processActivator,
+            windowRaiser: windowRaiser
+        )
+
+        try executor.execute(
+            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
+            targetProcessIdentifier: targetPID,
+            targetBundleIdentifier: "com.example.app",
+            gestureOriginScreenPoint: originPoint
+        )
+
+        XCTAssertEqual(windowRaiser.raisedWindows.count, 1)
+        XCTAssertEqual(windowRaiser.raisedWindows[0].screenPoint, originPoint)
+        XCTAssertEqual(windowRaiser.raisedWindows[0].processIdentifier, targetPID)
+    }
+
+    func testKeyboardShortcutSkipsWindowRaiseWhenNoGestureOrigin() throws {
+        let keyEventPoster = SpyKeyboardEventPoster()
+        let processActivator = SpyProcessActivator()
+        let windowRaiser = SpyTargetWindowRaiser()
+        let targetPID: pid_t = 432
+        let executor = ActionExecutor(
+            keyEventPoster: keyEventPoster,
+            processActivator: processActivator,
+            windowRaiser: windowRaiser
+        )
+
+        try executor.execute(
+            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
+            targetProcessIdentifier: targetPID,
+            targetBundleIdentifier: "com.example.app",
+            gestureOriginScreenPoint: nil
+        )
+
+        XCTAssertTrue(windowRaiser.raisedWindows.isEmpty)
+    }
+
     func testShowDesktopUsesCommandF3Shortcut() throws {
         let keyEventPoster = SpyKeyboardEventPoster()
         let executor = ActionExecutor(keyEventPoster: keyEventPoster)
@@ -138,7 +189,8 @@ final class ActionExecutorTests: XCTestCase {
         try executor.execute(
             .systemCommand(.showDesktop),
             targetProcessIdentifier: nil,
-            targetBundleIdentifier: nil
+            targetBundleIdentifier: nil,
+            gestureOriginScreenPoint: nil
         )
 
         XCTAssertEqual(
@@ -157,7 +209,8 @@ final class ActionExecutorTests: XCTestCase {
         try executor.execute(
             .systemCommand(.lockScreen),
             targetProcessIdentifier: nil,
-            targetBundleIdentifier: nil
+            targetBundleIdentifier: nil,
+            gestureOriginScreenPoint: nil
         )
 
         XCTAssertEqual(
@@ -228,6 +281,19 @@ private final class SpyWorkspaceOpener: WorkspaceOpening {
     func open(_ url: URL) -> Bool {
         openedURLs.append(url)
         return true
+    }
+}
+
+private final class SpyTargetWindowRaiser: TargetWindowRaising {
+    struct RaisedWindow: Equatable {
+        var screenPoint: CGPoint
+        var processIdentifier: pid_t
+    }
+
+    private(set) var raisedWindows: [RaisedWindow] = []
+
+    func raiseWindow(at screenPoint: CGPoint, for processIdentifier: pid_t) {
+        raisedWindows.append(RaisedWindow(screenPoint: screenPoint, processIdentifier: processIdentifier))
     }
 }
 
