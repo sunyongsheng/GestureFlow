@@ -53,6 +53,11 @@ To generate the changelog entries:
 2. List commits since the previous tag: `git log <prev_tag>..HEAD --oneline`. For the first release, use: `git log --oneline`
 3. Summarize into user-facing bullet points (exclude CI fixes, docs-only changes)
 
+**Changelog writing rules:**
+- Do NOT include specific app names, third-party product names, or concrete examples (e.g. "e.g. Feishu", "such as Chrome") in changelog entries. Describe the fix/feature in generic, user-facing terms only.
+- Good: "Fix gestures on inactive app windows being incorrectly dispatched to the app underneath"
+- Bad: "Fix gestures on inactive app windows (e.g. Finder) being dispatched to the app underneath"
+
 Ask the user to confirm or edit the changelog before proceeding. If the user does not confirm or edit the changelog, stop and do not commit, push, or tag.
 
 ### Step 4: Commit
