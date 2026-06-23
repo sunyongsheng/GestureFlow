@@ -222,15 +222,17 @@ final class GestureFeedbackCardView: NSView {
         messageLabel: NSTextField,
         horizontalPadding: CGFloat
     ) -> [NSLayoutConstraint] {
-        [
+        let trailing = messageLabel.trailingAnchor.constraint(
+            equalTo: containerView.trailingAnchor,
+            constant: -horizontalPadding
+        )
+        trailing.priority = .defaultHigh
+        return [
             messageLabel.leadingAnchor.constraint(
                 equalTo: containerView.leadingAnchor,
                 constant: horizontalPadding
             ),
-            messageLabel.trailingAnchor.constraint(
-                equalTo: containerView.trailingAnchor,
-                constant: -horizontalPadding
-            ),
+            trailing,
             messageLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
         ]
     }
