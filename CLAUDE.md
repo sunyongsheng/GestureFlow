@@ -52,6 +52,7 @@ Tests/
 - YAML-based config stored in a user-configurable directory (default `~/.config/gestureflow`)
 - `AppConfigurationStore` and `GestureConfigurationStore` handle persistence
 - Configuration directory is relocatable at runtime
+- App language is stored in `UserDefaults` (`AppleLanguages`), not in the YAML config
 
 ## Do NOT
 
@@ -63,6 +64,11 @@ These are hard-won lessons from past bugs. Violating them will re-introduce issu
 4. **Do NOT call `orderFrontRegardless()` during `GestureOverlayWindow.init`** — this breaks tests that construct `GestureFlowApplication` in headless/CI environments.
 5. **Do NOT use `isEnabled: true` in integration tests that create `GestureFlowApplication`** — on CI without Accessibility permission, `reconcilePersistedRunningState` will flip it to `false` and save, corrupting test expectations.
 6. `**GestureFlowCore` must NOT import AppKit** — it's the platform-independent model layer.
+
+## Mandatory Maintenance
+
+- **When adding a new configuration item** to `AppConfiguration` (or its nested structs in `AppConfiguration.swift`), you **must** update the configuration table in both `README.md` and `README.en.md` to document the new field's YAML path, type, default value, description, and which settings page exposes it.
+- **README files come in pairs** — `README.md` (Chinese) and `README.en.md` (English). Any content change must be applied to both files.
 
 ## Building & Testing
 

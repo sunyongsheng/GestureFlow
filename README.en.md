@@ -41,6 +41,31 @@ button, draw a path, and trigger shortcuts or actions in the app you are using.
   (including XDG `~/.config/gestureflow`)
 - **Multilingual support**
 
+## Configuration
+
+GestureFlow uses a YAML configuration file.
+
+| YAML Path | Type | Default | Description | Settings UI |
+|-----------|------|---------|-------------|-------------|
+| `isEnabled` | Bool | `false` | Master switch for gesture recognition | General |
+| `general.showMenuBarIcon` | Bool | `true` | Show icon in the menu bar | General |
+| `update.checkIntervalHours` | Int | `168` | Auto-update check interval (hours) | — |
+| `trigger.movementThreshold` | Double | `24` | Pixels of movement before gesture recognition starts | Advanced |
+| `trigger.holdTimeoutMilliseconds` | Int | `450` | Hold-still timeout (ms) | Advanced |
+| `trigger.maximumSampleDistance` | Double | `120` | Max distance between path samples (px) | Advanced |
+| `feedback.trailColorHex` | String | `"#00E042"` | Gesture trail color | Advanced |
+| `feedback.trailWidth` | Double | `3` | Trail line width | Advanced |
+| `feedback.trailOpacity` | Double | `1` | Trail opacity | Advanced |
+| `feedback.trailStrokeEnabled` | Bool | `true` | Show trail stroke outline | Advanced |
+| `feedback.trailStrokeColorHex` | String | `"#FFFFFF"` | Trail stroke color | Advanced |
+| `feedback.trailStrokeWidth` | Double | `2` | Trail stroke width | Advanced |
+| `feedback.overlayHideDelayMilliseconds` | Int | `500` | How long overlay stays after gesture ends (ms) | — |
+| `feedback.unrecognizedTrailColorHex` | String | `"#8E8E93"` | Trail color for unrecognized gestures | — |
+| `feedback.feedbackCardCornerRadius` | Double | `18` | Feedback card corner radius | — |
+| `feedback.feedbackCardLiquidGlassEnabled` | Bool | `false` | Use macOS 26 liquid glass style | Advanced |
+| `gestureTargetApplication` | String | `"underMouse"` | Shortcut target: `foreground` or `underMouse` | Advanced |
+| `ignoredApplicationBundleIdentifiers` | [String] | `[]` | Bundle IDs of apps where gestures are disabled | Advanced |
+
 ## Requirements
 
 - macOS 14.0 or later

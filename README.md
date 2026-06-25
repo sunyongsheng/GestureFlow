@@ -36,6 +36,31 @@ GestureFlow 是一款原生 macOS 鼠标手势工具。按住鼠标按键绘制�
 - 支持**自定义配置目录**，便于在多台设备间同步设置（含 XDG `~/.config/gestureflow`）
 - **多语言支持**
 
+## 配置项
+
+GestureFlow 使用 YAML 格式配置文件。
+
+| YAML 路径 | 类型 | 默认值 | 说明 | 设置 UI |
+|-----------|------|--------|------|---------|
+| `isEnabled` | Bool | `false` | 手势识别总开关 | 通用 |
+| `general.showMenuBarIcon` | Bool | `true` | 是否在菜单栏显示图标 | 通用 |
+| `update.checkIntervalHours` | Int | `168` | 自动检查更新间隔（小时） | — |
+| `trigger.movementThreshold` | Double | `24` | 鼠标移动多少像素后开始识别手势 | 高级 |
+| `trigger.holdTimeoutMilliseconds` | Int | `450` | 按住不动超时时间（毫秒） | 高级 |
+| `trigger.maximumSampleDistance` | Double | `120` | 路径采样最大间距（像素） | 高级 |
+| `feedback.trailColorHex` | String | `"#00E042"` | 手势轨迹颜色 | 高级 |
+| `feedback.trailWidth` | Double | `3` | 轨迹线宽 | 高级 |
+| `feedback.trailOpacity` | Double | `1` | 轨迹透明度 | 高级 |
+| `feedback.trailStrokeEnabled` | Bool | `true` | 是否显示轨迹描边 | 高级 |
+| `feedback.trailStrokeColorHex` | String | `"#FFFFFF"` | 轨迹描边颜色 | 高级 |
+| `feedback.trailStrokeWidth` | Double | `2` | 轨迹描边线宽 | 高级 |
+| `feedback.overlayHideDelayMilliseconds` | Int | `500` | 手势结束后 overlay 保留时间（毫秒） | — |
+| `feedback.unrecognizedTrailColorHex` | String | `"#8E8E93"` | 未识别手势时轨迹颜色 | — |
+| `feedback.feedbackCardCornerRadius` | Double | `18` | 反馈卡片圆角 | — |
+| `feedback.feedbackCardLiquidGlassEnabled` | Bool | `false` | 使用 macOS 26 液态玻璃风格 | 高级 |
+| `gestureTargetApplication` | String | `"underMouse"` | 快捷键发送目标：`foreground` 或 `underMouse` | 高级 |
+| `ignoredApplicationBundleIdentifiers` | [String] | `[]` | 忽略手势的应用 Bundle ID 列表 | 高级 |
+
 ## 系统要求
 
 - macOS 14.0 或更高版本
