@@ -2,6 +2,13 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.7] - 2026-06-25
+
+- Display release notes in the update dialog when a new version is detected.
+- Always check for updates on cold launch when automatic updates are enabled, then restart the periodic check timer.
+- Make update check interval configurable via `update.checkIntervalHours` in the configuration file (default 168 hours).
+- Add menu bar icon visibility toggle in General settings.
+
 ## [0.2.6] - 2026-06-23
 
 - Fix gestures on inactive app windows being incorrectly dispatched to the app underneath due to a coordinate system mismatch in accessibility hit testing.
