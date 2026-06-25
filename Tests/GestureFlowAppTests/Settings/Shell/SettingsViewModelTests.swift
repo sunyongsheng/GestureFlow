@@ -71,7 +71,7 @@ final class SettingsViewModelTests: XCTestCase {
 
         viewModel.commitGesture(id: gestureID)
 
-        XCTAssertEqual(viewModel.gestureSaveErrorMessage, "请录制快捷键。")
+        XCTAssertEqual(viewModel.gestureSaveErrorMessage, "请录制快捷键")
         XCTAssertTrue(viewModel.isGesturePendingSave(id: gestureID))
     }
 

@@ -18,7 +18,7 @@ final class LocalizationManagerTests: XCTestCase {
         let manager = LocalizationManager(language: .en)
         XCTAssertEqual(
             manager.message(for: .invalidConfigurationContent),
-            "Configuration files in the target directory are invalid. Check them and try again."
+            "Configuration files in the target directory are invalid. Check them and try again"
         )
     }
 
