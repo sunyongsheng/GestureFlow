@@ -137,6 +137,17 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    func setShowMenuBarIcon(_ show: Bool) {
+        configuration.general.showMenuBarIcon = show
+        do {
+            try saveConfiguration(configuration)
+            saveErrorMessage = nil
+        } catch {
+            configuration.general.showMenuBarIcon = !show
+            saveErrorMessage = error.localizedDescription
+        }
+    }
+
     func localizedGestureName(_ gesture: GestureDefinition) -> String {
         localizationManager.localizedGestureDisplayName(gesture)
     }

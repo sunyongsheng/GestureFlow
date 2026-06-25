@@ -26,6 +26,8 @@ enum L10nStringsJa {
         .generalLaunchAtLoginDescription: "ログイン後に GestureFlow を自動的に起動します。",
         .generalGestureRecognitionTitle: "ジェスチャ認識",
         .generalGestureRecognitionDescription: "有効にすると、設定したマウスジェスチャの監視と認識を開始します。",
+        .generalMenuBarIconTitle: "メニューバーアイコン",
+        .generalMenuBarIconDescription: "メニューバーに表示します",
         .generalAppLanguageTitle: "アプリの言語",
         .generalAppLanguageDescription: "インターフェースの表示言語を選択します。",
         .generalConfigDirectoryTitle: "設定フォルダ",

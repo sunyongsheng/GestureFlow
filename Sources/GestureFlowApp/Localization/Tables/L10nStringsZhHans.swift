@@ -26,6 +26,8 @@ enum L10nStringsZhHans {
         .generalLaunchAtLoginDescription: "系统登录后自动启动 GestureFlow。",
         .generalGestureRecognitionTitle: "手势识别",
         .generalGestureRecognitionDescription: "开启后，GestureFlow 会开始监听并识别配置的鼠标手势。",
+        .generalMenuBarIconTitle: "菜单栏图标",
+        .generalMenuBarIconDescription: "是否展示在菜单栏",
         .generalAppLanguageTitle: "应用语言",
         .generalAppLanguageDescription: "选择界面显示语言。",
         .generalConfigDirectoryTitle: "配置目录",

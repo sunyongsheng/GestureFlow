@@ -142,6 +142,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             actions: makeStatusBarActions(),
             localization: localizationManager
         )
+        self.statusBarController?.isVisible = configuration.general.showMenuBarIcon
         reconcilePersistedRunningState()
         self.statusBarController?.update(state: currentStatusBarState())
     }
@@ -375,6 +376,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             localizationManager.setLanguage(configuration.general.language)
             statusBarController?.refreshLocalizedStrings()
         }
+        statusBarController?.isVisible = configuration.general.showMenuBarIcon
         statusBarController?.update(state: currentStatusBarState())
         settingsViewModel?.updateRuntimeStatus(
             configuration: configuration,

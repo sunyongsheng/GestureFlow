@@ -26,6 +26,8 @@ enum L10nStringsKo {
         .generalLaunchAtLoginDescription: "로그인 후 GestureFlow를 자동으로 시작합니다.",
         .generalGestureRecognitionTitle: "제스처 인식",
         .generalGestureRecognitionDescription: "켜면 설정된 마우스 제스처를 감지하고 인식합니다.",
+        .generalMenuBarIconTitle: "메뉴 막대 아이콘",
+        .generalMenuBarIconDescription: "메뉴 막대에 표시합니다",
         .generalAppLanguageTitle: "앱 언어",
         .generalAppLanguageDescription: "인터페이스 표시 언어를 선택합니다.",
         .generalConfigDirectoryTitle: "구성 디렉터리",

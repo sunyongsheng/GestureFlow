@@ -56,6 +56,18 @@ struct GeneralSettingsView: View {
                     Divider()
 
                     SettingsValueRow(
+                        title: l10n.string(.generalMenuBarIconTitle),
+                        description: l10n.string(.generalMenuBarIconDescription),
+                        statusText: nil
+                    ) {
+                        Toggle("", isOn: menuBarIconBinding)
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                    }
+
+                    Divider()
+
+                    SettingsValueRow(
                         title: l10n.string(.generalAppLanguageTitle),
                         description: l10n.string(.generalAppLanguageDescription),
                         statusText: nil
@@ -261,6 +273,13 @@ struct GeneralSettingsView: View {
             set: { newValue in
                 viewModel.setGestureRecognitionEnabled(newValue)
             }
+        )
+    }
+
+    private var menuBarIconBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.configuration.general.showMenuBarIcon },
+            set: { viewModel.setShowMenuBarIcon($0) }
         )
     }
 }

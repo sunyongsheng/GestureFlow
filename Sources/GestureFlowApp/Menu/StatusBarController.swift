@@ -72,6 +72,11 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         handleMenuItem(item)
     }
 
+    var isVisible: Bool {
+        get { statusItem.isVisible }
+        set { statusItem.isVisible = newValue }
+    }
+
     func update(state: StatusBarState) {
         menuState = state
         if let gestureFlowItem = menu.item(withTag: StatusBarMenuItemTag.gestureFlow.rawValue) {

@@ -2,13 +2,16 @@ import Foundation
 
 public struct GeneralConfiguration: Codable, Equatable {
     public var language: AppLanguage
+    public var showMenuBarIcon: Bool
 
     private enum CodingKeys: String, CodingKey {
         case language
+        case showMenuBarIcon
     }
 
-    public init(language: AppLanguage? = nil) {
+    public init(language: AppLanguage? = nil, showMenuBarIcon: Bool = true) {
         self.language = language ?? AppLanguage.resolvingSystemPreferred()
+        self.showMenuBarIcon = showMenuBarIcon
     }
 
     public init(from decoder: Decoder) throws {
@@ -18,6 +21,7 @@ public struct GeneralConfiguration: Codable, Equatable {
         } else {
             language = AppLanguage.resolvingSystemPreferred()
         }
+        showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? true
     }
 
     public static var `default`: GeneralConfiguration {

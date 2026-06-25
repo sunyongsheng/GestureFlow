@@ -25,6 +25,8 @@ enum L10nKey: String, CaseIterable {
     case generalLaunchAtLoginDescription
     case generalGestureRecognitionTitle
     case generalGestureRecognitionDescription
+    case generalMenuBarIconTitle
+    case generalMenuBarIconDescription
     case generalAppLanguageTitle
     case generalAppLanguageDescription
     case generalConfigDirectoryTitle

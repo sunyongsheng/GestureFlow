@@ -26,6 +26,8 @@ enum L10nStringsEn {
         .generalLaunchAtLoginDescription: "Automatically start GestureFlow after you log in.",
         .generalGestureRecognitionTitle: "Gesture Recognition",
         .generalGestureRecognitionDescription: "When enabled, GestureFlow listens for and recognizes configured mouse gestures.",
+        .generalMenuBarIconTitle: "Menu Bar Icon",
+        .generalMenuBarIconDescription: "Show GestureFlow in the menu bar",
         .generalAppLanguageTitle: "Application Language",
         .generalAppLanguageDescription: "Choose the interface language.",
         .generalConfigDirectoryTitle: "Configuration Directory",
