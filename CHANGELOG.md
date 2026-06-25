@@ -2,6 +2,11 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.8] - 2026-06-25
+
+- Move app language storage from YAML config to UserDefaults so Sparkle's update dialog follows the app language setting.
+- Remove trailing periods from all localized UI strings.
+
 ## [0.2.7] - 2026-06-25
 
 - Display release notes in the update dialog when a new version is detected.
