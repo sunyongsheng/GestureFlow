@@ -1,15 +1,17 @@
 import Foundation
 
 final class UpdateScheduler: @unchecked Sendable {
-    static let defaultInterval: TimeInterval = 7 * 24 * 60 * 60
-
-    private let interval: TimeInterval
+    private var interval: TimeInterval
     private let now: () -> Date
     private var timer: Timer?
 
-    init(interval: TimeInterval = UpdateScheduler.defaultInterval, now: @escaping () -> Date = Date.init) {
-        self.interval = interval
+    init(intervalHours: Int = 168, now: @escaping () -> Date = Date.init) {
+        self.interval = TimeInterval(intervalHours) * 3600
         self.now = now
+    }
+
+    func updateInterval(hours: Int) {
+        interval = TimeInterval(hours) * 3600
     }
 
     func shouldPerformCheck(lastCheckDate: Date?) -> Bool {

@@ -94,8 +94,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             )
         self.permissionService = permissionService
         self.launchAtLoginService = launchAtLoginService
+        self.initialLoadResult = resolvedAppConfigurationStore.loadRecovering()
         let updatePreferencesStore = UpdatePreferencesStore()
-        let updateScheduler = UpdateScheduler()
+        let updateScheduler = UpdateScheduler(intervalHours: initialLoadResult.configuration.update.checkIntervalHours)
         let currentAppVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
         self.appUpdateService = appUpdateService ?? AppUpdateService(
             releaseClient: GitHubReleaseClient(currentAppVersion: currentAppVersion),
@@ -110,7 +111,6 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.terminateApplication = terminateApplication
         self.showSettingsHandler = showSettings
         self.scheduleOnMain = scheduleOnMain
-        self.initialLoadResult = resolvedAppConfigurationStore.loadRecovering()
         self.runtimeState = RuntimeState(
             appConfiguration: initialLoadResult.configuration,
             gestureConfigurationService: resolvedGestureService

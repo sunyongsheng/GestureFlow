@@ -25,11 +25,33 @@ public struct GeneralConfiguration: Codable, Equatable {
     }
 }
 
+public struct UpdateConfiguration: Codable, Equatable {
+    /// How often to check for updates automatically, in hours.
+    public var checkIntervalHours: Int
+
+    private enum CodingKeys: String, CodingKey {
+        case checkIntervalHours
+    }
+
+    public init(checkIntervalHours: Int = UpdateConfiguration.default.checkIntervalHours) {
+        self.checkIntervalHours = checkIntervalHours
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        checkIntervalHours = try container.decodeIfPresent(Int.self, forKey: .checkIntervalHours)
+            ?? Self.default.checkIntervalHours
+    }
+
+    public static let `default` = UpdateConfiguration(checkIntervalHours: 168)
+}
+
 public struct AppConfiguration: Codable, Equatable {
     public var isEnabled: Bool
     public var general: GeneralConfiguration
     public var feedback: FeedbackConfiguration
     public var trigger: GestureTriggerConfiguration
+    public var update: UpdateConfiguration
     public var gestureTargetApplication: GestureTargetApplication
     public var ignoredApplicationBundleIdentifiers: [String]
 
@@ -38,6 +60,7 @@ public struct AppConfiguration: Codable, Equatable {
         case general
         case feedback
         case trigger
+        case update
         case gestureTargetApplication
         case ignoredApplicationBundleIdentifiers
     }
@@ -47,6 +70,7 @@ public struct AppConfiguration: Codable, Equatable {
         general: GeneralConfiguration = .default,
         feedback: FeedbackConfiguration = .default,
         trigger: GestureTriggerConfiguration = .default,
+        update: UpdateConfiguration = .default,
         gestureTargetApplication: GestureTargetApplication = .defaultValue,
         ignoredApplicationBundleIdentifiers: [String] = []
     ) {
@@ -54,6 +78,7 @@ public struct AppConfiguration: Codable, Equatable {
         self.general = general
         self.feedback = feedback
         self.trigger = trigger
+        self.update = update
         self.gestureTargetApplication = gestureTargetApplication
         self.ignoredApplicationBundleIdentifiers = ignoredApplicationBundleIdentifiers
     }
@@ -64,6 +89,7 @@ public struct AppConfiguration: Codable, Equatable {
         general = try container.decodeIfPresent(GeneralConfiguration.self, forKey: .general) ?? .default
         feedback = try container.decodeIfPresent(FeedbackConfiguration.self, forKey: .feedback) ?? .default
         trigger = try container.decodeIfPresent(GestureTriggerConfiguration.self, forKey: .trigger) ?? .default
+        update = try container.decodeIfPresent(UpdateConfiguration.self, forKey: .update) ?? .default
         gestureTargetApplication = try container.decodeIfPresent(
             GestureTargetApplication.self,
             forKey: .gestureTargetApplication
