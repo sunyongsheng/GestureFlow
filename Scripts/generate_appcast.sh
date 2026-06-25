@@ -3,16 +3,19 @@
 # Generate a Sparkle appcast.xml for a signed release zip.
 #
 # Usage:
-#   Scripts/generate_appcast.sh <version> <zip-path> <ed-signature> <output-appcast-path>
+#   Scripts/generate_appcast.sh <version> <zip-path> <ed-signature> <output-appcast-path> [release-notes-file]
 #
 # <ed-signature> is the base64 EdDSA string from sign_update output.
+# [release-notes-file] is an optional path to a Markdown file whose content will be
+# embedded as HTML <description> so Sparkle displays it in the update dialog.
 #
 set -euo pipefail
 
-VERSION="${1:?usage: $0 <version> <zip-path> <ed-signature> <output-appcast-path>}"
+VERSION="${1:?usage: $0 <version> <zip-path> <ed-signature> <output-appcast-path> [release-notes-file]}"
 ZIP_PATH="${2:?}"
 ED_SIGNATURE="${3:?}"
 OUTPUT_PATH="${4:?}"
+RELEASE_NOTES_FILE="${5:-}"
 
 ARTIFACT_NAME="$(basename "${ZIP_PATH}")"
 ZIP_LENGTH="$(wc -c < "${ZIP_PATH}" | tr -d ' ')"
@@ -33,7 +36,27 @@ if [[ -z "${BUILD_VERSION}" ]]; then
     exit 1
 fi
 
-cat > "${OUTPUT_PATH}" <<EOF
+# Convert markdown bullet list to HTML for Sparkle's release notes viewer.
+DESCRIPTION_BLOCK=""
+if [[ -n "${RELEASE_NOTES_FILE}" && -s "${RELEASE_NOTES_FILE}" ]]; then
+    HTML_ITEMS=""
+    while IFS= read -r line; do
+        # Strip leading "- " and convert to <li>
+        item="${line#- }"
+        if [[ -n "${item}" ]]; then
+            HTML_ITEMS="${HTML_ITEMS}        <li>${item}</li>
+"
+        fi
+    done < "${RELEASE_NOTES_FILE}"
+
+    if [[ -n "${HTML_ITEMS}" ]]; then
+        DESCRIPTION_BLOCK="      <description><![CDATA[<ul>
+${HTML_ITEMS}      </ul>]]></description>"
+    fi
+fi
+
+{
+    cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
@@ -42,6 +65,11 @@ cat > "${OUTPUT_PATH}" <<EOF
       <title>Version ${VERSION}</title>
       <sparkle:version>${BUILD_VERSION}</sparkle:version>
       <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+EOF
+    if [[ -n "${DESCRIPTION_BLOCK}" ]]; then
+        echo "${DESCRIPTION_BLOCK}"
+    fi
+    cat <<EOF
       <enclosure
         url="${ENCLOSURE_URL}"
         sparkle:edSignature="${ED_SIGNATURE}"
@@ -52,5 +80,6 @@ cat > "${OUTPUT_PATH}" <<EOF
   </channel>
 </rss>
 EOF
+} > "${OUTPUT_PATH}"
 
 echo "Wrote ${OUTPUT_PATH}"

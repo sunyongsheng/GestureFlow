@@ -13,7 +13,8 @@ final class AppUpdateServiceTests: XCTestCase {
                 GitHubReleaseInfo(
                     tagName: "release/v0.2.0",
                     version: SemanticVersion(major: 0, minor: 2, patch: 0),
-                    appcastURL: URL(string: "https://example.com/appcast.xml")!
+                    appcastURL: URL(string: "https://example.com/appcast.xml")!,
+                    releaseNotes: nil
                 )
             )
         )
@@ -40,7 +41,8 @@ final class AppUpdateServiceTests: XCTestCase {
                 GitHubReleaseInfo(
                     tagName: "release/v0.3.0",
                     version: SemanticVersion(major: 0, minor: 3, patch: 0),
-                    appcastURL: appcastURL
+                    appcastURL: appcastURL,
+                    releaseNotes: "• Some improvement"
                 )
             )
         )
@@ -67,7 +69,8 @@ final class AppUpdateServiceTests: XCTestCase {
                 GitHubReleaseInfo(
                     tagName: "release/v0.3.0",
                     version: SemanticVersion(major: 0, minor: 3, patch: 0),
-                    appcastURL: URL(string: "https://example.com/appcast.xml")!
+                    appcastURL: URL(string: "https://example.com/appcast.xml")!,
+                    releaseNotes: "• Bug fix"
                 )
             )
         )
@@ -86,7 +89,10 @@ final class AppUpdateServiceTests: XCTestCase {
 
         XCTAssertEqual(
             outcome,
-            .installUnavailableInDevelopment(latestVersion: SemanticVersion(major: 0, minor: 3, patch: 0))
+            .installUnavailableInDevelopment(
+                latestVersion: SemanticVersion(major: 0, minor: 3, patch: 0),
+                releaseNotes: "• Bug fix"
+            )
         )
         XCTAssertNil(controller.lastAppcastURL)
     }

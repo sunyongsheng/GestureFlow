@@ -5,7 +5,7 @@ import os
 enum ManualUpdateCheckOutcome: Equatable {
     case upToDate
     case delegatedToSparkle
-    case installUnavailableInDevelopment(latestVersion: SemanticVersion)
+    case installUnavailableInDevelopment(latestVersion: SemanticVersion, releaseNotes: String?)
     case failed(GitHubReleaseClientError)
 }
 
@@ -108,7 +108,10 @@ final class AppUpdateService {
             }
 
             guard allowsSparkleInstall else {
-                return force ? .installUnavailableInDevelopment(latestVersion: release.version) : nil
+                return force ? .installUnavailableInDevelopment(
+                    latestVersion: release.version,
+                    releaseNotes: release.releaseNotes
+                ) : nil
             }
 
             await MainActor.run {

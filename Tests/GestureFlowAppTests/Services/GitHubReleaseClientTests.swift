@@ -25,6 +25,32 @@ final class GitHubReleaseClientTests: XCTestCase {
             release.appcastURL.absoluteString,
             GitHubReleaseClient.latestAppcastURL.absoluteString
         )
+        XCTAssertNil(release.releaseNotes)
+    }
+
+    func testParsesAppcastWithReleaseNotes() throws {
+        let fixture = """
+        <?xml version="1.0" encoding="utf-8"?>
+        <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+          <channel>
+            <item>
+              <title>Version 0.3.0</title>
+              <sparkle:version>5</sparkle:version>
+              <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+              <description><![CDATA[<ul>
+                <li>Add new gesture recording UI</li>
+                <li>Fix crash on multi-monitor setups</li>
+              </ul>]]></description>
+            </item>
+          </channel>
+        </rss>
+        """.data(using: .utf8)!
+
+        let client = GitHubReleaseClient(currentAppVersion: "0.2.0")
+        let release = try client.parseAppcastData(fixture)
+
+        XCTAssertEqual(release.version.description, "0.3.0")
+        XCTAssertEqual(release.releaseNotes, "• Add new gesture recording UI\n• Fix crash on multi-monitor setups")
     }
 
     func testMissingVersionInAppcastThrows() {

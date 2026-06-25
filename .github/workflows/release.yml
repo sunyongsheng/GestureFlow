@@ -77,6 +77,30 @@ jobs:
           : "${KEYCHAIN_PASSWORD:?KEYCHAIN_PASSWORD secret is required}"
           Scripts/package_release.sh "${{ steps.version.outputs.version }}"
 
+      - name: Extract release notes for appcast
+        id: release_notes
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES_FILE="dist/release-notes.md"
+          mkdir -p dist
+
+          if [ -f CHANGELOG.md ]; then
+            awk -v ver="$VERSION" '
+              BEGIN { found = 0 }
+              /^## \[/ {
+                if (found) { exit }
+                if ($0 ~ ("\\[" ver "\\]")) { found = 1; next }
+              }
+              found { print }
+            ' CHANGELOG.md > "$NOTES_FILE"
+          fi
+
+          if [ ! -s "$NOTES_FILE" ]; then
+            rm -f "$NOTES_FILE"
+          fi
+          echo "notes_file=${NOTES_FILE}" >> "$GITHUB_OUTPUT"
+
       - name: Generate Sparkle appcast
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
@@ -85,6 +109,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           ZIP="dist/GestureFlow-${VERSION}-macos.zip"
           APPCAST="dist/appcast.xml"
+          NOTES_FILE="${{ steps.release_notes.outputs.notes_file }}"
 
           SPARKLE_DIR="${RUNNER_TEMP}/sparkle"
           mkdir -p "${SPARKLE_DIR}"
@@ -103,7 +128,12 @@ jobs:
             echo "error: failed to parse sign_update output: ${SIGN_OUTPUT}" >&2
             exit 1
           fi
-          Scripts/generate_appcast.sh "${VERSION}" "${ZIP}" "${ED_SIGNATURE}" "${APPCAST}"
+
+          NOTES_ARG=""
+          if [ -f "${NOTES_FILE}" ]; then
+            NOTES_ARG="${NOTES_FILE}"
+          fi
+          Scripts/generate_appcast.sh "${VERSION}" "${ZIP}" "${ED_SIGNATURE}" "${APPCAST}" ${NOTES_ARG}
           rm -rf "${SPARKLE_DIR}" ed_private_key.pem sparkle.tar.xz
 
       - name: Upload artifact

@@ -526,13 +526,17 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         switch outcome {
         case .delegatedToSparkle:
             break
-        case .installUnavailableInDevelopment(let latestVersion):
+        case .installUnavailableInDevelopment(let latestVersion, let releaseNotes):
+            var message = localizationManager.format(
+                .aboutUpdateAvailableInDevelopmentMessage,
+                latestVersion.description
+            )
+            if let releaseNotes, !releaseNotes.isEmpty {
+                message += "\n\n" + releaseNotes
+            }
             viewModel.presentUpdateCheckAlert(
                 title: localizationManager.string(.aboutUpdateAvailableInDevelopmentTitle),
-                message: localizationManager.format(
-                    .aboutUpdateAvailableInDevelopmentMessage,
-                    latestVersion.description
-                )
+                message: message
             )
         case .upToDate:
             viewModel.presentUpdateCheckAlert(

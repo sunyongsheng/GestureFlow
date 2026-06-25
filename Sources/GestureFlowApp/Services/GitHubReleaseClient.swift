@@ -5,6 +5,7 @@ struct GitHubReleaseInfo: Equatable, Sendable {
     let tagName: String
     let version: SemanticVersion
     let appcastURL: URL
+    let releaseNotes: String?
 }
 
 enum GitHubReleaseClientError: Error, Equatable {
@@ -70,8 +71,41 @@ final class GitHubReleaseClient: GitHubReleaseFetching, @unchecked Sendable {
         return GitHubReleaseInfo(
             tagName: tagName,
             version: version,
-            appcastURL: Self.latestAppcastURL
+            appcastURL: Self.latestAppcastURL,
+            releaseNotes: Self.releaseNotes(in: xml)
         )
+    }
+
+    /// Extracts plain-text release notes from the appcast `<description>` CDATA block.
+    /// Strips HTML tags and normalizes whitespace so the result is suitable for display
+    /// in a native alert or text view.
+    static func releaseNotes(in xml: String) -> String? {
+        let pattern = "<description>\\s*<!\\[CDATA\\[(.+?)\\]\\]>\\s*</description>"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .dotMatchesLineSeparators),
+              let match = regex.firstMatch(in: xml, range: NSRange(xml.startIndex..., in: xml)),
+              match.numberOfRanges > 1,
+              let range = Range(match.range(at: 1), in: xml) else {
+            return nil
+        }
+
+        var text = String(xml[range])
+        // Strip HTML tags
+        let tagPattern = "<[^>]+>"
+        if let tagRegex = try? NSRegularExpression(pattern: tagPattern) {
+            text = tagRegex.stringByReplacingMatches(
+                in: text,
+                range: NSRange(text.startIndex..., in: text),
+                withTemplate: ""
+            )
+        }
+        // Collapse multiple newlines/whitespace into single newline per item
+        let lines = text.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .map { "• \($0)" }
+
+        let result = lines.joined(separator: "\n")
+        return result.isEmpty ? nil : result
     }
 
     private static func sparkleVersion(in xml: String) -> String? {
