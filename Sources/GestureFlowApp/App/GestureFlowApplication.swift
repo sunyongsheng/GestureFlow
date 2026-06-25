@@ -118,7 +118,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         self.configuration = runtimeState.appConfiguration
         runtimeState.gestureConfigurationService.load()
 
-        let localizationManager = LocalizationManager(language: configuration.general.language)
+        let localizationManager = LocalizationManager()
         self.localizationManager = localizationManager
         AppServices.localization = localizationManager
 
@@ -346,7 +346,6 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
         let loadResult = appConfigurationStore.loadRecovering()
         configuration = loadResult.configuration
-        localizationManager.setLanguage(configuration.general.language)
         runtimeState.appConfiguration = configuration
         runtimeState.gestureConfigurationService.load()
 
@@ -368,14 +367,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     }
 
     private func applySettingsConfiguration(_ newConfiguration: AppConfiguration) throws {
-        let previousLanguage = configuration.general.language
         configuration = newConfiguration
         runtimeState.appConfiguration = newConfiguration
         try appConfigurationStore.save(configuration)
-        if configuration.general.language != previousLanguage {
-            localizationManager.setLanguage(configuration.general.language)
-            statusBarController?.refreshLocalizedStrings()
-        }
         statusBarController?.isVisible = configuration.general.showMenuBarIcon
         statusBarController?.update(state: currentStatusBarState())
         settingsViewModel?.updateRuntimeStatus(

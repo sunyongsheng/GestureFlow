@@ -246,7 +246,7 @@ struct GeneralSettingsView: View {
 
     private var appLanguageBinding: Binding<AppLanguage> {
         Binding(
-            get: { viewModel.configuration.general.language },
+            get: { viewModel.localizationManager.language },
             set: { viewModel.setAppLanguage($0) }
         )
     }

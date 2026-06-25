@@ -60,7 +60,7 @@ final class SettingsViewModel: ObservableObject {
         isLaunchAtLoginEnabled: Bool = false,
         isAutomaticUpdateEnabled: Bool = false,
         canCheckForUpdates: Bool = true,
-        localizationManager: LocalizationManager = LocalizationManager(language: .zhHans),
+        localizationManager: LocalizationManager = LocalizationManager(),
         saveConfiguration: @escaping (AppConfiguration) throws -> Void,
         saveGestureConfiguration: @escaping (GestureConfiguration) throws -> Void,
         relocateConfigurationDirectory: @escaping (String, ConfigurationDirectoryRelocationMode) throws -> Void = { _, _ in },
@@ -122,19 +122,9 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func setAppLanguage(_ language: AppLanguage) {
-        let previousLanguage = configuration.general.language
-        guard previousLanguage != language else { return }
-
-        configuration.general.language = language
-        do {
-            try saveConfiguration(configuration)
-            saveErrorMessage = nil
-            localizationManager.setLanguage(language)
-            onLanguageDidChange?()
-        } catch {
-            configuration.general.language = previousLanguage
-            saveErrorMessage = error.localizedDescription
-        }
+        guard localizationManager.language != language else { return }
+        localizationManager.setLanguage(language)
+        onLanguageDidChange?()
     }
 
     func setShowMenuBarIcon(_ show: Bool) {
@@ -460,7 +450,6 @@ final class SettingsViewModel: ObservableObject {
     ) {
         if let configuration {
             self.configuration = configuration
-            localizationManager.setLanguage(configuration.general.language)
         }
         if let gestureConfiguration {
             self.gestureConfiguration = gestureConfiguration

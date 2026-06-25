@@ -3,14 +3,13 @@ import XCTest
 import GestureFlowCore
 
 final class AppLanguageSwitchTests: XCTestCase {
-    func testSetAppLanguageUpdatesLocalizationManagerAndPersistsConfiguration() throws {
-        var savedConfiguration: AppConfiguration?
-        let localization = LocalizationManager(language: .zhHans)
+    func testSetAppLanguageUpdatesLocalizationManager() throws {
+        let defaults = UserDefaults(suiteName: "test.\(UUID())")!
+        defaults.set([AppLanguage.zhHans.rawValue], forKey: LocalizationManager.defaultsKey)
+        let localization = LocalizationManager(defaults: defaults)
         let viewModel = SettingsViewModel(
             loadResult: ConfigurationLoadResult(
-                configuration: AppConfiguration(
-                    general: GeneralConfiguration(language: .zhHans)
-                ),
+                configuration: AppConfiguration(),
                 didRecoverFromCorruption: false,
                 backupURL: nil
             ),
@@ -18,9 +17,7 @@ final class AppLanguageSwitchTests: XCTestCase {
             isRunning: false,
             isAccessibilityTrusted: true,
             localizationManager: localization,
-            saveConfiguration: { configuration in
-                savedConfiguration = configuration
-            },
+            saveConfiguration: { _ in },
             saveGestureConfiguration: { _ in },
             requestAccessibilityPermission: {},
             startGestureFlow: {},
@@ -32,7 +29,7 @@ final class AppLanguageSwitchTests: XCTestCase {
 
         viewModel.setAppLanguage(.en)
 
-        XCTAssertEqual(savedConfiguration?.general.language, .en)
+        XCTAssertEqual(localization.language, .en)
         XCTAssertEqual(localization.string(.settingsSectionGeneral), "General")
     }
 }

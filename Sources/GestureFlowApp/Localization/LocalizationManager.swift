@@ -3,15 +3,31 @@ import Foundation
 import GestureFlowCore
 
 final class LocalizationManager: ObservableObject {
+    static let defaultsKey = "AppleLanguages"
+
     @Published private(set) var language: AppLanguage
 
-    init(language: AppLanguage = .zhHans) {
+    init(defaults: UserDefaults = .standard) {
+        self.language = Self.resolvedLanguage(from: defaults)
+    }
+
+    init(language: AppLanguage) {
         self.language = language
     }
 
-    func setLanguage(_ language: AppLanguage) {
+    func setLanguage(_ language: AppLanguage, defaults: UserDefaults = .standard) {
         guard self.language != language else { return }
         self.language = language
+        defaults.set([language.rawValue], forKey: Self.defaultsKey)
+    }
+
+    static func resolvedLanguage(from defaults: UserDefaults = .standard) -> AppLanguage {
+        if let languages = defaults.array(forKey: defaultsKey) as? [String],
+           let first = languages.first,
+           let language = AppLanguage(matchingLocaleIdentifier: first) {
+            return language
+        }
+        return AppLanguage.resolvingSystemPreferred()
     }
 
     func string(_ key: L10nKey) -> String {

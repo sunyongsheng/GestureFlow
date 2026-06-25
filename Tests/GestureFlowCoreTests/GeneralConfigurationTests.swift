@@ -2,9 +2,9 @@ import XCTest
 @testable import GestureFlowCore
 
 final class GeneralConfigurationTests: XCTestCase {
-    func testGeneralConfigurationDefaultsToSystemPreferredLanguage() {
-        XCTAssertEqual(GeneralConfiguration().language, AppLanguage.resolvingSystemPreferred())
-        XCTAssertEqual(AppConfiguration().general.language, AppLanguage.resolvingSystemPreferred())
+    func testGeneralConfigurationDefaultsShowMenuBarIconTrue() {
+        XCTAssertTrue(GeneralConfiguration().showMenuBarIcon)
+        XCTAssertTrue(AppConfiguration().general.showMenuBarIcon)
     }
 
     func testAppConfigurationDecodesWithoutGeneralSection() throws {
@@ -15,28 +15,19 @@ final class GeneralConfigurationTests: XCTestCase {
         let configuration = try YAMLConfigurationCoder.decode(AppConfiguration.self, from: data)
 
         XCTAssertTrue(configuration.isEnabled)
-        XCTAssertEqual(configuration.general.language, AppLanguage.resolvingSystemPreferred())
+        XCTAssertTrue(configuration.general.showMenuBarIcon)
     }
 
-    func testAppConfigurationRoundTripsLanguageEn() throws {
-        var configuration = AppConfiguration()
-        configuration.general.language = .en
-
-        let data = try YAMLConfigurationCoder.encode(configuration)
-        let decoded = try YAMLConfigurationCoder.decode(AppConfiguration.self, from: data)
-
-        XCTAssertEqual(decoded.general.language, .en)
-    }
-
-    func testUnknownLanguageFallsBackToEnglish() throws {
+    func testOldConfigWithLanguageFieldDecodesWithoutCrash() throws {
         let yaml = """
         general:
-          language: de
+          language: en
+          showMenuBarIcon: false
         """
         let data = Data(yaml.utf8)
         let configuration = try YAMLConfigurationCoder.decode(AppConfiguration.self, from: data)
 
-        XCTAssertEqual(configuration.general.language, .en)
+        XCTAssertFalse(configuration.general.showMenuBarIcon)
     }
 
     func testMatchingLocaleIdentifierMapsChineseVariants() {
