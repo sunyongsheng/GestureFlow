@@ -63,7 +63,7 @@ final class AppUpdateService {
     func startAutomaticUpdatesIfNeeded(onFire: @escaping () -> Void) {
         guard preferencesStore.isAutomaticUpdateEnabled else { return }
         scheduler.startRepeating(onFire: onFire)
-        Task { await checkForUpdatesIfNeeded(force: false) }
+        Task { await performUpdateCheck(force: false) }
     }
 
     func stopAutomaticUpdates() {
