@@ -167,13 +167,13 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
 
     private func startAutomaticUpdatesIfNeeded() {
         appUpdateService.startAutomaticUpdatesIfNeeded { [weak self] in
-            Task { await self?.appUpdateService.checkForUpdatesIfNeeded(force: false) }
+            Task { await self?.appUpdateService.checkForUpdatesInBackground() }
         }
     }
 
     private func makeUpdateSchedulerCallback() -> () -> Void {
         { [weak self] in
-            Task { await self?.appUpdateService.checkForUpdatesIfNeeded(force: false) }
+            Task { await self?.appUpdateService.checkForUpdatesInBackground() }
         }
     }
 
@@ -293,16 +293,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
                 }
             },
             checkForUpdates: { [weak self] in
-                guard let self, let viewModel = self.settingsViewModel else { return }
-                Task {
-                    await self.appUpdateService.checkForUpdatesIfNeeded(
-                        force: true,
-                        onManualProgress: { viewModel.setUpdateCheckInProgress($0) },
-                        onManualOutcome: { [weak self] outcome in
-                            self?.presentManualUpdateCheckOutcome(outcome, viewModel: viewModel)
-                        }
-                    )
-                }
+                guard let self else { return }
+                Task { await self.appUpdateService.checkForUpdates() }
             },
             pauseGestureRecognition: { [weak self] in
                 self?.pauseGestureRecognitionForCustomSignatureRecording()
@@ -513,45 +505,6 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             isRunning: gestureEngine.isRunning,
             isAccessibilityTrusted: permissionService.isAccessibilityTrusted
         )
-    }
-
-    private func presentManualUpdateCheckOutcome(
-        _ outcome: ManualUpdateCheckOutcome,
-        viewModel: SettingsViewModel
-    ) {
-        switch outcome {
-        case .delegatedToSparkle:
-            break
-        case .installUnavailableInDevelopment(let latestVersion, let releaseNotes):
-            var message = localizationManager.format(
-                .aboutUpdateAvailableInDevelopmentMessage,
-                latestVersion.description
-            )
-            if let releaseNotes, !releaseNotes.isEmpty {
-                message += "\n\n" + releaseNotes
-            }
-            viewModel.presentUpdateCheckAlert(
-                title: localizationManager.string(.aboutUpdateAvailableInDevelopmentTitle),
-                message: message
-            )
-        case .upToDate:
-            viewModel.presentUpdateCheckAlert(
-                title: localizationManager.string(.aboutUpdateUpToDateTitle),
-                message: localizationManager.format(
-                    .aboutUpdateUpToDateMessage,
-                    currentVersionString()
-                )
-            )
-        case .failed(let error):
-            viewModel.presentUpdateCheckAlert(
-                title: localizationManager.string(.aboutUpdateCheckFailedTitle),
-                message: localizationManager.message(for: error)
-            )
-        }
-    }
-
-    private func currentVersionString() -> String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
     }
 
     private func showPlaceholder(title: String, message: String = "This screen will be added in a later task.") {

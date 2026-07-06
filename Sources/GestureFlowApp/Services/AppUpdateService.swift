@@ -2,13 +2,6 @@ import Foundation
 import GestureFlowCore
 import os
 
-enum ManualUpdateCheckOutcome: Equatable {
-    case upToDate
-    case delegatedToSparkle
-    case installUnavailableInDevelopment(latestVersion: SemanticVersion, releaseNotes: String?)
-    case failed(GitHubReleaseClientError)
-}
-
 final class AppUpdateService {
     private static let logger = Logger(subsystem: "com.gestureflow.app", category: "AppUpdate")
 
@@ -17,21 +10,13 @@ final class AppUpdateService {
     private let preferencesStore: UpdatePreferencesStore
     private let scheduler: UpdateScheduler
     private let currentVersion: SemanticVersion
-    private let allowsSparkleInstall: Bool
 
     init(
         releaseClient: GitHubReleaseFetching,
         updateController: AppUpdateControlling,
         preferencesStore: UpdatePreferencesStore,
         scheduler: UpdateScheduler,
-        currentAppVersion: String,
-        allowsSparkleInstall: Bool = {
-            #if DEBUG
-            false
-            #else
-            true
-            #endif
-        }()
+        currentAppVersion: String
     ) {
         self.releaseClient = releaseClient
         self.updateController = updateController
@@ -39,7 +24,6 @@ final class AppUpdateService {
         self.scheduler = scheduler
         self.currentVersion = (try? SemanticVersion(parsing: currentAppVersion))
             ?? SemanticVersion(major: 0, minor: 0, patch: 0)
-        self.allowsSparkleInstall = allowsSparkleInstall
     }
 
     var canCheckForUpdates: Bool {
@@ -54,7 +38,7 @@ final class AppUpdateService {
         preferencesStore.isAutomaticUpdateEnabled = isEnabled
         if isEnabled {
             scheduler.startRepeating(onFire: onFire)
-            Task { await checkForUpdatesIfNeeded(force: false) }
+            Task { await performAutomaticUpdateCheck() }
         } else {
             scheduler.stop()
         }
@@ -63,74 +47,41 @@ final class AppUpdateService {
     func startAutomaticUpdatesIfNeeded(onFire: @escaping () -> Void) {
         guard preferencesStore.isAutomaticUpdateEnabled else { return }
         scheduler.startRepeating(onFire: onFire)
-        Task { await performUpdateCheck(force: false) }
+        Task { await performAutomaticUpdateCheck() }
     }
 
     func stopAutomaticUpdates() {
         scheduler.stop()
     }
 
-    func checkForUpdatesIfNeeded(
-        force: Bool,
-        onManualProgress: (@MainActor (Bool) -> Void)? = nil,
-        onManualOutcome: (@MainActor (ManualUpdateCheckOutcome) -> Void)? = nil
-    ) async {
-        if force && allowsSparkleInstall {
-            await MainActor.run {
-                updateController.checkForUpdates(appcastURL: GitHubReleaseClient.latestAppcastURL)
-            }
-            return
-        }
-
-        if !force {
-            guard preferencesStore.isAutomaticUpdateEnabled else { return }
-            guard scheduler.shouldPerformCheck(lastCheckDate: preferencesStore.lastUpdateCheckDate) else {
-                return
-            }
-        }
-
-        if force {
-            await MainActor.run { onManualProgress?(true) }
-        }
-
-        let manualOutcome = await performUpdateCheck(force: force)
-
-        if force {
-            await MainActor.run {
-                onManualProgress?(false)
-                if let manualOutcome {
-                    onManualOutcome?(manualOutcome)
-                }
-            }
+    /// Manual check: delegates directly to Sparkle's UI.
+    func checkForUpdates() async {
+        await MainActor.run {
+            updateController.checkForUpdates(appcastURL: GitHubReleaseClient.latestAppcastURL)
         }
     }
 
-    private func performUpdateCheck(force: Bool) async -> ManualUpdateCheckOutcome? {
+    /// Scheduled background check: silently fetches from GitHub, then delegates to Sparkle only if a newer version exists.
+    func checkForUpdatesInBackground() async {
+        guard preferencesStore.isAutomaticUpdateEnabled else { return }
+        guard scheduler.shouldPerformCheck(lastCheckDate: preferencesStore.lastUpdateCheckDate) else {
+            return
+        }
+        await performAutomaticUpdateCheck()
+    }
+
+    private func performAutomaticUpdateCheck() async {
         do {
             let release = try await releaseClient.fetchLatestRelease()
             preferencesStore.lastUpdateCheckDate = Date()
 
-            if release.version <= currentVersion {
-                return force ? .upToDate : nil
-            }
-
-            guard allowsSparkleInstall else {
-                return force ? .installUnavailableInDevelopment(
-                    latestVersion: release.version,
-                    releaseNotes: release.releaseNotes
-                ) : nil
-            }
+            guard release.version > currentVersion else { return }
 
             await MainActor.run {
                 updateController.checkForUpdates(appcastURL: release.appcastURL)
             }
-            return force ? .delegatedToSparkle : nil
-        } catch let error as GitHubReleaseClientError {
-            Self.logger.error("Update check failed: \(String(describing: error), privacy: .public)")
-            return force ? .failed(error) : nil
         } catch {
             Self.logger.error("Update check failed: \(error.localizedDescription, privacy: .public)")
-            return force ? .failed(.invalidResponse) : nil
         }
     }
 }
