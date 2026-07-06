@@ -34,14 +34,13 @@ final class AppUpdateServiceTests: XCTestCase {
         XCTAssertNil(controller.lastAppcastURL)
     }
 
-    func testManualCheckDelegatesToSparkleWhenReleaseIsNewer() async {
-        let appcastURL = URL(string: "https://example.com/appcast.xml")!
+    func testManualCheckDelegatesToSparkleDirectly() async {
         let client = MockReleaseClient(
             result: .success(
                 GitHubReleaseInfo(
                     tagName: "release/v0.3.0",
                     version: SemanticVersion(major: 0, minor: 3, patch: 0),
-                    appcastURL: appcastURL,
+                    appcastURL: URL(string: "https://example.com/appcast.xml")!,
                     releaseNotes: "• Some improvement"
                 )
             )
@@ -59,8 +58,12 @@ final class AppUpdateServiceTests: XCTestCase {
         var outcome: ManualUpdateCheckOutcome?
         await service.checkForUpdatesIfNeeded(force: true, onManualOutcome: { outcome = $0 })
 
-        XCTAssertEqual(outcome, .delegatedToSparkle)
-        XCTAssertEqual(controller.lastAppcastURL, appcastURL)
+        XCTAssertNil(outcome, "Manual check with Sparkle should not produce an outcome callback")
+        XCTAssertEqual(
+            controller.lastAppcastURL,
+            GitHubReleaseClient.latestAppcastURL,
+            "Should use the static appcast URL directly without fetching from GitHub"
+        )
     }
 
     func testManualCheckBlocksSparkleInstallWhenDisabled() async {

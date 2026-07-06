@@ -75,6 +75,13 @@ final class AppUpdateService {
         onManualProgress: (@MainActor (Bool) -> Void)? = nil,
         onManualOutcome: (@MainActor (ManualUpdateCheckOutcome) -> Void)? = nil
     ) async {
+        if force && allowsSparkleInstall {
+            await MainActor.run {
+                updateController.checkForUpdates(appcastURL: GitHubReleaseClient.latestAppcastURL)
+            }
+            return
+        }
+
         if !force {
             guard preferencesStore.isAutomaticUpdateEnabled else { return }
             guard scheduler.shouldPerformCheck(lastCheckDate: preferencesStore.lastUpdateCheckDate) else {
