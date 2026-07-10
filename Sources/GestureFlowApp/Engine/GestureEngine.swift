@@ -28,6 +28,11 @@ final class GestureEngine {
     private var pendingGestureTarget: ResolvedGestureTarget?
     private var activeGesturePoints: [GesturePoint] = []
     private var activeGestureTrigger: GestureTrigger?
+    /// Memoizes the live match for the current gesture so a stable signature (the common case while
+    /// dragging a straight segment) does not re-filter every configured gesture on each mouse sample.
+    private var hasCachedLiveMatch = false
+    private var cachedLiveMatchSignature: GestureSignature?
+    private var cachedLiveMatchResult: GestureMatchResult = .none
 
     private(set) var isRunning = false
 
@@ -112,6 +117,7 @@ final class GestureEngine {
             self.pendingGestureTarget = gestureTarget
             self.activeGestureTrigger = trigger
             self.activeGesturePoints = [point]
+            self.resetLiveMatchCache()
             let appearance = GestureTrailAppearance(feedback: self.appConfigurationProvider().feedback)
             self.overlay.beginGesture(at: self.displayPoint(for: point), appearance: appearance)
             self.refreshLiveGestureFeedback(at: point)
@@ -294,14 +300,7 @@ final class GestureEngine {
         guard let trigger = activeGestureTrigger else { return }
 
         let partialSignature = recognizer.recognize(points: activeGesturePoints)
-        let resolvedTarget = pendingGestureTarget
-        let liveMatch = matcher.match(
-            trigger: trigger,
-            signature: partialSignature,
-            targetBundleIdentifier: resolvedTarget?.bundleIdentifier,
-            prefixPolicy: .fallbackToPrefix,
-            in: gestureConfigurationProvider().gestures
-        )
+        let liveMatch = liveMatchResult(trigger: trigger, signature: partialSignature)
         let isHighlighted = liveMatch.gesture != nil
         let appearance = GestureTrailAppearance(
             feedback: appConfigurationProvider().feedback,
@@ -331,9 +330,37 @@ final class GestureEngine {
         )
     }
 
+    private func liveMatchResult(
+        trigger: GestureTrigger,
+        signature: GestureSignature?
+    ) -> GestureMatchResult {
+        if hasCachedLiveMatch, cachedLiveMatchSignature == signature {
+            return cachedLiveMatchResult
+        }
+
+        let result = matcher.match(
+            trigger: trigger,
+            signature: signature,
+            targetBundleIdentifier: pendingGestureTarget?.bundleIdentifier,
+            prefixPolicy: .fallbackToPrefix,
+            in: gestureConfigurationProvider().gestures
+        )
+        hasCachedLiveMatch = true
+        cachedLiveMatchSignature = signature
+        cachedLiveMatchResult = result
+        return result
+    }
+
+    private func resetLiveMatchCache() {
+        hasCachedLiveMatch = false
+        cachedLiveMatchSignature = nil
+        cachedLiveMatchResult = .none
+    }
+
     private func clearActiveGesture() {
         activeGesturePoints = []
         activeGestureTrigger = nil
+        resetLiveMatchCache()
     }
 
     private func runOnMain(_ work: @escaping () -> Void) {

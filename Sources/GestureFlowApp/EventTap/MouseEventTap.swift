@@ -59,6 +59,10 @@ final class MouseEventTap: MouseEventTapControlling {
     private var pendingRightClickTimeoutWorkItem: DispatchWorkItem?
     private var suppressRightMouseSequenceUntilUp = false
     private var isRightClickTimeoutActive = false
+    /// Cached main-screen height used for Quartz→AppKit Y flipping on every incoming event.
+    /// Invalidated when the screen configuration changes.
+    private var cachedMainScreenHeight: CGFloat?
+    private var screenParametersObserver: NSObjectProtocol?
 
     init(
         triggerConfigurationProvider: @escaping () -> GestureTriggerConfiguration,
@@ -155,6 +159,7 @@ final class MouseEventTap: MouseEventTapControlling {
         acceptsCGEvents = true
         CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
         setEventTapEnabled(true)
+        observeScreenParameterChangesIfNeeded()
         return true
     }
 
@@ -180,6 +185,12 @@ final class MouseEventTap: MouseEventTapControlling {
             CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
         }
 
+        if let screenParametersObserver {
+            NotificationCenter.default.removeObserver(screenParametersObserver)
+            self.screenParametersObserver = nil
+        }
+        cachedMainScreenHeight = nil
+
         eventTap = nil
         runLoopSource = nil
         pendingRightClick = nil
@@ -188,6 +199,17 @@ final class MouseEventTap: MouseEventTapControlling {
         suppressRightMouseSequenceUntilUp = false
         clearRightClickTimeoutIfNeeded()
         buttonReset.map(releaseMouseButtonIfNeeded)
+    }
+
+    private func observeScreenParameterChangesIfNeeded() {
+        guard screenParametersObserver == nil else { return }
+        screenParametersObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.cachedMainScreenHeight = nil
+        }
     }
 
     func handle(_ input: MouseEventTapInput) -> MouseEventTapDecision {
@@ -524,9 +546,17 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func appKitScreenPoint(from quartzPoint: CGPoint) -> GesturePoint {
-        let mainScreenHeight = Self.mainScreenHeight(from: screenFramesProvider())
-        let appKitY = mainScreenHeight - quartzPoint.y
+        let appKitY = currentMainScreenHeight() - quartzPoint.y
         return GesturePoint(x: quartzPoint.x, y: appKitY)
+    }
+
+    private func currentMainScreenHeight() -> CGFloat {
+        if let cachedMainScreenHeight {
+            return cachedMainScreenHeight
+        }
+        let height = Self.mainScreenHeight(from: screenFramesProvider())
+        cachedMainScreenHeight = height
+        return height
     }
 
     private static func mainScreenHeight(from screenFrames: [CGRect]) -> CGFloat {

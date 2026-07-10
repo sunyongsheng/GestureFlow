@@ -7,6 +7,10 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
     private var hideWorkItem: DispatchWorkItem?
     private var screenObserver: NSObjectProtocol?
     private let localization: LocalizationManager
+    /// Screen geometry captured whenever panels are (re)built or their frames refreshed, so the
+    /// per-sample feedback placement during a gesture avoids repeated `NSScreen.screens` queries.
+    private var cachedScreenFrames: [CGRect] = []
+    private var cachedMainScreenFrame: CGRect?
 
     init(localization: LocalizationManager) {
         self.localization = localization
@@ -118,6 +122,8 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
             let overlayView = GestureOverlayView(frame: NSRect(origin: .zero, size: fallbackFrame.size), localization: localization)
             let panel = Self.makePanel(frame: fallbackFrame, contentView: overlayView)
             screenOverlays = [ScreenOverlay(panel: panel, overlayView: overlayView)]
+            cachedScreenFrames = [fallbackFrame]
+            cachedMainScreenFrame = nil
             return
         }
 
@@ -127,6 +133,8 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
             let panel = Self.makePanel(frame: screen.frame, contentView: overlayView)
             return ScreenOverlay(panel: panel, overlayView: overlayView)
         }
+        cachedScreenFrames = screens.map(\.frame)
+        cachedMainScreenFrame = NSScreen.main?.frame
     }
 
     private static func makePanel(frame: NSRect, contentView: NSView) -> NSPanel {
@@ -165,6 +173,8 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
             overlay.panel.setFrame(screen.frame, display: false)
             overlay.overlayView.frame = NSRect(origin: .zero, size: screen.frame.size)
         }
+        cachedScreenFrames = screens.map(\.frame)
+        cachedMainScreenFrame = NSScreen.main?.frame
     }
 
     // MARK: - Visibility
@@ -234,16 +244,15 @@ final class GestureOverlayWindow: GestureOverlayDisplaying {
 
     private func screenIndex(containing point: GesturePoint) -> Int? {
         let cgPoint = CGPoint(x: point.x, y: point.y)
-        let screens = NSScreen.screens
-        guard screens.count == screenOverlays.count else { return nil }
-        return screens.firstIndex(where: { $0.frame.contains(cgPoint) })
+        guard cachedScreenFrames.count == screenOverlays.count else { return nil }
+        return cachedScreenFrames.firstIndex(where: { $0.contains(cgPoint) })
     }
 
     private func resolveFeedbackFrame(for point: GesturePoint, in overlay: ScreenOverlay) -> CGRect {
         let screenFrame = GestureOverlayGeometry.resolveScreenFrame(
             containing: point,
-            screenFrames: NSScreen.screens.map(\.frame),
-            mainScreenFrame: NSScreen.main?.frame
+            screenFrames: cachedScreenFrames,
+            mainScreenFrame: cachedMainScreenFrame
         )
         let globalFrame = GestureOverlayGeometry.feedbackAnchor(in: screenFrame)
         return GestureOverlayCoordinateConverter.localRect(

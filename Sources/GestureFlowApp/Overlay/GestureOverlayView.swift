@@ -59,10 +59,23 @@ final class GestureOverlayView: NSView {
 
     func append(_ point: GesturePoint) {
         points.append(point)
-        needsDisplay = true
+        // The overlay panel is full-screen, so invalidating the whole view forces the entire
+        // surface to be re-encoded and shipped to the render server on every mouse sample.
+        // Once the trail is an established polyline, only the new segment's rect needs redrawing;
+        // `draw(_:)` re-strokes the full path clipped to that rect, keeping prior pixels intact.
+        guard points.count > 2 else {
+            needsDisplay = true
+            return
+        }
+        setNeedsDisplay(trailSegmentInvalidationRect(from: points[points.count - 2], to: point))
     }
 
     func updateLive(appearance: GestureTrailAppearance, feedback: LiveGestureOverlayFeedback, feedbackFrame: CGRect?) {
+        // Only the trail color/width matters for `draw(_:)`; the feedback card is a self-contained
+        // subview. Repainting the whole full-screen trail every sample is what dominated CPU, so we
+        // repaint it only when the appearance actually changed (e.g. highlight flips on/off). The
+        // per-sample new segment is invalidated by `append`.
+        let trailAppearanceChanged = appearance != trailAppearance
         trailAppearance = appearance
         visibleCompletion = nil
         visibleCompletionFrame = nil
@@ -79,7 +92,9 @@ final class GestureOverlayView: NSView {
         } else {
             feedbackCardView.hide()
         }
-        needsDisplay = true
+        if trailAppearanceChanged {
+            needsDisplay = true
+        }
     }
 
     func complete(with completion: GestureOverlayCompletion, feedbackFrame: CGRect?) {
@@ -167,8 +182,24 @@ final class GestureOverlayView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
+        // Reset the invalidated region to fully transparent before stroking. This keeps partial
+        // (single-segment) redraws correct: the semi-transparent trail is re-stroked over a cleared
+        // area instead of blending onto whatever was already there.
+        NSGraphicsContext.current?.cgContext.clear(dirtyRect)
         drawTrail()
         drawMarker()
+    }
+
+    private func trailSegmentInvalidationRect(from start: GesturePoint, to end: GesturePoint) -> NSRect {
+        let halfLineWidth = trailAppearance.strokeEnabled
+            ? trailAppearance.width / 2 + trailAppearance.strokeWidth
+            : trailAppearance.width / 2
+        let margin = halfLineWidth + 2
+        let minX = min(start.x, end.x) - margin
+        let minY = min(start.y, end.y) - margin
+        let maxX = max(start.x, end.x) + margin
+        let maxY = max(start.y, end.y) + margin
+        return NSRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
     }
 
     private func drawTrail() {
