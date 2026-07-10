@@ -2,6 +2,13 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.9] - 2026-07-10
+
+- Reduce CPU usage during gesture drawing by redrawing only the new trail segment instead of the full overlay surface.
+- Cache live gesture matching and screen geometry to avoid redundant work on each mouse sample.
+- Unify the update check flow through Sparkle in both Debug and Release builds.
+- Fix manual "Check for Updates" to skip a redundant GitHub fetch and delegate directly to Sparkle.
+
 ## [0.2.8] - 2026-06-25
 
 - Move app language storage from YAML config to UserDefaults so Sparkle's update dialog follows the app language setting.
