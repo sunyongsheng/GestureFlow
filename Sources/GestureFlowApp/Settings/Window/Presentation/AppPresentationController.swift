@@ -20,8 +20,7 @@ final class AppPresentationController {
         application: NSApplication = .shared,
         setActivationPolicy: @escaping (NSApplication.ActivationPolicy) -> Bool = { NSApp.setActivationPolicy($0) },
         activateApp: @escaping () -> Void = {
-            NSApp.activate()
-            NSRunningApplication.current.activate(options: [.activateAllWindows])
+            SettingsWindowFrontmostPresenter.activateCurrentApplication()
         },
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }
     ) {
@@ -42,8 +41,12 @@ final class AppPresentationController {
             // activation so a reopen after close can reclaim key focus.
             state = .promotingToForeground
             scheduleDeferredActivationRequest()
-        case .promotingToForeground, .foregroundSettingsVisible:
+        case .promotingToForeground:
             break
+        case .foregroundSettingsVisible:
+            // Settings may still be open but key focus was stolen (e.g. by Electron).
+            // Re-request activation on every menu-bar open.
+            scheduleDeferredActivationRequest()
         }
     }
 

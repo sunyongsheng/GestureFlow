@@ -48,26 +48,18 @@ final class GestureFlowApplicationTests: XCTestCase {
         )
         var showSettingsCount = 0
         var closeAutoOpenedSettingsWindowsCount = 0
-        var scheduledBlocks: [() -> Void] = []
         let application = GestureFlowApplication(
             appConfigurationStore: store,
             permissionService: permissionService,
             injectedGestureEngine: gestureEngine,
             showSettings: { _, _ in showSettingsCount += 1 },
-            scheduleOnMain: { scheduledBlocks.append($0) },
             closeAutoOpenedSettingsWindows: { closeAutoOpenedSettingsWindowsCount += 1 }
         )
 
         application.launch(shouldPresentSettingsOnLaunch: false)
 
         XCTAssertEqual(showSettingsCount, 0)
-        XCTAssertEqual(closeAutoOpenedSettingsWindowsCount, 0)
-        XCTAssertEqual(scheduledBlocks.count, 1)
-
-        scheduledBlocks.removeFirst()()
-
         XCTAssertEqual(closeAutoOpenedSettingsWindowsCount, 1)
-        XCTAssertEqual(showSettingsCount, 0)
     }
 
     func testLaunchKeepsExistingStatusBarControllerAlive() throws {

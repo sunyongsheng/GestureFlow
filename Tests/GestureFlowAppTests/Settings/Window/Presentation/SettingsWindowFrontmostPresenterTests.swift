@@ -141,6 +141,76 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
 
         XCTAssertFalse(window.isVisible)
     }
+
+    func testBeginKeyFocusClaimStopsWhenAlreadyKey() {
+        let coordinator = SettingsWindowCoordinator()
+        let center = NotificationCenter()
+        var claimCount = 0
+
+        SettingsWindowFrontmostPresenter.beginKeyFocusClaim(
+            coordinator: coordinator,
+            notificationCenter: center,
+            claim: { _ in
+                claimCount += 1
+                return true
+            },
+            isApplicationActive: { true },
+            hasKeySettingsWindow: { _ in true }
+        )
+
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        XCTAssertEqual(claimCount, 1)
+    }
+
+    func testBeginKeyFocusClaimClaimsAgainWhenApplicationBecomesActive() {
+        let coordinator = SettingsWindowCoordinator()
+        let center = NotificationCenter()
+        var claimCount = 0
+
+        SettingsWindowFrontmostPresenter.beginKeyFocusClaim(
+            coordinator: coordinator,
+            notificationCenter: center,
+            claim: { _ in
+                claimCount += 1
+                return true
+            },
+            isApplicationActive: { false },
+            hasKeySettingsWindow: { _ in false }
+        )
+
+        XCTAssertEqual(claimCount, 1)
+
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        XCTAssertEqual(claimCount, 2)
+
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        XCTAssertEqual(claimCount, 2)
+    }
+
+    func testCancelKeyFocusClaimPreventsBecomeActiveClaim() {
+        let coordinator = SettingsWindowCoordinator()
+        let center = NotificationCenter()
+        var claimCount = 0
+
+        SettingsWindowFrontmostPresenter.beginKeyFocusClaim(
+            coordinator: coordinator,
+            notificationCenter: center,
+            claim: { _ in
+                claimCount += 1
+                return true
+            },
+            isApplicationActive: { false },
+            hasKeySettingsWindow: { _ in false }
+        )
+
+        SettingsWindowFrontmostPresenter.cancelKeyFocusClaim(notificationCenter: center)
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        XCTAssertEqual(claimCount, 1)
+    }
 }
 
 @MainActor

@@ -11,11 +11,6 @@ extension GestureFlowApplicationCoordinating {
     }
 }
 
-enum SettingsPresentationSource {
-    case launch
-    case menuBar
-}
-
 final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private final class RuntimeState {
         var appConfiguration: AppConfiguration
@@ -77,7 +72,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         showSettings: @escaping (SettingsViewModel, SettingsPresentationSource) -> Void = { _, _ in },
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) },
         closeAutoOpenedSettingsWindows: @escaping () -> Void = {
-            SettingsWindowFrontmostPresenter.closeAllSettingsWindows()
+            SettingsWindowDependencies.shared.presentationFlow
+                .dismissAutoOpenedWindowsForSilentLaunch()
         },
         autoPromptAccessibilityOnLaunch: Bool = {
             #if DEBUG
@@ -174,9 +170,8 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         if shouldPresentSettingsOnLaunch {
             openSettings(source: .launch)
         } else {
-            scheduleOnMain { [weak self] in
-                self?.closeAutoOpenedSettingsWindows()
-            }
+            // Default injects Flow.dismiss; tests may override with a direct spy.
+            closeAutoOpenedSettingsWindows()
         }
         refreshApplicationState(promptIfNeeded: false)
         scheduleLaunchPermissionPromptIfNeeded()

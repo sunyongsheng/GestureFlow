@@ -54,7 +54,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let controller = makeApplicationController(settingsCoordinator, settingsOpener)
         applicationController = controller
-        controller.launch(shouldPresentSettingsOnLaunch: !launchReasonDetector.wasLaunchedAtLogin)
+        controller.launch(
+            shouldPresentSettingsOnLaunch: SettingsPresentationFlow.shouldPresentSettingsOnLaunch(
+                detector: launchReasonDetector
+            )
+        )
     }
 }
 
