@@ -156,6 +156,34 @@ final class AppDelegateTests: XCTestCase {
         XCTAssertTrue(coordinator.viewModel === viewModel)
         XCTAssertEqual(openCount, 1)
     }
+
+    func testShowSettingsHandlerForMenuBarPreparesForegroundBeforeOpeningWindow() {
+        let coordinator = SettingsWindowCoordinator()
+        var events: [String] = []
+        let opener = SettingsWindowOpener(resolveOpenAction: {
+            { events.append("open") }
+        })
+        let presentationController = AppPresentationController(
+            application: .shared,
+            setActivationPolicy: { _ in
+                events.append("policy")
+                return true
+            },
+            activateApp: { events.append("activate") },
+            scheduleOnMain: { $0() }
+        )
+        let showSettings = AppDelegate.makeShowSettingsHandler(
+            coordinator: coordinator,
+            opener: opener,
+            presentationController: presentationController,
+            scheduleOnMain: { $0() }
+        )
+
+        showSettings(makeSettingsViewModel(), SettingsPresentationSource.menuBar)
+
+        XCTAssertEqual(events, ["policy", "activate", "open"])
+        XCTAssertEqual(presentationController.state, .promotingToForeground)
+    }
 }
 
 private final class ApplicationCoordinatorSpy: GestureFlowApplicationCoordinating {

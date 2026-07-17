@@ -29,13 +29,46 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
 
     func testActivateExistingOrOpenOpensOnlyWhenNoSettingsWindowExists() {
         var openCount = 0
+        var activateCount = 0
 
         SettingsWindowFrontmostPresenter.activateExistingOrOpen(
             openWindow: { openCount += 1 },
-            windows: [makeGenericWindow()]
+            windows: [makeGenericWindow()],
+            activateApplication: { activateCount += 1 }
         )
 
         XCTAssertEqual(openCount, 1)
+        // Activation is deferred until the settings host window attaches.
+        XCTAssertEqual(activateCount, 0)
+    }
+
+    func testBringToFrontOrdersWindowKeyAndActivatesApplication() {
+        let window = makeSettingsWindow()
+        window.orderOut(nil)
+        var activateCount = 0
+
+        SettingsWindowFrontmostPresenter.bringToFront(
+            window: window,
+            activateApplication: { activateCount += 1 }
+        )
+
+        XCTAssertTrue(window.isVisible)
+        XCTAssertEqual(activateCount, 1)
+    }
+
+    func testClaimFrontmostSettingsWindowUsesWindowsOverloadPath() {
+        let window = makeSettingsWindow()
+        window.orderOut(nil)
+        var activateCount = 0
+
+        let didClaim = SettingsWindowFrontmostPresenter.activateExistingSettingsWindow(
+            windows: [window],
+            activateApplication: { activateCount += 1 }
+        )
+
+        XCTAssertTrue(didClaim)
+        XCTAssertTrue(window.isVisible)
+        XCTAssertEqual(activateCount, 1)
     }
 
     func testActivateExistingOrOpenSkipsOpenWhenSettingsWindowAlreadyExists() {
@@ -80,6 +113,33 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
 
         XCTAssertEqual(openCount, 0)
         XCTAssertTrue(window.isVisible)
+    }
+
+    func testCloseAllSettingsWindowsClosesMatchingWindows() {
+        let settingsWindow = makeSettingsWindow()
+        settingsWindow.orderFront(nil)
+        let genericWindow = makeGenericWindow()
+        genericWindow.orderFront(nil)
+
+        SettingsWindowFrontmostPresenter.closeAllSettingsWindows(
+            windows: [settingsWindow, genericWindow]
+        )
+
+        XCTAssertFalse(settingsWindow.isVisible)
+        XCTAssertTrue(genericWindow.isVisible)
+    }
+
+    func testCloseAllSettingsWindowsClosesAttachedWindowsWithoutIdentifier() {
+        let window = makeGenericWindow()
+        window.orderFront(nil)
+        let attachedIDs = Set([ObjectIdentifier(window)])
+
+        SettingsWindowFrontmostPresenter.closeAllSettingsWindows(
+            windows: [window],
+            attachedWindowIDs: attachedIDs
+        )
+
+        XCTAssertFalse(window.isVisible)
     }
 }
 

@@ -139,6 +139,8 @@
 		BD000000000000000000000B /* L10nStringsZhHant.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000B /* L10nStringsZhHant.swift */; };
 		BD000000000000000000000C /* GestureConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000C /* GestureConfigurationService.swift */; };
 		BD000000000000000000000D /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000D /* LaunchAtLoginService.swift */; };
+		BD0000000000000000000028 /* SettingsWindowFocusClaim.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000028 /* SettingsWindowFocusClaim.swift */; };
+		FC0000000000000000000001 /* Settings/Window/Opening/SettingsWindowFocusClaimTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0000000000000000000002 /* Settings/Window/Opening/SettingsWindowFocusClaimTests.swift */; };
 		BD000000000000000000000E /* GestureFeedbackCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000E /* GestureFeedbackCardView.swift */; };
 		BD000000000000000000000F /* GestureTargetApplicationResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD000000000000000000000F /* GestureTargetApplicationResolver.swift */; };
 		BD0000000000000000000020 /* GestureActivationGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD0000000000000000000020 /* GestureActivationGate.swift */; };
@@ -358,6 +360,8 @@
 		AD000000000000000000000B /* L10nStringsZhHant.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = L10nStringsZhHant.swift; sourceTree = "<group>"; };
 		AD000000000000000000000C /* GestureConfigurationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureConfigurationService.swift; sourceTree = "<group>"; };
 		AD000000000000000000000D /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
+		AD0000000000000000000028 /* SettingsWindowFocusClaim.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsWindowFocusClaim.swift; sourceTree = "<group>"; };
+		FC0000000000000000000002 /* Settings/Window/Opening/SettingsWindowFocusClaimTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Settings/Window/Opening/SettingsWindowFocusClaimTests.swift; sourceTree = "<group>"; };
 		AD000000000000000000000E /* GestureFeedbackCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureFeedbackCardView.swift; sourceTree = "<group>"; };
 		AD000000000000000000000F /* GestureTargetApplicationResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureTargetApplicationResolver.swift; sourceTree = "<group>"; };
 		AD0000000000000000000020 /* GestureActivationGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureActivationGate.swift; sourceTree = "<group>"; };
@@ -548,6 +552,7 @@
 				1766889B544862BA0E04BF40 /* AppDelegateTests.swift */,
 				F3A4B5C6D70819293A4B5C6 /* ColorHexFormattingTests.swift */,
 				B6C7D8091A2B3C4D5E6F7081 /* Settings/Window/Opening/SettingsWindowFrontmostPresenterTests.swift */,
+				FC0000000000000000000002 /* Settings/Window/Opening/SettingsWindowFocusClaimTests.swift */,
 				C0727874AE8B2F5CFFA1956F /* AppPresentationControllerTests.swift */,
 				5D8F2E209E88A880F6D8497B /* GestureEngineTests.swift */,
 				A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */,
@@ -848,6 +853,7 @@
 		CD000000000000000000000D /* Opening */ = {
 			isa = PBXGroup;
 			children = (
+				AD0000000000000000000028 /* SettingsWindowFocusClaim.swift */,
 				AC0000000000000000000020 /* SettingsWindowFrontmostPresenter.swift */,
 				AC0000000000000000000021 /* SettingsWindowOpener.swift */,
 			);
@@ -1179,6 +1185,7 @@
 				11CCADD5B4C2D2C1226B0CAF /* AppDelegateTests.swift in Sources */,
 				E2F3A4B5C6D70819293A4B5 /* ColorHexFormattingTests.swift in Sources */,
 				F5A6B7C8D9012B3C4D5E6F71 /* Settings/Window/Opening/SettingsWindowFrontmostPresenterTests.swift in Sources */,
+				FC0000000000000000000001 /* Settings/Window/Opening/SettingsWindowFocusClaimTests.swift in Sources */,
 				CF857DED13C113DA6789BBD6 /* AppPresentationControllerTests.swift in Sources */,
 				821C412ADFD094D46D9B7AEC /* GestureEngineTests.swift in Sources */,
 				9CE9A72563FDFB4D9FD4A6A5 /* GestureFlowApplicationTests.swift in Sources */,
@@ -1284,6 +1291,7 @@
 				BC0000000000000000000019 /* SettingsWindowCoordinator.swift in Sources */,
 				BC000000000000000000001A /* SettingsWindowDependencies.swift in Sources */,
 				BC000000000000000000001D /* SettingsWindowFramePersistence.swift in Sources */,
+				BD0000000000000000000028 /* SettingsWindowFocusClaim.swift in Sources */,
 				BC0000000000000000000020 /* SettingsWindowFrontmostPresenter.swift in Sources */,
 				BC000000000000000000001B /* SettingsWindowLifecycleObserver.swift in Sources */,
 				BC000000000000000000001E /* SettingsWindowMetrics.swift in Sources */,

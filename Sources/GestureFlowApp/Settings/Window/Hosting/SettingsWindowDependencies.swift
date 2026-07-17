@@ -18,10 +18,15 @@ final class SettingsWindowDependencies {
         self.coordinator = coordinator
         self.opener = opener
         self.presentationController = presentationController
-        self.coordinator.onSettingsDidAppear = { [weak presentationController] in
+        self.coordinator.onSettingsDidAppear = { [weak presentationController, weak coordinator] in
             presentationController?.handleSettingsDidAppear()
+            // WindowGroup creation is async relative to `openWindow`; claim key focus
+            // only after the host window has attached.
+            guard let coordinator else { return }
+            SettingsWindowFocusClaim.begin(coordinator: coordinator)
         }
         self.coordinator.onLastSettingsWindowDidClose = { [weak presentationController] in
+            SettingsWindowFocusClaim.cancel()
             presentationController?.handleLastSettingsWindowDidClose()
         }
     }
@@ -59,9 +64,14 @@ final class SettingsWindowDependencies {
                 presentationController.prepareToShowSettings()
             }
         case .menuBar:
+            // 1) Become a regular app so the window can take key focus.
+            // 2) Open / reopen the settings scene.
+            // 3) Start a focus claim that retries against apps (e.g. Electron)
+            //    which keep activation after the status-item menu dismisses.
             scheduleOnMain {
-                _ = opener.openSettingsWindow()
                 presentationController.prepareToShowSettings()
+                _ = opener.openSettingsWindow()
+                SettingsWindowFocusClaim.begin(coordinator: coordinator)
             }
         }
     }

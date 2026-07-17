@@ -19,7 +19,10 @@ final class AppPresentationController {
     init(
         application: NSApplication = .shared,
         setActivationPolicy: @escaping (NSApplication.ActivationPolicy) -> Bool = { NSApp.setActivationPolicy($0) },
-        activateApp: @escaping () -> Void = { NSApp.activate(ignoringOtherApps: true) },
+        activateApp: @escaping () -> Void = {
+            NSApp.activate()
+            NSRunningApplication.current.activate(options: [.activateAllWindows])
+        },
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }
     ) {
         self.application = application
@@ -35,7 +38,10 @@ final class AppPresentationController {
             state = .promotingToForeground
             scheduleDeferredActivationRequest()
         case .returningToAccessory:
+            // Policy is still `.regular` until the cancelled fallback runs; re-request
+            // activation so a reopen after close can reclaim key focus.
             state = .promotingToForeground
+            scheduleDeferredActivationRequest()
         case .promotingToForeground, .foregroundSettingsVisible:
             break
         }
@@ -45,6 +51,7 @@ final class AppPresentationController {
         guard state != .accessoryBackground else { return }
         pendingAccessoryFallbackToken = UUID()
         state = .foregroundSettingsVisible
+        scheduleDeferredActivationRequest()
     }
 
     func handleLastSettingsWindowDidClose() {

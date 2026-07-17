@@ -7,9 +7,7 @@ enum SettingsWindowFrontmostPresenter {
         coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
         openWindow: () -> Void,
         application: NSApplication = .shared,
-        activateApplication: @escaping ActivateApplication = {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        activateApplication: @escaping ActivateApplication = activateCurrentApplication
     ) {
         let windows = mergedSettingsWindows(
             coordinator: coordinator,
@@ -26,15 +24,15 @@ enum SettingsWindowFrontmostPresenter {
         }
 
         openWindow()
+        // SwiftUI creates the WindowGroup asynchronously; focus is claimed from
+        // `onSettingsDidAppear` / deferred `claimFrontmostSettingsWindow`.
     }
 
     static func activateExistingOrOpen(
         openWindow: () -> Void,
         windows: [NSWindow],
         attachedWindowIDs: Set<ObjectIdentifier> = [],
-        activateApplication: @escaping ActivateApplication = {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        activateApplication: @escaping ActivateApplication = activateCurrentApplication
     ) {
         if activateExistingSettingsWindow(
             windows: windows,
@@ -51,9 +49,7 @@ enum SettingsWindowFrontmostPresenter {
     static func activateExistingSettingsWindow(
         coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
         application: NSApplication = .shared,
-        activateApplication: @escaping ActivateApplication = {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        activateApplication: @escaping ActivateApplication = activateCurrentApplication
     ) -> Bool {
         activateExistingSettingsWindow(
             windows: mergedSettingsWindows(
@@ -69,9 +65,7 @@ enum SettingsWindowFrontmostPresenter {
     static func activateExistingSettingsWindow(
         windows: [NSWindow],
         attachedWindowIDs: Set<ObjectIdentifier> = [],
-        activateApplication: @escaping ActivateApplication = {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        activateApplication: @escaping ActivateApplication = activateCurrentApplication
     ) -> Bool {
         let settingsWindows = windows.filter { window in
             isSettingsWindow(window)
@@ -85,13 +79,66 @@ enum SettingsWindowFrontmostPresenter {
             window.close()
         }
 
-        if targetWindow.isMiniaturized {
-            targetWindow.deminiaturize(nil)
+        bringToFront(window: targetWindow, activateApplication: activateApplication)
+        return true
+    }
+
+    /// Reclaim key focus after SwiftUI finishes creating/showing the settings window.
+    @discardableResult
+    static func claimFrontmostSettingsWindow(
+        coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
+        application: NSApplication = .shared,
+        activateApplication: @escaping ActivateApplication = activateCurrentApplication
+    ) -> Bool {
+        activateExistingSettingsWindow(
+            coordinator: coordinator,
+            application: application,
+            activateApplication: activateApplication
+        )
+    }
+
+    static func closeAllSettingsWindows(
+        coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
+        application: NSApplication = .shared
+    ) {
+        closeAllSettingsWindows(
+            windows: mergedSettingsWindows(
+                coordinator: coordinator,
+                application: application
+            ),
+            attachedWindowIDs: attachedWindowIDs(for: coordinator)
+        )
+    }
+
+    static func closeAllSettingsWindows(
+        windows: [NSWindow],
+        attachedWindowIDs: Set<ObjectIdentifier> = []
+    ) {
+        for window in windows where isSettingsWindow(window)
+            || attachedWindowIDs.contains(ObjectIdentifier(window))
+        {
+            window.close()
+        }
+    }
+
+    static func bringToFront(
+        window: NSWindow,
+        activateApplication: @escaping ActivateApplication = activateCurrentApplication
+    ) {
+        if window.isMiniaturized {
+            window.deminiaturize(nil)
         }
 
-        targetWindow.makeKeyAndOrderFront(nil)
+        // Status-item dismissal often leaves another app active; `orderFrontRegardless`
+        // is required for LSUIElement / accessory shells to surface the window.
+        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
         activateApplication()
-        return true
+    }
+
+    private static func activateCurrentApplication() {
+        NSApp.activate()
+        NSRunningApplication.current.activate(options: [.activateAllWindows])
     }
 
     private static func attachedWindowIDs(

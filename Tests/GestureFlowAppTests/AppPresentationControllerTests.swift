@@ -48,6 +48,8 @@ final class AppPresentationControllerTests: XCTestCase {
         harness.runScheduledBlocksUntilDrained()
 
         XCTAssertEqual(harness.activationPolicies, [.regular])
+        // prepare + didAppear + reopen prepare
+        XCTAssertEqual(harness.activateAppCallCount, 3)
         XCTAssertEqual(controller.state, .promotingToForeground)
     }
 
@@ -62,7 +64,8 @@ final class AppPresentationControllerTests: XCTestCase {
         harness.runScheduledBlocksUntilDrained()
 
         XCTAssertEqual(harness.activationPolicies, [.regular])
-        XCTAssertEqual(harness.activateAppCallCount, 1)
+        // One activation from prepare, one from settings-did-appear reclaim.
+        XCTAssertEqual(harness.activateAppCallCount, 2)
         XCTAssertEqual(controller.state, .foregroundSettingsVisible)
     }
 
