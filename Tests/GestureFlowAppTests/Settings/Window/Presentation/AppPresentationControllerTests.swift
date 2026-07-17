@@ -10,12 +10,7 @@ final class AppPresentationControllerTests: XCTestCase {
         controller.prepareToShowSettings()
 
         XCTAssertEqual(harness.activationPolicies, [.regular])
-        XCTAssertEqual(harness.activateAppCallCount, 0)
         XCTAssertEqual(controller.state, .promotingToForeground)
-
-        harness.runScheduledBlocksUntilDrained()
-
-        XCTAssertEqual(harness.activateAppCallCount, 1)
     }
 
     func testClosingLastSettingsWindowSchedulesAccessoryFallbackOnNextMainTurn() {
@@ -48,8 +43,6 @@ final class AppPresentationControllerTests: XCTestCase {
         harness.runScheduledBlocksUntilDrained()
 
         XCTAssertEqual(harness.activationPolicies, [.regular])
-        // prepare + didAppear + reopen prepare
-        XCTAssertEqual(harness.activateAppCallCount, 3)
         XCTAssertEqual(controller.state, .promotingToForeground)
     }
 
@@ -61,11 +54,8 @@ final class AppPresentationControllerTests: XCTestCase {
         controller.prepareToShowSettings()
         controller.handleSettingsDidAppear()
         controller.prepareToShowSettings()
-        harness.runScheduledBlocksUntilDrained()
 
         XCTAssertEqual(harness.activationPolicies, [.regular])
-        // prepare + did-appear + menu-bar reopen while still visible
-        XCTAssertEqual(harness.activateAppCallCount, 3)
         XCTAssertEqual(controller.state, .foregroundSettingsVisible)
     }
 
@@ -78,16 +68,11 @@ final class AppPresentationControllerTests: XCTestCase {
 
         XCTAssertEqual(harness.activationPolicies, [.regular])
         XCTAssertEqual(controller.state, .promotingToForeground)
-
-        harness.runScheduledBlocksUntilDrained()
-
-        XCTAssertEqual(harness.activateAppCallCount, 1)
     }
 }
 
 private final class AppPresentationControllerHarness {
     private(set) var activationPolicies: [NSApplication.ActivationPolicy] = []
-    private(set) var activateAppCallCount = 0
     private(set) var scheduledBlocks: [() -> Void] = []
 
     func makeController() -> AppPresentationController {
@@ -96,9 +81,6 @@ private final class AppPresentationControllerHarness {
             setActivationPolicy: { [weak self] policy in
                 self?.activationPolicies.append(policy)
                 return true
-            },
-            activateApp: { [weak self] in
-                self?.activateAppCallCount += 1
             },
             scheduleOnMain: { [weak self] block in
                 self?.scheduledBlocks.append(block)

@@ -29,7 +29,6 @@ final class SettingsPresentationFlowTests: XCTestCase {
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
-            activateApp: {},
             scheduleOnMain: { $0() }
         )
         let flow = SettingsPresentationFlow(
@@ -63,7 +62,6 @@ final class SettingsPresentationFlowTests: XCTestCase {
                 events.append("policy")
                 return true
             },
-            activateApp: { events.append("activate") },
             scheduleOnMain: { $0() }
         )
         let flow = SettingsPresentationFlow(
@@ -75,7 +73,7 @@ final class SettingsPresentationFlowTests: XCTestCase {
 
         flow.presentFromMenuBar(viewModel: makeSettingsViewModel())
 
-        XCTAssertEqual(events, ["policy", "activate", "open"])
+        XCTAssertEqual(events, ["policy", "open"])
         XCTAssertEqual(presentationController.state, .promotingToForeground)
     }
 
@@ -88,7 +86,6 @@ final class SettingsPresentationFlowTests: XCTestCase {
             presentationController: AppPresentationController(
                 application: .shared,
                 setActivationPolicy: { _ in true },
-                activateApp: {},
                 scheduleOnMain: { _ in }
             ),
             scheduleOnMain: { scheduledBlocks.append($0) },

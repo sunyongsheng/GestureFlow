@@ -96,7 +96,6 @@ final class AppDelegateTests: XCTestCase {
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
-            activateApp: {},
             scheduleOnMain: { _ in }
         )
         let delegate = AppDelegate(
@@ -116,7 +115,6 @@ final class AppDelegateTests: XCTestCase {
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
-            activateApp: {},
             scheduleOnMain: { $0() }
         )
         let showSettings = AppDelegate.makeShowSettingsHandler(
@@ -140,7 +138,6 @@ final class AppDelegateTests: XCTestCase {
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
-            activateApp: {},
             scheduleOnMain: { _ in }
         )
         let showSettings = AppDelegate.makeShowSettingsHandler(
@@ -171,7 +168,6 @@ final class AppDelegateTests: XCTestCase {
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
-            activateApp: {},
             scheduleOnMain: { $0() }
         )
         let showSettings = AppDelegate.makeShowSettingsHandler(
@@ -200,7 +196,6 @@ final class AppDelegateTests: XCTestCase {
                 events.append("policy")
                 return true
             },
-            activateApp: { events.append("activate") },
             scheduleOnMain: { $0() }
         )
         let showSettings = AppDelegate.makeShowSettingsHandler(
@@ -212,7 +207,7 @@ final class AppDelegateTests: XCTestCase {
 
         showSettings(makeSettingsViewModel(), SettingsPresentationSource.menuBar)
 
-        XCTAssertEqual(events, ["policy", "activate", "open"])
+        XCTAssertEqual(events, ["policy", "open"])
         XCTAssertEqual(presentationController.state, .promotingToForeground)
     }
 }

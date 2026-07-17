@@ -29,17 +29,13 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
 
     func testActivateExistingOrOpenOpensOnlyWhenNoSettingsWindowExists() {
         var openCount = 0
-        var activateCount = 0
 
         SettingsWindowFrontmostPresenter.activateExistingOrOpen(
             openWindow: { openCount += 1 },
-            windows: [makeGenericWindow()],
-            activateApplication: { activateCount += 1 }
+            windows: [makeGenericWindow()]
         )
 
         XCTAssertEqual(openCount, 1)
-        // Activation is deferred until the settings host window attaches.
-        XCTAssertEqual(activateCount, 0)
     }
 
     func testBringToFrontOrdersWindowKeyAndActivatesApplication() {
@@ -140,6 +136,44 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
         )
 
         XCTAssertFalse(window.isVisible)
+    }
+
+    func testClaimSkipsForceActivationWhenApplicationAlreadyActive() {
+        let window = makeSettingsWindow()
+        window.orderOut(nil)
+        var activateCount = 0
+        let isActive = true
+
+        let claimed = SettingsWindowFrontmostPresenter.activateExistingSettingsWindow(
+            windows: [window],
+            activateApplication: {
+                guard isActive == false else { return }
+                activateCount += 1
+            }
+        )
+
+        XCTAssertTrue(claimed)
+        XCTAssertEqual(activateCount, 0)
+        XCTAssertTrue(window.isVisible)
+    }
+
+    func testClaimForceActivatesWhenApplicationIsInactive() {
+        let window = makeSettingsWindow()
+        window.orderOut(nil)
+        var activateCount = 0
+        let isActive = false
+
+        let claimed = SettingsWindowFrontmostPresenter.activateExistingSettingsWindow(
+            windows: [window],
+            activateApplication: {
+                guard isActive == false else { return }
+                activateCount += 1
+            }
+        )
+
+        XCTAssertTrue(claimed)
+        XCTAssertEqual(activateCount, 1)
+        XCTAssertTrue(window.isVisible)
     }
 
     func testBeginKeyFocusClaimStopsWhenAlreadyKey() {

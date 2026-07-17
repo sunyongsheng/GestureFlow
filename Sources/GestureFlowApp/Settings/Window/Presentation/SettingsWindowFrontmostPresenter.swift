@@ -20,23 +20,38 @@ enum SettingsWindowFrontmostPresenter {
 
     // MARK: - Open / front (one-shot)
 
+    /// Orders an existing settings window without force-activating.
+    ///
+    /// Activation is owned by `beginKeyFocusClaim` so reopen paths do not stack
+    /// SkyLight calls while `isActive` is still false asynchronously.
+    @discardableResult
+    static func orderExistingSettingsWindow(
+        coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
+        application: NSApplication = .shared
+    ) -> Bool {
+        activateExistingSettingsWindow(
+            coordinator: coordinator,
+            application: application,
+            activateApplication: {}
+        )
+    }
+
+    static func hasSettingsWindow(
+        coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
+        application: NSApplication = .shared
+    ) -> Bool {
+        let attachedIDs = attachedWindowIDs(for: coordinator)
+        return mergedSettingsWindows(coordinator: coordinator, application: application).contains { window in
+            isSettingsWindow(window) || attachedIDs.contains(ObjectIdentifier(window))
+        }
+    }
+
     static func activateExistingOrOpen(
         coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
         openWindow: () -> Void,
-        application: NSApplication = .shared,
-        activateApplication: @escaping ActivateApplication = activateCurrentApplication
+        application: NSApplication = .shared
     ) {
-        let windows = mergedSettingsWindows(
-            coordinator: coordinator,
-            application: application
-        )
-        let attachedWindowIDs = attachedWindowIDs(for: coordinator)
-
-        if activateExistingSettingsWindow(
-            windows: windows,
-            attachedWindowIDs: attachedWindowIDs,
-            activateApplication: activateApplication
-        ) {
+        if orderExistingSettingsWindow(coordinator: coordinator, application: application) {
             return
         }
 
@@ -48,13 +63,12 @@ enum SettingsWindowFrontmostPresenter {
     static func activateExistingOrOpen(
         openWindow: () -> Void,
         windows: [NSWindow],
-        attachedWindowIDs: Set<ObjectIdentifier> = [],
-        activateApplication: @escaping ActivateApplication = activateCurrentApplication
+        attachedWindowIDs: Set<ObjectIdentifier> = []
     ) {
         if activateExistingSettingsWindow(
             windows: windows,
             attachedWindowIDs: attachedWindowIDs,
-            activateApplication: activateApplication
+            activateApplication: {}
         ) {
             return
         }
@@ -101,16 +115,23 @@ enum SettingsWindowFrontmostPresenter {
     }
 
     /// One-shot reclaim after SwiftUI finishes creating/showing the settings window.
+    ///
+    /// Activates only when this app is not already active, so menu-bar / appear /
+    /// `didBecomeActive` claims do not stack SkyLight force-activation.
     @discardableResult
     static func claimFrontmostSettingsWindow(
         coordinator: SettingsWindowCoordinator = SettingsWindowDependencies.shared.coordinator,
         application: NSApplication = .shared,
+        isApplicationActive: @escaping () -> Bool = { NSApp.isActive },
         activateApplication: @escaping ActivateApplication = activateCurrentApplication
     ) -> Bool {
         activateExistingSettingsWindow(
             coordinator: coordinator,
             application: application,
-            activateApplication: activateApplication
+            activateApplication: {
+                guard isApplicationActive() == false else { return }
+                activateApplication()
+            }
         )
     }
 

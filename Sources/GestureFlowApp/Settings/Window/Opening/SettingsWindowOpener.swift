@@ -15,7 +15,8 @@ final class SettingsWindowOpener {
 
     init(
         activateExistingSettingsWindow: @escaping () -> Bool = {
-            SettingsWindowFrontmostPresenter.activateExistingSettingsWindow(
+            // Order only — `beginKeyFocusClaim` owns force-activation.
+            SettingsWindowFrontmostPresenter.orderExistingSettingsWindow(
                 coordinator: SettingsWindowDependencies.shared.coordinator
             )
         }

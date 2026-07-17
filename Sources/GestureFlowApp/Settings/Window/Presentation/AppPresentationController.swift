@@ -10,7 +10,6 @@ final class AppPresentationController {
 
     private let application: NSApplication
     private let setActivationPolicy: (NSApplication.ActivationPolicy) -> Bool
-    private let activateApp: () -> Void
     private let scheduleOnMain: (@escaping () -> Void) -> Void
 
     private var pendingAccessoryFallbackToken = UUID()
@@ -19,34 +18,28 @@ final class AppPresentationController {
     init(
         application: NSApplication = .shared,
         setActivationPolicy: @escaping (NSApplication.ActivationPolicy) -> Bool = { NSApp.setActivationPolicy($0) },
-        activateApp: @escaping () -> Void = {
-            SettingsWindowFrontmostPresenter.activateCurrentApplication()
-        },
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) }
     ) {
         self.application = application
         self.setActivationPolicy = setActivationPolicy
-        self.activateApp = activateApp
         self.scheduleOnMain = scheduleOnMain
     }
 
+    /// Promotes to `.regular` so the settings window can become key.
+    ///
+    /// Does not activate the app — activation is owned by
+    /// `SettingsWindowFrontmostPresenter` focus claim so menu-bar opens do not
+    /// stack SkyLight / `NSApp.activate` multiple times.
     func prepareToShowSettings() {
         switch state {
         case .accessoryBackground:
             _ = setActivationPolicy(.regular)
             state = .promotingToForeground
-            scheduleDeferredActivationRequest()
         case .returningToAccessory:
-            // Policy is still `.regular` until the cancelled fallback runs; re-request
-            // activation so a reopen after close can reclaim key focus.
+            // Policy is still `.regular` until the cancelled fallback runs.
             state = .promotingToForeground
-            scheduleDeferredActivationRequest()
-        case .promotingToForeground:
+        case .promotingToForeground, .foregroundSettingsVisible:
             break
-        case .foregroundSettingsVisible:
-            // Settings may still be open but key focus was stolen (e.g. by Electron).
-            // Re-request activation on every menu-bar open.
-            scheduleDeferredActivationRequest()
         }
     }
 
@@ -54,7 +47,6 @@ final class AppPresentationController {
         guard state != .accessoryBackground else { return }
         pendingAccessoryFallbackToken = UUID()
         state = .foregroundSettingsVisible
-        scheduleDeferredActivationRequest()
     }
 
     func handleLastSettingsWindowDidClose() {
@@ -75,17 +67,5 @@ final class AppPresentationController {
 
     func cancelPendingAccessoryFallbackIfNeeded() {
         pendingAccessoryFallbackToken = UUID()
-    }
-
-    private func scheduleDeferredActivationRequest() {
-        scheduleOnMain { [weak self] in
-            guard let self else { return }
-            self.scheduleOnMain { [weak self] in
-                guard let self else { return }
-                guard self.state == .promotingToForeground || self.state == .foregroundSettingsVisible else { return }
-
-                self.activateApp()
-            }
-        }
     }
 }

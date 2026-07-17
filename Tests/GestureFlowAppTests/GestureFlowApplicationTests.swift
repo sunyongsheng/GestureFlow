@@ -604,7 +604,6 @@ final class GestureFlowApplicationTests: XCTestCase {
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
-            activateApp: {},
             scheduleOnMain: { scheduledAccessoryFallback = $0 }
         )
         let coordinator = SettingsWindowCoordinator()
@@ -694,7 +693,6 @@ final class GestureFlowApplicationTests: XCTestCase {
         let presentationController = AppPresentationController(
             application: .shared,
             setActivationPolicy: { _ in true },
-            activateApp: {},
             scheduleOnMain: { _ in }
         )
         let coordinator = SettingsWindowCoordinator()

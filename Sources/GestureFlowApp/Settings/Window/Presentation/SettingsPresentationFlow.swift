@@ -57,17 +57,20 @@ final class SettingsPresentationFlow {
         }
     }
 
-    /// Menu bar / Cmd+, : promote, open, then reclaim key focus.
-    ///
-    /// New windows also claim again from `onSettingsDidAppear` after attach.
-    /// Reopening an existing window only hits this path (appear does not re-fire).
+    /// Menu bar / Cmd+, : promote, open, then reclaim key focus when a window
+    /// already exists. New windows claim once from `onSettingsDidAppear`.
     func presentFromMenuBar(viewModel: SettingsViewModel) {
         presentationController.cancelPendingAccessoryFallbackIfNeeded()
         coordinator.install(viewModel: viewModel)
         scheduleOnMain { [presentationController, opener, coordinator] in
             presentationController.prepareToShowSettings()
             _ = opener.openSettingsWindow()
-            SettingsWindowFrontmostPresenter.beginKeyFocusClaim(coordinator: coordinator)
+            // Reopen: appear does not re-fire, so claim here.
+            // First open: wait for attach → `onSettingsDidAppear` claim (avoids a
+            // no-op claim generation that races the appear path).
+            if SettingsWindowFrontmostPresenter.hasSettingsWindow(coordinator: coordinator) {
+                SettingsWindowFrontmostPresenter.beginKeyFocusClaim(coordinator: coordinator)
+            }
         }
     }
 
