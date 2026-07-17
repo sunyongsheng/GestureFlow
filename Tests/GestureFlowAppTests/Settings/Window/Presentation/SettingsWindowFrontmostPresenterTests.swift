@@ -112,22 +112,21 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
     }
 
     func testCloseAllSettingsWindowsClosesMatchingWindows() {
-        let settingsWindow = makeSettingsWindow()
-        settingsWindow.orderFront(nil)
-        let genericWindow = makeGenericWindow()
-        genericWindow.orderFront(nil)
+        // Assert via close() call counts — `isVisible` after `close()` is unreliable
+        // on CI hosts (and default `isReleasedWhenClosed` can deallocate the window).
+        let settingsWindow = makeTrackingSettingsWindow()
+        let genericWindow = makeTrackingGenericWindow()
 
         SettingsWindowFrontmostPresenter.closeAllSettingsWindows(
             windows: [settingsWindow, genericWindow]
         )
 
-        XCTAssertFalse(settingsWindow.isVisible)
-        XCTAssertTrue(genericWindow.isVisible)
+        XCTAssertEqual(settingsWindow.closeCallCount, 1)
+        XCTAssertEqual(genericWindow.closeCallCount, 0)
     }
 
     func testCloseAllSettingsWindowsClosesAttachedWindowsWithoutIdentifier() {
-        let window = makeGenericWindow()
-        window.orderFront(nil)
+        let window = makeTrackingGenericWindow()
         let attachedIDs = Set([ObjectIdentifier(window)])
 
         SettingsWindowFrontmostPresenter.closeAllSettingsWindows(
@@ -135,7 +134,7 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
             attachedWindowIDs: attachedIDs
         )
 
-        XCTAssertFalse(window.isVisible)
+        XCTAssertEqual(window.closeCallCount, 1)
     }
 
     func testClaimSkipsForceActivationWhenApplicationAlreadyActive() {
@@ -248,23 +247,72 @@ final class SettingsWindowFrontmostPresenterTests: XCTestCase {
 }
 
 @MainActor
+private final class TrackingWindow: NSWindow {
+    private(set) var closeCallCount = 0
+
+    override func close() {
+        closeCallCount += 1
+        super.close()
+    }
+}
+
+@MainActor
 private func makeSettingsWindow() -> NSWindow {
-    let window = NSWindow(
+    configureTestWindow(
+        NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        ),
+        settingsIdentifier: true
+    )
+}
+
+@MainActor
+private func makeGenericWindow() -> NSWindow {
+    configureTestWindow(
+        NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        ),
+        settingsIdentifier: false
+    )
+}
+
+@MainActor
+private func makeTrackingSettingsWindow() -> TrackingWindow {
+    let window = TrackingWindow(
         contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
         styleMask: [.titled, .closable, .resizable],
         backing: .buffered,
         defer: false
     )
-    window.identifier = NSUserInterfaceItemIdentifier(SettingsWindowSceneIDs.settings)
-    return window
+    return configureTestWindow(window, settingsIdentifier: true)
 }
 
 @MainActor
-private func makeGenericWindow() -> NSWindow {
-    NSWindow(
+private func makeTrackingGenericWindow() -> TrackingWindow {
+    let window = TrackingWindow(
         contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
         styleMask: [.titled, .closable],
         backing: .buffered,
         defer: false
     )
+    return configureTestWindow(window, settingsIdentifier: false)
+}
+
+@MainActor
+@discardableResult
+private func configureTestWindow<Window: NSWindow>(
+    _ window: Window,
+    settingsIdentifier: Bool
+) -> Window {
+    window.isReleasedWhenClosed = false
+    if settingsIdentifier {
+        window.identifier = NSUserInterfaceItemIdentifier(SettingsWindowSceneIDs.settings)
+    }
+    return window
 }
