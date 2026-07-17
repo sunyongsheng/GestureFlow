@@ -17,7 +17,38 @@ final class AppDelegateTests: XCTestCase {
         )
 
         XCTAssertEqual(coordinator.launchCallCount, 1)
+        XCTAssertEqual(coordinator.lastShouldPresentSettingsOnLaunch, true)
         XCTAssertTrue(delegate.applicationController === coordinator)
+    }
+
+    func testApplicationDidFinishLaunching_skipsSettingsWhenLaunchedAtLogin() {
+        let coordinator = ApplicationCoordinatorSpy()
+        let delegate = AppDelegate(
+            launchReasonDetector: LaunchReasonDetectorStub(wasLaunchedAtLogin: true),
+            makeApplicationController: { _, _ in coordinator }
+        )
+
+        delegate.applicationDidFinishLaunching(
+            Notification(name: NSApplication.didFinishLaunchingNotification)
+        )
+
+        XCTAssertEqual(coordinator.launchCallCount, 1)
+        XCTAssertEqual(coordinator.lastShouldPresentSettingsOnLaunch, false)
+    }
+
+    func testApplicationDidFinishLaunching_presentsSettingsOnOrdinaryColdStart() {
+        let coordinator = ApplicationCoordinatorSpy()
+        let delegate = AppDelegate(
+            launchReasonDetector: LaunchReasonDetectorStub(wasLaunchedAtLogin: false),
+            makeApplicationController: { _, _ in coordinator }
+        )
+
+        delegate.applicationDidFinishLaunching(
+            Notification(name: NSApplication.didFinishLaunchingNotification)
+        )
+
+        XCTAssertEqual(coordinator.launchCallCount, 1)
+        XCTAssertEqual(coordinator.lastShouldPresentSettingsOnLaunch, true)
     }
 
     func testAppDelegateExposesInjectedSettingsOpener() {
@@ -188,10 +219,16 @@ final class AppDelegateTests: XCTestCase {
 
 private final class ApplicationCoordinatorSpy: GestureFlowApplicationCoordinating {
     private(set) var launchCallCount = 0
+    private(set) var lastShouldPresentSettingsOnLaunch: Bool?
 
-    func launch() {
+    func launch(shouldPresentSettingsOnLaunch: Bool) {
         launchCallCount += 1
+        lastShouldPresentSettingsOnLaunch = shouldPresentSettingsOnLaunch
     }
+}
+
+private struct LaunchReasonDetectorStub: LaunchReasonDetecting {
+    let wasLaunchedAtLogin: Bool
 }
 
 private func makeSettingsViewModel() -> SettingsViewModel {

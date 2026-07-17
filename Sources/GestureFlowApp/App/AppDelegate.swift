@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private let makeApplicationController: ApplicationControllerFactory
     private let scheduleOnMain: (@escaping () -> Void) -> Void
+    private let launchReasonDetector: LaunchReasonDetecting
 
     let settingsCoordinator: SettingsWindowCoordinator
     let settingsOpener: SettingsWindowOpener
@@ -20,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.settingsOpener = dependencies.opener
         self.presentationController = dependencies.presentationController
         self.scheduleOnMain = { DispatchQueue.main.async(execute: $0) }
+        self.launchReasonDetector = LaunchReasonDetector()
         self.makeApplicationController = Self.defaultApplicationControllerFactory(
             dependencies: dependencies,
             scheduleOnMain: self.scheduleOnMain
@@ -32,12 +34,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsOpener: SettingsWindowOpener = SettingsWindowDependencies.shared.opener,
         presentationController: AppPresentationController = SettingsWindowDependencies.shared.presentationController,
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) },
+        launchReasonDetector: LaunchReasonDetecting = LaunchReasonDetector(),
         makeApplicationController: ApplicationControllerFactory? = nil
     ) {
         self.settingsCoordinator = settingsCoordinator
         self.settingsOpener = settingsOpener
         self.presentationController = presentationController
         self.scheduleOnMain = scheduleOnMain
+        self.launchReasonDetector = launchReasonDetector
         self.makeApplicationController = makeApplicationController ?? Self.defaultApplicationControllerFactory(
             coordinator: settingsCoordinator,
             opener: settingsOpener,
@@ -50,7 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let controller = makeApplicationController(settingsCoordinator, settingsOpener)
         applicationController = controller
-        controller.launch()
+        controller.launch(shouldPresentSettingsOnLaunch: !launchReasonDetector.wasLaunchedAtLogin)
     }
 }
 

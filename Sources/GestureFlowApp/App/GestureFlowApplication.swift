@@ -2,7 +2,13 @@ import AppKit
 import GestureFlowCore
 
 protocol GestureFlowApplicationCoordinating: AnyObject {
-    func launch()
+    func launch(shouldPresentSettingsOnLaunch: Bool)
+}
+
+extension GestureFlowApplicationCoordinating {
+    func launch() {
+        launch(shouldPresentSettingsOnLaunch: true)
+    }
 }
 
 enum SettingsPresentationSource {
@@ -39,6 +45,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     private let terminateApplication: (NSApplication) -> Void
     private let showSettingsHandler: (SettingsViewModel, SettingsPresentationSource) -> Void
     private let scheduleOnMain: (@escaping () -> Void) -> Void
+    private let closeAutoOpenedSettingsWindows: () -> Void
     private let initialLoadResult: ConfigurationLoadResult
     private let localizationManager: LocalizationManager
     private var configuration: AppConfiguration
@@ -69,6 +76,9 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         terminateApplication: @escaping (NSApplication) -> Void = { $0.terminate(nil) },
         showSettings: @escaping (SettingsViewModel, SettingsPresentationSource) -> Void = { _, _ in },
         scheduleOnMain: @escaping (@escaping () -> Void) -> Void = { DispatchQueue.main.async(execute: $0) },
+        closeAutoOpenedSettingsWindows: @escaping () -> Void = {
+            SettingsWindowFrontmostPresenter.closeAllSettingsWindows()
+        },
         autoPromptAccessibilityOnLaunch: Bool = {
             #if DEBUG
             false
@@ -79,6 +89,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
     ) {
         self.application = application
         self.autoPromptAccessibilityOnLaunch = autoPromptAccessibilityOnLaunch
+        self.closeAutoOpenedSettingsWindows = closeAutoOpenedSettingsWindows
         let resolvedResolver = configurationDirectoryResolver ?? ConfigurationDirectoryResolver.bootstrap()
         let resolvedAppConfigurationStore = appConfigurationStore ?? resolvedResolver.makeAppConfigurationStore()
         let resolvedGestureService = gestureConfigurationService
@@ -156,11 +167,17 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
         }
     }
 
-    func launch() {
+    func launch(shouldPresentSettingsOnLaunch: Bool) {
         observeApplicationActivationIfNeeded()
         observeApplicationTerminationIfNeeded()
         startAutomaticUpdatesIfNeeded()
-        openSettings(source: .launch)
+        if shouldPresentSettingsOnLaunch {
+            openSettings(source: .launch)
+        } else {
+            scheduleOnMain { [weak self] in
+                self?.closeAutoOpenedSettingsWindows()
+            }
+        }
         refreshApplicationState(promptIfNeeded: false)
         scheduleLaunchPermissionPromptIfNeeded()
     }

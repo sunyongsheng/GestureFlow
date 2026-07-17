@@ -32,7 +32,8 @@ let package = Package(
                 .linkedFramework("SwiftUI"),
                 .linkedFramework("CoreGraphics"),
                 .linkedFramework("ApplicationServices"),
-                .linkedFramework("ServiceManagement")
+                .linkedFramework("ServiceManagement"),
+                .linkedFramework("Carbon")
             ]
         ),
         .testTarget(
