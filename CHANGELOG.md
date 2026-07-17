@@ -2,6 +2,12 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.2.10] - 2026-07-17
+
+- Keep the settings window closed when the app is launched at login.
+- Fix the settings window opening from the menu bar without taking keyboard focus when another app is frontmost.
+- Avoid repeatedly forcing app activation when opening settings from the menu bar.
+
 ## [0.2.9] - 2026-07-10
 
 - Reduce CPU usage during gesture drawing by redrawing only the new trail segment instead of the full overlay surface.
