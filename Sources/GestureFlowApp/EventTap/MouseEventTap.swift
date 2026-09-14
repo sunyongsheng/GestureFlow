@@ -472,14 +472,25 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func recoverFromDisabledEvent() -> MouseEventTapDecision {
+        let buttonReset = pendingMouseButtonReset
+            ?? activeGesture.flatMap { gesture in
+                gesture.points.last.map {
+                    PendingMouseButtonReset(trigger: gesture.trigger, point: $0)
+                }
+            }
+            ?? pendingRightClick?.points.last.map {
+                PendingMouseButtonReset(trigger: .rightMouse, point: $0)
+            }
         if activeGesture != nil || pendingRightClick != nil {
             onGestureCancelled?()
         }
         cancelPendingRightClickTimeout()
         pendingRightClick = nil
         activeGesture = nil
+        pendingMouseButtonReset = nil
         suppressRightMouseSequenceUntilUp = false
         clearRightClickTimeoutIfNeeded()
+        buttonReset.map(releaseMouseButtonIfNeeded)
         setEventTapEnabled(true)
         return .passEvent
     }

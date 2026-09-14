@@ -757,6 +757,77 @@ final class MouseEventTapTests: XCTestCase {
         XCTAssertEqual(cancelCount, 1)
     }
 
+    func testDisabledTapWithPendingRightClickReleasesMouseButtonForSystemStateRecovery() {
+        var resets: [(GestureTrigger, GesturePoint)] = []
+        var replayedClicks: [(GestureTrigger, GesturePoint)] = []
+        var cancelCount = 0
+        let tap = makeMouseEventTap(
+            syntheticClickPoster: { trigger, point in
+                replayedClicks.append((trigger, point))
+            },
+            mouseButtonResetter: { trigger, point in
+                resets.append((trigger, point))
+            }
+        )
+        tap.onGestureCancelled = {
+            cancelCount += 1
+        }
+
+        XCTAssertEqual(tap.handle(.rightMouseDown(at: GesturePoint(x: 10, y: 10))), .suppressEvent)
+        XCTAssertEqual(tap.handle(.tapDisabledByTimeout), .passEvent)
+
+        XCTAssertEqual(cancelCount, 1)
+        XCTAssertEqual(resets.count, 1)
+        XCTAssertEqual(resets.first?.0, .rightMouse)
+        XCTAssertEqual(resets.first?.1, GesturePoint(x: 10, y: 10))
+        XCTAssertTrue(replayedClicks.isEmpty)
+    }
+
+    func testDisabledTapWithActiveRightGestureReleasesMouseButtonForSystemStateRecovery() {
+        var resets: [(GestureTrigger, GesturePoint)] = []
+        var cancelCount = 0
+        var endedGestures: [(GestureTrigger, [GesturePoint])] = []
+        let tap = makeMouseEventTap(
+            mouseButtonResetter: { trigger, point in
+                resets.append((trigger, point))
+            }
+        )
+        tap.onGestureCancelled = {
+            cancelCount += 1
+        }
+        tap.onGestureEnded = { trigger, points in
+            endedGestures.append((trigger, points))
+        }
+
+        XCTAssertEqual(tap.handle(.rightMouseDown(at: GesturePoint(x: 0, y: 0))), .suppressEvent)
+        XCTAssertEqual(tap.handle(.rightMouseDragged(to: GesturePoint(x: 40, y: 0))), .suppressEvent)
+        XCTAssertEqual(tap.handle(.tapDisabledByUserInput), .passEvent)
+
+        XCTAssertEqual(cancelCount, 1)
+        XCTAssertTrue(endedGestures.isEmpty)
+        XCTAssertEqual(resets.count, 1)
+        XCTAssertEqual(resets.first?.0, .rightMouse)
+        XCTAssertEqual(resets.first?.1, GesturePoint(x: 40, y: 0))
+    }
+
+    func testDisabledTapWithNoPendingRightClickDoesNotReleaseMouseButton() {
+        var resets: [(GestureTrigger, GesturePoint)] = []
+        var cancelCount = 0
+        let tap = makeMouseEventTap(
+            mouseButtonResetter: { trigger, point in
+                resets.append((trigger, point))
+            }
+        )
+        tap.onGestureCancelled = {
+            cancelCount += 1
+        }
+
+        XCTAssertEqual(tap.handle(.tapDisabledByTimeout), .passEvent)
+
+        XCTAssertEqual(cancelCount, 0)
+        XCTAssertTrue(resets.isEmpty)
+    }
+
     func testRightMouseDownPassesThroughWhenGateReturnsFalse() {
         var timeoutCount = 0
         let tap = makeMouseEventTap(
