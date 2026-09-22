@@ -2,6 +2,13 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.3.0] - 2026-09-22
+
+- Redesign the app icon with layered vector gesture artwork and adaptive Light / Dark colors in Icon Composer.
+- Add a separate Debug icon badge and refine spacing between gesture strokes.
+- Release a held right mouse button when the event tap is disabled to prevent a stuck button state.
+- Stabilize settings-window close tests in CI.
+
 ## [0.2.10] - 2026-07-17
 
 - Keep the settings window closed when the app is launched at login.
