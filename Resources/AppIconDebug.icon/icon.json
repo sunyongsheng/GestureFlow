@@ -5,22 +5,10 @@
       "layers" : [
         {
           "glass" : false,
-          "image-name" : "SVG Image 2.svg",
-          "name" : "DebugFlag",
+          "image-name" : "DebugBadge.svg",
+          "name" : "Foreground · Debug",
           "position" : {
-            "scale" : 3.33,
-            "translation-in-points" : [
-              227.7109375,
-              321.7890625
-            ]
-          }
-        },
-        {
-          "glass" : false,
-          "image-name" : "Image.jpeg",
-          "name" : "Image",
-          "position" : {
-            "scale" : 1.4,
+            "scale" : 1,
             "translation-in-points" : [
               0,
               0
@@ -28,13 +16,90 @@
           }
         }
       ],
+      "name" : "Foreground · Debug",
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.5
+        "opacity" : 0
       },
       "translucency" : {
-        "enabled" : true,
-        "value" : 0.5
+        "enabled" : false,
+        "value" : 0
+      }
+    },
+    {
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "srgb:0.03137,0.49804,0.67843,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.33333,0.85098,0.94902,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "Gesture.svg",
+          "name" : "Foreground · Gesture",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "name" : "Foreground · Gesture",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    },
+    {
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "srgb:0.92941,0.95294,0.97255,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.07059,0.13725,0.20000,1.00000"
+              }
+            }
+          ],
+          "glass" : false,
+          "image-name" : "Background.svg",
+          "name" : "Background · Adaptive",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "name" : "Background · Adaptive",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
       }
     }
   ],
