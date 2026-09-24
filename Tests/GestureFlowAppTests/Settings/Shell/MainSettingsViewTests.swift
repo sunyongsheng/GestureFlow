@@ -17,9 +17,13 @@ final class MainSettingsViewTests: XCTestCase {
 
     func testMainSettingsViewDeclaresSidebarColumnVisibilityState() {
         let view = MainSettingsView(viewModel: makeViewModel())
-        let statePropertyNames = Mirror(reflecting: view).children.compactMap(\.label)
+        // `@State` storage is `_name: State<T>` as a property wrapper and `__name: LazyState<T>` as the
+        // macro in the macOS 27 SDK, so match the stored type instead of the synthesized name.
+        let storedPropertyTypeNames = Mirror(reflecting: view).children.map {
+            String(describing: type(of: $0.value))
+        }
 
-        XCTAssertTrue(statePropertyNames.contains("_columnVisibility"))
+        XCTAssertTrue(storedPropertyTypeNames.contains { $0.hasSuffix("State<NavigationSplitViewVisibility>") })
     }
 
     func testMainSettingsViewSidebarDoesNotRenderBrandingHeaderText() {
