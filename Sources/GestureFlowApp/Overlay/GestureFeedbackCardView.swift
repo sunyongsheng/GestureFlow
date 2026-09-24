@@ -60,6 +60,7 @@ final class GestureFeedbackCardView: NSView {
         messageLabel.alignment = .center
         messageLabel.lineBreakMode = .byTruncatingTail
         messageLabel.maximumNumberOfLines = 1
+        messageLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         messageLabel.setContentCompressionResistancePriority(.required, for: .vertical)
     }
 
@@ -111,6 +112,9 @@ final class GestureFeedbackCardView: NSView {
         if #available(macOS 26.0, *), let glassView = glassEffectView(in: backgroundView) {
             glassView.cornerRadius = cornerRadius
             glassView.layer?.cornerRadius = cornerRadius
+            for case let rimHighlightView as LiquidGlassRimHighlightView in backgroundView.subviews {
+                rimHighlightView.cornerRadius = cornerRadius
+            }
             return
         }
 
@@ -132,7 +136,7 @@ final class GestureFeedbackCardView: NSView {
     @available(macOS 26.0, *)
     private static func makeGlassBackgroundView(messageLabel: NSTextField) -> BackgroundInstallation {
         let containerView = NSView()
-        configureCardShadow(containerView)
+        configureCardShadow(containerView, opacity: 0.12, radius: 10, offset: CGSize(width: 0, height: -3))
 
         let glassView = NSGlassEffectView(frame: .zero)
         glassView.style = .regular
@@ -146,6 +150,10 @@ final class GestureFeedbackCardView: NSView {
 
         glassView.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(glassView)
+
+        let rimHighlightView = LiquidGlassRimHighlightView()
+        rimHighlightView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(rimHighlightView)
 
         let labelConstraints = messageLabelConstraints(
             in: contentView,
@@ -163,7 +171,11 @@ final class GestureFeedbackCardView: NSView {
                     contentView.leadingAnchor.constraint(equalTo: glassView.leadingAnchor),
                     contentView.trailingAnchor.constraint(equalTo: glassView.trailingAnchor),
                     contentView.topAnchor.constraint(equalTo: glassView.topAnchor),
-                    contentView.bottomAnchor.constraint(equalTo: glassView.bottomAnchor)
+                    contentView.bottomAnchor.constraint(equalTo: glassView.bottomAnchor),
+                    rimHighlightView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+                    rimHighlightView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+                    rimHighlightView.topAnchor.constraint(equalTo: containerView.topAnchor),
+                    rimHighlightView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
                 ]
         )
 
@@ -174,7 +186,7 @@ final class GestureFeedbackCardView: NSView {
         let containerView = NSView()
         containerView.wantsLayer = true
         containerView.layer?.cornerRadius = 18
-        configureCardShadow(containerView)
+        configureCardShadow(containerView, opacity: 0.35, radius: 16, offset: CGSize(width: 0, height: 2))
 
         let visualEffectView = NSVisualEffectView()
         visualEffectView.material = .popover
@@ -209,12 +221,17 @@ final class GestureFeedbackCardView: NSView {
         return BackgroundInstallation(container: containerView, labelConstraints: labelConstraints)
     }
 
-    private static func configureCardShadow(_ containerView: NSView) {
+    private static func configureCardShadow(
+        _ containerView: NSView,
+        opacity: Float,
+        radius: CGFloat,
+        offset: CGSize
+    ) {
         containerView.wantsLayer = true
-        containerView.layer?.shadowColor = NSColor.black.withAlphaComponent(0.35).cgColor
-        containerView.layer?.shadowOpacity = 1
-        containerView.layer?.shadowRadius = 16
-        containerView.layer?.shadowOffset = CGSize(width: 0, height: 2)
+        containerView.layer?.shadowColor = NSColor.black.cgColor
+        containerView.layer?.shadowOpacity = opacity
+        containerView.layer?.shadowRadius = radius
+        containerView.layer?.shadowOffset = offset
     }
 
     private static func messageLabelConstraints(
@@ -235,5 +252,77 @@ final class GestureFeedbackCardView: NSView {
             trailing,
             messageLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)
         ]
+    }
+}
+
+/// Liquid Glass only renders its specular rim while its window is key in the active app. The overlay
+/// panel never becomes key, so the rim is drawn here, lit from the top and bottom like the system rim.
+final class LiquidGlassRimHighlightView: NSView {
+    private static let lineWidth: CGFloat = 1
+
+    var cornerRadius: CGFloat = 18 {
+        didSet {
+            guard cornerRadius != oldValue else { return }
+            needsDisplay = true
+        }
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        needsDisplay = true
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let inset = Self.lineWidth / 2
+        let rimRect = bounds.insetBy(dx: inset, dy: inset)
+        guard rimRect.width > 0, rimRect.height > 0,
+              let context = NSGraphicsContext.current?.cgContext else { return }
+
+        let isDark = effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        let radius = max(0, min(cornerRadius - inset, rimRect.width / 2, rimRect.height / 2))
+        guard let gradient = Self.makeRimGradient(
+            cornerRadius: radius,
+            height: bounds.height,
+            peakAlpha: isDark ? 0.35 : 0.5,
+            spread: (isDark ? 70 : 80) * .pi / 180
+        ) else { return }
+
+        let rimPath = CGPath(roundedRect: rimRect, cornerWidth: radius, cornerHeight: radius, transform: nil)
+        context.addPath(
+            rimPath.copy(strokingWithWidth: Self.lineWidth, lineCap: .butt, lineJoin: .miter, miterLimit: 10)
+        )
+        context.clip()
+        context.drawLinearGradient(
+            gradient,
+            start: CGPoint(x: bounds.midX, y: bounds.maxY),
+            end: CGPoint(x: bounds.midX, y: bounds.minY),
+            options: []
+        )
+    }
+
+    /// On a corner arc, the edge `cornerRadius * (1 - cos(angle))` away from the top or bottom faces
+    /// `angle` away from vertical, so a vertical gradient fades the rim by edge angle without seams.
+    private static func makeRimGradient(
+        cornerRadius: CGFloat,
+        height: CGFloat,
+        peakAlpha: CGFloat,
+        spread: CGFloat
+    ) -> CGGradient? {
+        let steps = 12
+        let edgeStops = (0...steps).map { step -> (location: CGFloat, alpha: CGFloat) in
+            let progress = CGFloat(step) / CGFloat(steps)
+            let strength = 1 - progress
+            let distanceFromEdge = lineWidth / 2 + cornerRadius * (1 - cos(spread * progress))
+            return (
+                location: min(distanceFromEdge / height, 0.5),
+                alpha: peakAlpha * strength * strength * (3 - 2 * strength)
+            )
+        }
+        let stops = edgeStops + edgeStops.reversed().map { (location: 1 - $0.location, alpha: $0.alpha) }
+        return CGGradient(
+            colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
+            colors: stops.map { NSColor.white.withAlphaComponent($0.alpha).cgColor } as CFArray,
+            locations: stops.map(\.location)
+        )
     }
 }

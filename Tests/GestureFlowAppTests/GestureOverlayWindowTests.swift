@@ -220,6 +220,63 @@ final class GestureOverlayWindowTests: XCTestCase {
         XCTAssertGreaterThan(messageLabel.bounds.height, 0)
     }
 
+    func testLiquidGlassFeedbackCardDrawsRimHighlightAboveGlass() throws {
+        guard #available(macOS 26.0, *) else {
+            throw XCTSkip("Liquid glass requires macOS 26")
+        }
+        var feedback = FeedbackConfiguration.default
+        feedback.feedbackCardCornerRadius = 22
+        feedback.feedbackCardLiquidGlassEnabled = true
+        let appearance = GestureTrailAppearance(feedback: feedback)
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
+        let origin = GesturePoint(x: 250, y: 420)
+
+        overlayWindow.beginGesture(at: origin, appearance: appearance)
+        overlayWindow.completeGesture(
+            with: .unmatched,
+            at: origin,
+            hideAfter: TimeInterval(feedback.overlayHideDelayMilliseconds) / 1000
+        )
+
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
+        let backgroundView = try XCTUnwrap(
+            Mirror(reflecting: feedbackCardView).children
+                .first(where: { $0.label == "backgroundView" })?
+                .value as? NSView
+        )
+        let glassIndex = try XCTUnwrap(backgroundView.subviews.firstIndex { $0 is NSGlassEffectView })
+        let rimIndex = try XCTUnwrap(backgroundView.subviews.firstIndex { $0 is LiquidGlassRimHighlightView })
+        let rimView = try XCTUnwrap(backgroundView.subviews[rimIndex] as? LiquidGlassRimHighlightView)
+
+        XCTAssertGreaterThan(rimIndex, glassIndex)
+        XCTAssertEqual(rimView.cornerRadius, 22, accuracy: 0.001)
+    }
+
+    func testFeedbackCardKeepsLongGestureNameInsideCard() throws {
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
+        let origin = GesturePoint(x: 250, y: 420)
+
+        overlayWindow.beginGesture(
+            at: origin,
+            appearance: GestureTrailAppearance(feedback: .default)
+        )
+        overlayWindow.completeGesture(
+            with: .recognized(gestureID: UUID(), storedName: String(repeating: "很长的手势名称", count: 6)),
+            at: origin,
+            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
+        )
+
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
+        let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
+        feedbackCardView.layoutSubtreeIfNeeded()
+
+        let labelFrameInCard = messageLabel.convert(messageLabel.bounds, to: feedbackCardView)
+        XCTAssertFalse(messageLabel.hasAmbiguousLayout)
+        XCTAssertLessThanOrEqual(labelFrameInCard.maxX, feedbackCardView.bounds.maxX)
+    }
+
     private func extractPanel(from overlayWindow: GestureOverlayWindow) -> NSPanel? {
         guard let firstOverlay = extractFirstScreenOverlay(from: overlayWindow) else { return nil }
         return Mirror(reflecting: firstOverlay).children
