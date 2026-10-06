@@ -194,30 +194,34 @@ final class GestureOverlayWindowTests: XCTestCase {
     }
 
     func testFeedbackCardCentersMessageLabelWithinCard() throws {
-        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
-        let origin = GesturePoint(x: 250, y: 420)
+        for liquidGlassEnabled in [false, true] {
+            var feedback = FeedbackConfiguration.default
+            feedback.feedbackCardLiquidGlassEnabled = liquidGlassEnabled
+            let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
+            let origin = GesturePoint(x: 250, y: 420)
 
-        overlayWindow.beginGesture(
-            at: origin,
-            appearance: GestureTrailAppearance(feedback: .default)
-        )
-        overlayWindow.completeGesture(
-            with: .unmatched,
-            at: origin,
-            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
-        )
+            overlayWindow.beginGesture(
+                at: origin,
+                appearance: GestureTrailAppearance(feedback: feedback)
+            )
+            overlayWindow.completeGesture(
+                with: .unmatched,
+                at: origin,
+                hideAfter: TimeInterval(feedback.overlayHideDelayMilliseconds) / 1000
+            )
 
-        let overlayView = extractOverlayView(from: overlayWindow)
-        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
-        let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
-        feedbackCardView.layoutSubtreeIfNeeded()
+            let overlayView = extractOverlayView(from: overlayWindow)
+            let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
+            let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
+            feedbackCardView.layoutSubtreeIfNeeded()
 
-        let labelMidYInCard = messageLabel.convert(
-            NSPoint(x: 0, y: messageLabel.bounds.midY),
-            to: feedbackCardView
-        ).y
-        XCTAssertEqual(labelMidYInCard, feedbackCardView.bounds.midY, accuracy: 1.0)
-        XCTAssertGreaterThan(messageLabel.bounds.height, 0)
+            let labelMidYInCard = messageLabel.convert(
+                NSPoint(x: 0, y: messageLabel.bounds.midY),
+                to: feedbackCardView
+            ).y
+            XCTAssertEqual(labelMidYInCard, feedbackCardView.bounds.midY, accuracy: 1.0, "liquid glass \(liquidGlassEnabled)")
+            XCTAssertGreaterThan(messageLabel.bounds.height, 0, "liquid glass \(liquidGlassEnabled)")
+        }
     }
 
     func testLiquidGlassFeedbackCardDrawsRimHighlightAboveGlass() throws {
@@ -254,27 +258,31 @@ final class GestureOverlayWindowTests: XCTestCase {
     }
 
     func testFeedbackCardKeepsLongGestureNameInsideCard() throws {
-        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
-        let origin = GesturePoint(x: 250, y: 420)
+        for liquidGlassEnabled in [false, true] {
+            var feedback = FeedbackConfiguration.default
+            feedback.feedbackCardLiquidGlassEnabled = liquidGlassEnabled
+            let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
+            let origin = GesturePoint(x: 250, y: 420)
 
-        overlayWindow.beginGesture(
-            at: origin,
-            appearance: GestureTrailAppearance(feedback: .default)
-        )
-        overlayWindow.completeGesture(
-            with: .recognized(gestureID: UUID(), storedName: String(repeating: "很长的手势名称", count: 6)),
-            at: origin,
-            hideAfter: TimeInterval(FeedbackConfiguration.default.overlayHideDelayMilliseconds) / 1000
-        )
+            overlayWindow.beginGesture(
+                at: origin,
+                appearance: GestureTrailAppearance(feedback: feedback)
+            )
+            overlayWindow.completeGesture(
+                with: .recognized(gestureID: UUID(), storedName: String(repeating: "很长的手势名称", count: 6)),
+                at: origin,
+                hideAfter: TimeInterval(feedback.overlayHideDelayMilliseconds) / 1000
+            )
 
-        let overlayView = extractOverlayView(from: overlayWindow)
-        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
-        let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
-        feedbackCardView.layoutSubtreeIfNeeded()
+            let overlayView = extractOverlayView(from: overlayWindow)
+            let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: overlayView))
+            let messageLabel = try XCTUnwrap(extractFeedbackMessageLabel(from: feedbackCardView))
+            feedbackCardView.layoutSubtreeIfNeeded()
 
-        let labelFrameInCard = messageLabel.convert(messageLabel.bounds, to: feedbackCardView)
-        XCTAssertFalse(messageLabel.hasAmbiguousLayout)
-        XCTAssertLessThanOrEqual(labelFrameInCard.maxX, feedbackCardView.bounds.maxX)
+            let labelFrameInCard = messageLabel.convert(messageLabel.bounds, to: feedbackCardView)
+            XCTAssertFalse(messageLabel.hasAmbiguousLayout, "liquid glass \(liquidGlassEnabled)")
+            XCTAssertLessThanOrEqual(labelFrameInCard.maxX, feedbackCardView.bounds.maxX, "liquid glass \(liquidGlassEnabled)")
+        }
     }
 
     func testTrailLayersSitBelowFeedbackCard() throws {

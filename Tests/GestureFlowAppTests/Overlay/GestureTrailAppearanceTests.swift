@@ -36,7 +36,7 @@ final class GestureTrailAppearanceTests: XCTestCase {
         XCTAssertEqual(appearance.strokeWidth, 2)
         XCTAssertEqual(appearance.colorHex, "#00E042")
         XCTAssertEqual(appearance.feedbackCardCornerRadius, 18, accuracy: 0.001)
-        XCTAssertFalse(appearance.feedbackCardLiquidGlassEnabled)
+        XCTAssertTrue(appearance.feedbackCardLiquidGlassEnabled)
     }
 
     func testMutedAppearanceUsesConfiguredUnrecognizedTrailColor() {

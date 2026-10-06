@@ -62,7 +62,7 @@ GestureFlow uses a YAML configuration file.
 | `feedback.overlayHideDelayMilliseconds` | Int | `500` | How long overlay stays after gesture ends (ms) | — |
 | `feedback.unrecognizedTrailColorHex` | String | `"#8E8E93"` | Trail color for unrecognized gestures | — |
 | `feedback.feedbackCardCornerRadius` | Double | `18` | Feedback card corner radius | — |
-| `feedback.feedbackCardLiquidGlassEnabled` | Bool | `false` | Use macOS 26 liquid glass style | Advanced |
+| `feedback.feedbackCardLiquidGlassEnabled` | Bool | `true` | Use macOS 26 liquid glass style | Advanced |
 | `gestureTargetApplication` | String | `"underMouse"` | Shortcut target: `foreground` or `underMouse` | Advanced |
 | `ignoredApplicationBundleIdentifiers` | [String] | `[]` | Bundle IDs of apps where gestures are disabled | Advanced |
 

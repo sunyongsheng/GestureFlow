@@ -170,7 +170,7 @@ public struct FeedbackConfiguration: Codable, Equatable {
         overlayHideDelayMilliseconds: Int = 500,
         unrecognizedTrailColorHex: String = "#8E8E93",
         feedbackCardCornerRadius: Double = 18,
-        feedbackCardLiquidGlassEnabled: Bool = false
+        feedbackCardLiquidGlassEnabled: Bool = true
     ) {
         self.trailColorHex = trailColorHex
         self.trailWidth = trailWidth

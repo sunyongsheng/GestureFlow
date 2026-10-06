@@ -57,7 +57,7 @@ GestureFlow 使用 YAML 格式配置文件。
 | `feedback.overlayHideDelayMilliseconds` | Int | `500` | 手势结束后 overlay 保留时间（毫秒） | — |
 | `feedback.unrecognizedTrailColorHex` | String | `"#8E8E93"` | 未识别手势时轨迹颜色 | — |
 | `feedback.feedbackCardCornerRadius` | Double | `18` | 反馈卡片圆角 | — |
-| `feedback.feedbackCardLiquidGlassEnabled` | Bool | `false` | 使用 macOS 26 液态玻璃风格 | 高级 |
+| `feedback.feedbackCardLiquidGlassEnabled` | Bool | `true` | 使用 macOS 26 液态玻璃风格 | 高级 |
 | `gestureTargetApplication` | String | `"underMouse"` | 快捷键发送目标：`foreground` 或 `underMouse` | 高级 |
 | `ignoredApplicationBundleIdentifiers` | [String] | `[]` | 忽略手势的应用 Bundle ID 列表 | 高级 |
 
