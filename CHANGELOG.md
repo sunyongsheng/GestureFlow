@@ -2,6 +2,17 @@
 
 All notable changes to GestureFlow are documented in this file.
 
+## [0.4.0] - 2026-10-06
+
+- Use the liquid glass feedback card by default on macOS 26 and later for new installations and after restoring defaults; existing settings are kept.
+- Make the liquid glass feedback card look closer to system glass with an edge highlight and a lighter shadow.
+- Truncate long gesture names in the feedback card instead of letting them overflow.
+- Reduce memory use while drawing gestures from about 330 MB to about 18 MB on a Retina display.
+- Keep the trail and live feedback responsive during long gestures and with high polling rate mice.
+- Stop mouse input from briefly stalling after a gesture that targets an app in the background.
+- Prevent an unresponsive app under the pointer from freezing right clicks for several seconds.
+- Speed up ordinary right clicks by looking up the target app only once a drag turns into a gesture.
+
 ## [0.3.0] - 2026-09-22
 
 - Redesign the app icon with layered vector gesture artwork and adaptive Light / Dark colors in Icon Composer.
