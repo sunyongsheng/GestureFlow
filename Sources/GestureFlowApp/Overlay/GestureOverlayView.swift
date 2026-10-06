@@ -6,7 +6,9 @@ final class GestureOverlayView: NSView {
     private var points: [GesturePoint] = []
     private var trailAppearance = GestureTrailAppearance(feedback: .default)
     private var marker: GestureOverlayMarker?
+    private let trailView = GestureTrailView()
     private let feedbackCardView = GestureFeedbackCardView()
+    private var trailDisplayLink: CADisplayLink?
     private let localization: LocalizationManager
     private var visibleLiveFeedback: LiveGestureOverlayFeedback?
     private var visibleLiveFeedbackFrame: CGRect?
@@ -21,7 +23,7 @@ final class GestureOverlayView: NSView {
     init(frame frameRect: NSRect, localization: LocalizationManager) {
         self.localization = localization
         super.init(frame: frameRect)
-        configureFeedbackCard()
+        configureSubviews()
         languageObserver = localization.objectWillChange.sink { [weak self] _ in
             self?.refreshVisibleFeedback()
         }
@@ -30,7 +32,7 @@ final class GestureOverlayView: NSView {
     override init(frame frameRect: NSRect) {
         self.localization = AppServices.localization
         super.init(frame: frameRect)
-        configureFeedbackCard()
+        configureSubviews()
         languageObserver = localization.objectWillChange.sink { [weak self] _ in
             self?.refreshVisibleFeedback()
         }
@@ -39,10 +41,14 @@ final class GestureOverlayView: NSView {
     required init?(coder: NSCoder) {
         self.localization = AppServices.localization
         super.init(coder: coder)
-        configureFeedbackCard()
+        configureSubviews()
         languageObserver = localization.objectWillChange.sink { [weak self] _ in
             self?.refreshVisibleFeedback()
         }
+    }
+
+    deinit {
+        trailDisplayLink?.invalidate()
     }
 
     func begin(at point: GesturePoint, appearance: GestureTrailAppearance) {
@@ -54,27 +60,15 @@ final class GestureOverlayView: NSView {
         visibleCompletion = nil
         visibleCompletionFrame = nil
         feedbackCardView.hide()
-        needsDisplay = true
+        renderTrail()
     }
 
     func append(_ point: GesturePoint) {
         points.append(point)
-        // The overlay panel is full-screen, so invalidating the whole view forces the entire
-        // surface to be re-encoded and shipped to the render server on every mouse sample.
-        // Once the trail is an established polyline, only the new segment's rect needs redrawing;
-        // `draw(_:)` re-strokes the full path clipped to that rect, keeping prior pixels intact.
-        guard points.count > 2 else {
-            needsDisplay = true
-            return
-        }
-        setNeedsDisplay(trailSegmentInvalidationRect(from: points[points.count - 2], to: point))
+        scheduleTrailRender()
     }
 
     func updateLive(appearance: GestureTrailAppearance, feedback: LiveGestureOverlayFeedback, feedbackFrame: CGRect?) {
-        // Only the trail color/width matters for `draw(_:)`; the feedback card is a self-contained
-        // subview. Repainting the whole full-screen trail every sample is what dominated CPU, so we
-        // repaint it only when the appearance actually changed (e.g. highlight flips on/off). The
-        // per-sample new segment is invalidated by `append`.
         let trailAppearanceChanged = appearance != trailAppearance
         trailAppearance = appearance
         visibleCompletion = nil
@@ -93,7 +87,7 @@ final class GestureOverlayView: NSView {
             feedbackCardView.hide()
         }
         if trailAppearanceChanged {
-            needsDisplay = true
+            renderTrail()
         }
     }
 
@@ -113,7 +107,6 @@ final class GestureOverlayView: NSView {
         } else {
             feedbackCardView.hide()
         }
-        needsDisplay = true
     }
 
     func showMarker(_ marker: GestureOverlayMarker, appearance: GestureTrailAppearance) {
@@ -121,12 +114,12 @@ final class GestureOverlayView: NSView {
         self.trailAppearance = appearance
         self.points = []
         feedbackCardView.hide()
-        needsDisplay = true
+        renderTrail()
     }
 
     func clearMarker() {
         marker = nil
-        needsDisplay = true
+        renderTrail()
     }
 
     func reset() {
@@ -137,7 +130,37 @@ final class GestureOverlayView: NSView {
         visibleCompletion = nil
         visibleCompletionFrame = nil
         feedbackCardView.hide()
-        needsDisplay = true
+        renderTrail()
+    }
+
+    /// Pushes the trail state to the layers now, superseding a render still waiting for the display refresh.
+    func renderTrail() {
+        trailDisplayLink?.isPaused = true
+        trailView.render(points: points, appearance: trailAppearance, marker: marker)
+    }
+
+    /// Mouse samples can arrive several times per frame and every render resends the whole path to the render
+    /// server, so appended points are rendered once per display refresh.
+    private func scheduleTrailRender() {
+        // Outside a window there is no display whose refresh could be waited for.
+        guard window != nil else {
+            renderTrail()
+            return
+        }
+        if trailDisplayLink == nil {
+            let link = displayLink(
+                target: TrailDisplayLinkTarget(view: self),
+                selector: #selector(TrailDisplayLinkTarget.displayDidRefresh)
+            )
+            link.add(to: .main, forMode: .common)
+            trailDisplayLink = link
+        }
+        trailDisplayLink?.isPaused = false
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        renderTrail()
     }
 
     func refreshVisibleFeedback() {
@@ -180,184 +203,24 @@ final class GestureOverlayView: NSView {
         !points.isEmpty || feedbackCardView.isVisible || marker != nil
     }
 
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        // Reset the invalidated region to fully transparent before stroking. This keeps partial
-        // (single-segment) redraws correct: the semi-transparent trail is re-stroked over a cleared
-        // area instead of blending onto whatever was already there.
-        NSGraphicsContext.current?.cgContext.clear(dirtyRect)
-        drawTrail(in: dirtyRect)
-        drawMarker()
-    }
-
-    /// Distance around a segment that its stroke (plus anti-aliasing) can touch.
-    private var trailSegmentMargin: Double {
-        let halfLineWidth = trailAppearance.strokeEnabled
-            ? trailAppearance.width / 2 + trailAppearance.strokeWidth
-            : trailAppearance.width / 2
-        return halfLineWidth + 2
-    }
-
-    private func trailSegmentInvalidationRect(from start: GesturePoint, to end: GesturePoint) -> NSRect {
-        let margin = trailSegmentMargin
-        let minX = min(start.x, end.x) - margin
-        let minY = min(start.y, end.y) - margin
-        let maxX = max(start.x, end.x) + margin
-        let maxY = max(start.y, end.y) + margin
-        return NSRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
-    }
-
-    private func drawTrail(in dirtyRect: NSRect) {
-        guard !points.isEmpty else { return }
-
-        if points.count == 1, let point = points.first {
-            drawSinglePointTrail(at: point)
-            return
-        }
-
-        let path = makeTrailPath(intersecting: dirtyRect)
-        guard !path.isEmpty else { return }
-        if trailAppearance.strokeEnabled {
-            strokePath(
-                path,
-                colorHex: trailAppearance.strokeColorHex,
-                lineWidth: trailAppearance.width + 2 * trailAppearance.strokeWidth,
-                opaque: true
-            )
-        }
-        strokePath(
-            path,
-            colorHex: trailAppearance.resolvedTrailColorHex,
-            lineWidth: trailAppearance.width
-        )
-    }
-
-    private func drawSinglePointTrail(at point: GesturePoint) {
-        if trailAppearance.strokeEnabled {
-            let outerDiameter = max((trailAppearance.width + 2 * trailAppearance.strokeWidth) * 1.5, 3)
-            fillCircle(
-                at: point,
-                diameter: outerDiameter,
-                colorHex: trailAppearance.strokeColorHex,
-                opaque: true
-            )
-        }
-
-        let innerDiameter = max(trailAppearance.width * 1.5, 3)
-        fillCircle(
-            at: point,
-            diameter: innerDiameter,
-            colorHex: trailAppearance.resolvedTrailColorHex
-        )
-    }
-
-    /// With round caps and joins the stroke is the union of per-segment capsules, so segments whose
-    /// capsule cannot reach the dirty rect are skipped without changing any pixel inside it. Subpaths stay
-    /// short because Core Graphics double-paints translucent self-overlaps within a subpath longer than
-    /// about 256 segments, which would make overlaps depend on how a dirty rect splits the trail.
-    private func makeTrailPath(intersecting dirtyRect: NSRect) -> NSBezierPath {
-        let path = NSBezierPath()
-        path.lineCapStyle = .round
-        path.lineJoinStyle = .round
-        let points = self.points
-        let margin = trailSegmentMargin
-        let minX = Double(dirtyRect.minX) - margin
-        let maxX = Double(dirtyRect.maxX) + margin
-        let minY = Double(dirtyRect.minY) - margin
-        let maxY = Double(dirtyRect.maxY) + margin
-        var segmentsInSubpath = 0
-
-        for index in 1..<points.count {
-            let start = points[index - 1]
-            let end = points[index]
-            guard max(start.x, end.x) >= minX,
-                  min(start.x, end.x) <= maxX,
-                  max(start.y, end.y) >= minY,
-                  min(start.y, end.y) <= maxY else {
-                segmentsInSubpath = 0
-                continue
-            }
-            if segmentsInSubpath == 0 {
-                path.move(to: start.nsPoint)
-            }
-            path.line(to: end.nsPoint)
-            segmentsInSubpath = (segmentsInSubpath + 1) % Self.maximumSegmentsPerSubpath
-        }
-
-        return path
-    }
-
-    private static let maximumSegmentsPerSubpath = 128
-
-    private func strokePath(
-        _ path: NSBezierPath,
-        colorHex: String,
-        lineWidth: Double,
-        opaque: Bool = false
-    ) {
-        let color = resolvedTrailColor(fromHex: colorHex, opaque: opaque)
-        color.setStroke()
-
-        let strokedPath = path.copy() as? NSBezierPath ?? path
-        strokedPath.lineWidth = max(lineWidth, 1)
-        strokedPath.lineCapStyle = .round
-        strokedPath.lineJoinStyle = .round
-        strokedPath.stroke()
-    }
-
-    private func fillCircle(
-        at point: GesturePoint,
-        diameter: Double,
-        colorHex: String,
-        opaque: Bool = false
-    ) {
-        let color = resolvedTrailColor(fromHex: colorHex, opaque: opaque)
-        color.setFill()
-
-        let rect = NSRect(
-            x: point.x - diameter / 2,
-            y: point.y - diameter / 2,
-            width: diameter,
-            height: diameter
-        )
-        NSBezierPath(ovalIn: rect).fill()
-    }
-
-    private func resolvedTrailColor(fromHex colorHex: String, opaque: Bool = false) -> NSColor {
-        let alpha = opaque ? 1 : trailAppearance.opacity
-        return ColorHexFormatting.nsColor(fromHex: colorHex)?
-            .withAlphaComponent(alpha)
-            ?? NSColor.systemBlue.withAlphaComponent(alpha)
-    }
-
-    private func drawMarker() {
-        guard let marker else { return }
-
-        let color: NSColor
-        switch marker.style {
-        case .timeoutOrigin:
-            color = NSColor.systemRed.withAlphaComponent(0.95)
-        }
-
-        color.setFill()
-        let radius = max(trailAppearance.width * 1.8, 6)
-        let rect = NSRect(
-            x: marker.point.x - radius / 2,
-            y: marker.point.y - radius / 2,
-            width: radius,
-            height: radius
-        )
-        NSBezierPath(ovalIn: rect).fill()
-    }
-
-    private func configureFeedbackCard() {
+    private func configureSubviews() {
+        trailView.frame = bounds
+        trailView.autoresizingMask = [.width, .height]
+        addSubview(trailView)
         feedbackCardView.isHidden = true
-        addSubview(feedbackCardView)
+        addSubview(feedbackCardView, positioned: .above, relativeTo: trailView)
     }
 }
 
-private extension GesturePoint {
-    var nsPoint: NSPoint {
-        NSPoint(x: x, y: y)
+/// `CADisplayLink` retains its target; the weak hop lets an overlay view go away while its link is still scheduled.
+private final class TrailDisplayLinkTarget: NSObject {
+    private weak var view: GestureOverlayView?
+
+    init(view: GestureOverlayView) {
+        self.view = view
+    }
+
+    @objc func displayDidRefresh(_ link: CADisplayLink) {
+        view?.renderTrail()
     }
 }

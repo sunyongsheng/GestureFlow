@@ -59,7 +59,8 @@ The target is resolved once, before the overlay appears, and reused at release.
 - All overlay views draw the full gesture trail; clipping to view bounds handles cross-screen continuity
 - Feedback card only appears on the screen containing the cursor
 - Overlay panels are non-activating and never become key, so anything that follows key-window / active-app state (system materials, focus styling) renders in its inactive appearance there
-- Overlay updates run on every mouse sample: keep them incremental (the trail invalidates only the new segment; the feedback card's `show` is called per sample and must stay cheap when nothing changed)
+- The trail and the timeout marker are non-animating `CAShapeLayer`s in `GestureTrailView`, below the feedback card; the render server rasterizes them, so no overlay view keeps a backing store
+- Overlay updates run on every mouse sample: appended points are rendered once per display refresh through the overlay view's display link, while begin, marker and reset changes apply immediately; the feedback card's `show` is called per sample and must stay cheap when nothing changed
 
 ### Coordinate System
 
@@ -109,6 +110,7 @@ These are hard-won lessons from past bugs. Violating them will re-introduce issu
 8. **Do NOT add extra `NSApp.activate` / force-activation calls when presenting settings** — activation is owned by the single key-focus claim in `SettingsWindowFrontmostPresenter`; other paths only order the window so the app is activated once per open.
 9. **Do NOT drop the synthetic button-up in `MouseEventTap`** (after consumed gestures and tap-disabled recovery) — macOS then thinks the right button is still held and left clicks act as right clicks.
 10. **Do NOT block or spin a nested run loop inside the event tap callback** (e.g. waiting for app activation) — the system's mouse events stall until it returns; wait asynchronously instead.
+11. **Do NOT implement `draw(_:)` in the full-screen overlay views** (`GestureOverlayView`, `GestureTrailView`) — a self-drawing full-screen view gets screen-sized backing stores (about 300 MB per 2x screen at peak) and every mouse sample then waits milliseconds in the Core Animation commit. Use non-animating shape layers instead.
 
 ## Mandatory Maintenance
 
@@ -142,7 +144,8 @@ xcodebuild -project GestureFlow.xcodeproj -scheme GestureFlow -destination "plat
 
 ## Testing Notes
 
-- Overlay tests use `Mirror` reflection to access private `screenOverlays` array and its `panel`/`overlayView` members
+- Overlay tests use `Mirror` reflection to access private `screenOverlays` array and its `panel`/`overlayView` members, and the overlay view's `trailView`/`feedbackCardView`
+- Don't test implicit layer animations through `action(forKey:)`: it returns nil for standalone layers even for properties that do animate. Change the state for real and assert that `animationKeys()` is empty
 - `ConfigurationDirectoryRelocationIntegrationTests` uses `isEnabled: false` to avoid Accessibility permission dependency
 - `MouseEventTapTests` inject custom `screenFramesProvider` and `desktopFrameProvider` closures for deterministic coordinates
 - `swift test` (SPM) and `xcodebuild test` (Xcode) may differ — always verify both if touching project config

@@ -277,88 +277,179 @@ final class GestureOverlayWindowTests: XCTestCase {
         XCTAssertLessThanOrEqual(labelFrameInCard.maxX, feedbackCardView.bounds.maxX)
     }
 
-    func testTrailRedrawOfDirtyRectMatchesFullRedraw() throws {
+    func testTrailLayersSitBelowFeedbackCard() throws {
         let view = GestureOverlayView(
             frame: NSRect(x: 0, y: 0, width: 400, height: 300),
             localization: LocalizationManager(language: .zhHans)
         )
+        let trailView = try XCTUnwrap(extractTrailView(from: view))
+        let feedbackCardView = try XCTUnwrap(extractFeedbackCardView(from: view))
+
+        XCTAssertLessThan(
+            try XCTUnwrap(view.subviews.firstIndex(of: trailView)),
+            try XCTUnwrap(view.subviews.firstIndex(of: feedbackCardView))
+        )
+        let sublayers = try XCTUnwrap(trailView.layer?.sublayers)
+        XCTAssertLessThan(
+            try XCTUnwrap(sublayers.firstIndex(of: trailView.outlineLayer)),
+            try XCTUnwrap(sublayers.firstIndex(of: trailView.trailLayer))
+        )
+    }
+
+    func testTrailLayerChangesApplyWithoutImplicitAnimation() throws {
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let trailView = try XCTUnwrap(extractTrailView(from: overlayView))
+        var feedback = FeedbackConfiguration.default
+        feedback.trailOpacity = 0.6
+        let point = GesturePoint(x: 300, y: 380)
+
+        overlayWindow.beginGesture(at: GesturePoint(x: 250, y: 420), appearance: GestureTrailAppearance(feedback: feedback))
+        overlayView.window?.displayIfNeeded()
+        CATransaction.flush()
+        overlayWindow.appendGesturePoint(point)
+        overlayWindow.updateLiveGesture(
+            at: point,
+            appearance: GestureTrailAppearance(feedback: feedback, isHighlighted: false),
+            feedback: LiveGestureOverlayFeedback(message: nil, showsCard: false)
+        )
+        overlayView.renderTrail()
+        overlayWindow.showMarker(GestureOverlayMarker(point: point, style: .timeoutOrigin), appearance: GestureTrailAppearance(feedback: .default))
+
+        for layer in [trailView.outlineLayer, trailView.trailLayer, trailView.markerLayer] {
+            XCTAssertEqual(layer.animationKeys() ?? [], [])
+        }
+        overlayWindow.cancelGesture()
+    }
+
+    func testTrailLayersStrokeThePolylineWithOutlineAndLayerOpacity() throws {
+        let view = GestureOverlayView(
+            frame: NSRect(x: 0, y: 0, width: 400, height: 300),
+            localization: LocalizationManager(language: .zhHans)
+        )
+        let trailView = try XCTUnwrap(extractTrailView(from: view))
         var feedback = FeedbackConfiguration.default
         feedback.trailWidth = 6
         feedback.trailOpacity = 0.6
-        let wave = (0..<160).map { index in
-            GesturePoint(x: 30 + Double(index) * 2, y: 150 + sin(Double(index) / 8) * 100)
-        }
-        let crossing = (0..<120).map { index in
-            GesturePoint(x: 350 - Double(index) * 2.6, y: 60 + Double(index) * 1.5)
-        }
-        let points = wave + crossing
+        feedback.trailStrokeWidth = 2
+        let points = [GesturePoint(x: 10, y: 20), GesturePoint(x: 60, y: 20), GesturePoint(x: 60, y: 90)]
+
         view.begin(at: points[0], appearance: GestureTrailAppearance(feedback: feedback))
         points.dropFirst().forEach { view.append($0) }
 
-        let fullRedraw = try renderPixels(of: view, dirtyRect: view.bounds)
-        let dirtyRects = [
-            NSRect(x: 60, y: 40, width: 24, height: 30),
-            NSRect(x: 150, y: 120, width: 60, height: 60),
-            NSRect(x: 200, y: 90, width: 18, height: 70),
-            NSRect(x: 280, y: 180, width: 40, height: 30),
-            NSRect(x: 0, y: 0, width: 400, height: 20)
-        ]
-        for dirtyRect in dirtyRects {
-            let partialRedraw = try renderPixels(of: view, dirtyRect: dirtyRect)
-            XCTAssertLessThanOrEqual(
-                partialRedraw.maxChannelDifference(from: fullRedraw, in: dirtyRect),
-                2,
-                "dirty rect \(dirtyRect)"
-            )
-        }
-    }
+        let expected = points.map { CGPoint(x: $0.x, y: $0.y) }
+        XCTAssertEqual(pathPoints(of: trailView.trailLayer.path), expected)
+        XCTAssertEqual(pathPoints(of: trailView.outlineLayer.path), expected)
+        XCTAssertEqual(trailView.trailLayer.lineWidth, 6)
+        XCTAssertEqual(trailView.outlineLayer.lineWidth, 10)
+        XCTAssertEqual(trailView.trailLayer.opacity, 0.6, accuracy: 0.0001)
+        XCTAssertEqual(trailView.trailLayer.strokeColor?.alpha, 1)
+        XCTAssertEqual(trailView.outlineLayer.strokeColor?.alpha, 1)
+        XCTAssertNil(trailView.trailLayer.fillColor)
 
-    private struct RenderedPixels {
-        let height: Int
-        let bytesPerRow: Int
-        let bytes: [UInt8]
-
-        func maxChannelDifference(from other: RenderedPixels, in rect: NSRect) -> Int {
-            var maximum = 0
-            for row in (height - Int(rect.maxY))..<(height - Int(rect.minY)) {
-                for column in Int(rect.minX)..<Int(rect.maxX) {
-                    for channel in 0..<4 {
-                        let index = row * bytesPerRow + column * 4 + channel
-                        maximum = max(maximum, abs(Int(bytes[index]) - Int(other.bytes[index])))
-                    }
-                }
-            }
-            return maximum
-        }
-    }
-
-    private func renderPixels(of view: NSView, dirtyRect: NSRect) throws -> RenderedPixels {
-        let width = Int(view.bounds.width)
-        let height = Int(view.bounds.height)
-        let rep = try XCTUnwrap(NSBitmapImageRep(
-            bitmapDataPlanes: nil,
-            pixelsWide: width,
-            pixelsHigh: height,
-            bitsPerSample: 8,
-            samplesPerPixel: 4,
-            hasAlpha: true,
-            isPlanar: false,
-            colorSpaceName: .deviceRGB,
-            bytesPerRow: 0,
-            bitsPerPixel: 0
-        ))
-        let context = try XCTUnwrap(NSGraphicsContext(bitmapImageRep: rep))
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = context
-        context.cgContext.clip(to: dirtyRect)
-        view.draw(dirtyRect)
-        NSGraphicsContext.restoreGraphicsState()
-        let data = try XCTUnwrap(rep.bitmapData)
-        return RenderedPixels(
-            height: height,
-            bytesPerRow: rep.bytesPerRow,
-            bytes: Array(UnsafeBufferPointer(start: data, count: rep.bytesPerRow * height))
+        feedback.trailStrokeEnabled = false
+        view.updateLive(
+            appearance: GestureTrailAppearance(feedback: feedback),
+            feedback: LiveGestureOverlayFeedback(message: nil, showsCard: false),
+            feedbackFrame: nil
         )
+        XCTAssertNil(trailView.outlineLayer.path)
+        XCTAssertEqual(pathPoints(of: trailView.trailLayer.path), expected)
+    }
+
+    func testStartPointAndTimeoutMarkerRenderAsCircles() throws {
+        let view = GestureOverlayView(
+            frame: NSRect(x: 0, y: 0, width: 400, height: 300),
+            localization: LocalizationManager(language: .zhHans)
+        )
+        let trailView = try XCTUnwrap(extractTrailView(from: view))
+        let appearance = GestureTrailAppearance(feedback: .default)
+
+        view.begin(at: GesturePoint(x: 50, y: 40), appearance: appearance)
+
+        // Default trail: width 3 with a 2 pt outline, so dots of 1.5 x (3 + 2 x 2) and 1.5 x 3.
+        assertCircle(trailView.outlineLayer.path, center: CGPoint(x: 50, y: 40), diameter: 10.5)
+        assertCircle(trailView.trailLayer.path, center: CGPoint(x: 50, y: 40), diameter: 4.5)
+        XCTAssertNotNil(trailView.trailLayer.fillColor)
+        XCTAssertNil(trailView.trailLayer.strokeColor)
+
+        view.showMarker(GestureOverlayMarker(point: GesturePoint(x: 80, y: 70), style: .timeoutOrigin), appearance: appearance)
+
+        XCTAssertNil(trailView.trailLayer.path)
+        XCTAssertNil(trailView.outlineLayer.path)
+        assertCircle(trailView.markerLayer.path, center: CGPoint(x: 80, y: 70), diameter: 6)
+
+        view.clearMarker()
+
+        XCTAssertNil(trailView.markerLayer.path)
+    }
+
+    func testAppendedPointsWaitForDisplayRefreshWhileResetAppliesImmediately() throws {
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let trailView = try XCTUnwrap(extractTrailView(from: overlayView))
+        let origin = GesturePoint(x: 250, y: 420)
+
+        overlayWindow.beginGesture(at: origin, appearance: GestureTrailAppearance(feedback: .default))
+        overlayWindow.appendGesturePoint(GesturePoint(x: 260, y: 420))
+        overlayWindow.appendGesturePoint(GesturePoint(x: 270, y: 430))
+
+        XCTAssertNotNil(trailView.trailLayer.fillColor, "still the start dot until the display refreshes")
+
+        overlayView.renderTrail()
+
+        XCTAssertEqual(pathPoints(of: trailView.trailLayer.path).count, 3)
+
+        overlayWindow.cancelGesture()
+
+        XCTAssertNil(trailView.trailLayer.path)
+        XCTAssertNil(trailView.outlineLayer.path)
+    }
+
+    func testOverlayKeepsNoScreenSizedBackingStore() throws {
+        let overlayWindow = GestureOverlayWindow(localization: LocalizationManager(language: .zhHans))
+        let overlayView = extractOverlayView(from: overlayWindow)
+        let trailView = try XCTUnwrap(extractTrailView(from: overlayView))
+
+        overlayWindow.beginGesture(at: GesturePoint(x: 250, y: 420), appearance: GestureTrailAppearance(feedback: .default))
+        overlayWindow.appendGesturePoint(GesturePoint(x: 300, y: 380))
+        overlayView.renderTrail()
+        overlayView.window?.displayIfNeeded()
+        CATransaction.flush()
+
+        XCTAssertNil(overlayView.layer?.contents)
+        XCTAssertNil(trailView.layer?.contents)
+        overlayWindow.cancelGesture()
+    }
+
+    private func pathPoints(of path: CGPath?) -> [CGPoint] {
+        var points: [CGPoint] = []
+        path?.applyWithBlock { element in
+            switch element.pointee.type {
+            case .moveToPoint, .addLineToPoint:
+                points.append(element.pointee.points[0])
+            default:
+                break
+            }
+        }
+        return points
+    }
+
+    private func assertCircle(
+        _ path: CGPath?,
+        center: CGPoint,
+        diameter: CGFloat,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard let bounds = path?.boundingBoxOfPath else {
+            XCTFail("missing path", file: file, line: line)
+            return
+        }
+        XCTAssertEqual(bounds.midX, center.x, accuracy: 0.001, file: file, line: line)
+        XCTAssertEqual(bounds.midY, center.y, accuracy: 0.001, file: file, line: line)
+        XCTAssertEqual(bounds.width, diameter, accuracy: 0.001, file: file, line: line)
+        XCTAssertEqual(bounds.height, diameter, accuracy: 0.001, file: file, line: line)
     }
 
     private func extractPanel(from overlayWindow: GestureOverlayWindow) -> NSPanel? {
@@ -388,6 +479,12 @@ final class GestureOverlayWindowTests: XCTestCase {
         Mirror(reflecting: overlayView).children
             .first(where: { $0.label == "marker" })?
             .value as? GestureOverlayMarker
+    }
+
+    private func extractTrailView(from overlayView: GestureOverlayView) -> GestureTrailView? {
+        Mirror(reflecting: overlayView).children
+            .first(where: { $0.label == "trailView" })?
+            .value as? GestureTrailView
     }
 
     private func extractFeedbackCardView(from overlayView: GestureOverlayView) -> NSView? {

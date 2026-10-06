@@ -84,6 +84,8 @@ tap 回调没有返回之前，系统的鼠标事件会一直被挡住；回调�
 
 #### 轨迹绘制
 
+> 2026-10 起轨迹改由 `CAShapeLayer` 渲染，本节和下一节描述的绘制方式已被替换，见[2026-10：浮层改用矢量图层](#2026-10浮层改用矢量图层)。
+
 原先每次局部重绘都会重建整条路径，并在脏区域的裁剪下完整描边两遍（外描边 + 轨迹色），开销随点数线性增长。
 
 改动：`GestureOverlayView.makeTrailPath(intersecting:)` 只保留"描边范围（半线宽 + 2 pt 抗锯齿余量）能碰到脏区域"的线段。轨迹使用圆头和圆角连接，描边等于各线段胶囊形状的并集，所以跳过碰不到脏区域的线段，不会改变脏区域内的任何像素；有逐像素对比测试保证。筛选只做标量比较，数组先拷贝到局部变量，循环在 release 下可以忽略不计。
@@ -153,7 +155,7 @@ GESTUREFLOW_MEMORY_PROBE=1 swift test --filter MemoryFootprintProbeTests
 
 ### 后续待办
 
-- 浮层轨迹改用矢量图层（`CAShapeLayer`），或只覆盖轨迹范围的绘制图层，避免整屏后备缓冲。这是降低内存峰值最有效的方式。
+- ~~浮层轨迹改用矢量图层（`CAShapeLayer`），或只覆盖轨迹范围的绘制图层，避免整屏后备缓冲。~~ 已在 2026-10 完成，见下文。
 - 用 Instruments（Allocations / VM Tracker）定位设置高级页的 +146 MB。
 - 需要归因那 20.9 MB 无类型缓冲区时，用 MallocStackLogging 启动进程后再抓取。
 - 跨 App 的激活和快捷键投递无法自动测试：自动测试会切走当前应用。改动后需要手动验证：在"光标下的 App"模式下对后台窗口画手势，确认目标窗口被置前、快捷键生效。
@@ -164,8 +166,8 @@ GESTUREFLOW_MEMORY_PROBE=1 swift test --filter MemoryFootprintProbeTests
 - 不要在调用 `activate()` 之后立刻同步判断是否已经激活：`NSWorkspace.frontmostApplication`、`NSRunningApplication.isActive` 这类属性要等主 run loop 转一圈才会更新。需要等待时，监听激活通知并设置超时。
 - 新增 AX 调用前先调用 `AccessibilityMessaging.applyTimeout()`。
 - 普通右键不应触发目标解析：在右键升级为手势之前，不要访问 `GestureActivation.target`。
-- 每个采样的工作量不能随手势长度增长：实时识别用 `IncrementalGestureRecognizer`，不要对全部点重新识别；浮层绘制只处理脏区域附近的内容。
-- 轨迹子路径保持在 128 段以内（`GestureOverlayView.maximumSegmentsPerSubpath`），否则半透明交叉处的颜色会随脏区域切分而变化。
+- 每个采样的工作量不能随手势长度增长：实时识别用 `IncrementalGestureRecognizer`，不要对全部点重新识别。浮层轨迹的规则见 2026-10 一节。
+- ~~轨迹子路径保持在 128 段以内~~：2026-10 改用 `CAShapeLayer` 后不再适用，相关代码已删除。
 - 性能数据以 release 构建为准（`swift test -c release -Xswiftc -enable-testing`）。
 
 ### 测试
@@ -180,7 +182,7 @@ GESTUREFLOW_MEMORY_PROBE=1 swift test --filter MemoryFootprintProbeTests
   - 目标已在前台时直接发送；
   - `WorkspaceActivationWaiter` 收到目标激活通知时只投递一次、忽略其他 App、超时后照常投递。
 - `GestureRecognizerTests`：随机路径（屏幕 / 视图两种坐标系）下，增量识别与批量识别逐前缀完全一致。
-- `GestureOverlayWindowTests`：半透明、自交叉、超过 256 段的轨迹，局部重绘与全量重绘的像素一致。
+- `GestureOverlayWindowTests`：半透明、自交叉、超过 256 段的轨迹，局部重绘与全量重绘的像素一致（2026-10 随绘制方式一起替换）。
 - `MemoryFootprintProbeTests`：可选运行的内存诊断，见上文。
 
 验证结果：`swift test` 共 303 个测试全部通过（2 个诊断测试跳过）；`xcodebuild test` 通过。
@@ -195,3 +197,81 @@ GESTUREFLOW_MEMORY_PROBE=1 swift test --filter MemoryFootprintProbeTests
 - [GestureOverlayView.swift](../Sources/GestureFlowApp/Overlay/GestureOverlayView.swift)
 - [GestureRecognizer.swift](../Sources/GestureFlowCore/Recognition/GestureRecognizer.swift)
 - [MemoryFootprintProbeTests.swift](../Tests/GestureFlowAppTests/MemoryFootprintProbeTests.swift)
+
+## 2026-10：浮层改用矢量图层
+
+### 背景
+
+2026-09 的排查确认，内存峰值主要来自全屏、由 CPU 绘制的浮层图层。改造前又补测了它的 CPU 开销，发现它也是手势链路上最大的主线程开销：
+
+- layer-backed 视图的 `draw(_:)` 实际在 Core Animation 提交时执行，提交还要处理整屏后备缓冲。每个采样里，更新状态约 20 µs、`displayIfNeeded` 约 41 µs，提交却要约 4.6 ms，其中大部分是阻塞等待，不是计算。
+- AppKit 不会把局部重绘合并到每帧一次：1 s 内 296 次 `setNeedsDisplay` 对应 296 次 `draw(_:)`（屏幕 120 Hz），每个鼠标采样都要付一次提交。
+- 结果是 1 kHz 鼠标下主线程跟不上：0.6 s 的 L 形手势（599 个采样）要约 2.8 s 才处理完，轨迹和事件都会滞后。
+
+### 改动
+
+- 新增 `GestureTrailView`，用三个 `CAShapeLayer`（外描边、轨迹、超时红点）绘制，由渲染服务光栅化。`GestureOverlayView` 去掉了全部 Core Graphics 绘制代码；两个视图都不实现 `draw(_:)`，也就没有后备缓冲。
+- 外观规则不变：
+  - 外描边宽 `width + 2 × strokeWidth`、不透明，轨迹宽 `width`，都用圆头和圆角连接；
+  - 不透明度设在轨迹图层上而不是颜色里：图层先合成再混合，半透明轨迹自交叉处仍只着色一次。`CAShapeLayer` 没有 Core Graphics 子路径超过约 256 段的问题，128 段拆分随之删除；
+  - 起点圆点和超时红点显式画圆，尺寸与原来相同（圆点为线宽的 1.5 倍，红点取线宽的 1.8 倍与 6 pt 中较大者）。
+- 关闭隐式动画：图层子类的 `action(forKey:)` 返回 nil。实测 `path` 本身不会隐式动画，但颜色、线宽、不透明度会；不关的话，起点圆点会在 0.25 s 内"变形"成线条，识别色切换也会渐变。
+- 更新节奏：追加的点通过视图的 `CADisplayLink`（`NSView.displayLink(target:selector:)`，跟随所在屏幕的刷新率）合并为每帧渲染一次；手势开始、超时红点、清除和外观变化立即生效。display link 只在有待渲染的点时运行，渲染后暂停；视图不在窗口里时直接渲染。
+- 层级：轨迹视图是浮层的第一个子视图，反馈卡片始终在它上面。
+- 自己添加的子图层不会随窗口调整 `contentsScale`，改由 `viewDidChangeBackingProperties()` 同步。本机 macOS 27 上 1x 和 2x 一样清晰，但旧系统不保证。
+
+### 效果
+
+临时探测测试驱动真实的 `GestureOverlayWindow`（测完即删），环境同上，单块 1728×1117@2x 屏幕。
+
+App 内存（`MemoryFootprintProbeTests`）：
+
+| 阶段 | 改动前 | 改动后 |
+| --- | --- | --- |
+| 浮层创建完、未显示 | 20.1 MB | 12.4 MB |
+| 第一次手势开始，轨迹为空 | 71.9 MB | 13.0 MB |
+| 画完轨迹，液态玻璃关 | 327.8 MB | 15.3 MB |
+| 画完轨迹，液态玻璃开 | 330.5 MB | 17.9 MB |
+| 峰值 | 330.9 MB | 18.3 MB |
+| 空闲 5 s 后 | 93.8 MB | 17.8 MB |
+
+手势处理（release，按 1 kHz 送入采样；耗时含手势后约 0.2 s 的停留与隐藏）：
+
+| 场景 | 改动前：耗时 / 主线程 CPU | 改动后：耗时 / 主线程 CPU |
+| --- | --- | --- |
+| L 形手势，599 个采样（0.6 s 输入） | 2.78 s / 约 320 ms | 0.81 s / 约 35 ms |
+| 螺旋压力测试，1999 个采样（2 s 输入） | 8.6 s / 约 1140 ms | 2.21 s / 约 112 ms |
+
+改动后平均每个采样约 60 µs 主线程 CPU（含每帧渲染的分摊），处理速度跟得上输入。
+
+渲染服务（WindowServer）。这是改造前担心的风险：光栅化挪进了 WindowServer，开销和内存可能只是换了地方。
+
+- CPU：WindowServer 空闲时就占约 48% 的核（来自屏幕上其他 App），两种实现画手势时都在这个水平上下几个百分点，测不出可归因于浮层的差别。
+- 内存：同一测试里 8 次"显示螺旋轨迹 / 隐藏"的读数差，新旧实现完全一致。`top` 的读数本身会无关地波动 ±200 MB，所以只能说没有看到增长。
+
+视觉一致性：在固定背景上截屏对比 5 种状态（半透明自交叉轨迹、起点圆点、超时红点、轨迹穿过反馈卡片）。肉眼看不出差别，方向和层级与原来一致；逐像素差异只在抗锯齿边缘，66.8 万像素里有 16 个差值超过 32 级（最大 72，都是绿白交界处的单个边缘像素）。
+
+### 测试
+
+`GestureOverlayWindowTests` 里原来的局部重绘像素对比测试随绘制方式一起删除，换成：
+
+- 轨迹视图在反馈卡片下面，外描边在轨迹下面；
+- 圆点 → 线条、识别色切换、超时红点这些状态切换后，图层上没有隐式动画；
+- 路径、线宽、颜色、不透明度符合原来的绘制规则，关闭描边时没有外描边；
+- 起点圆点和超时红点的圆心、直径；
+- 追加的点等屏幕刷新才渲染，取消手势立即清空；
+- 浮层视图和轨迹视图都没有后备缓冲（`layer.contents` 为 nil）。
+
+动画和后备缓冲两项做过变异验证：给 `GestureOverlayView` 加回一个空的 `draw(_:)`，或让图层恢复默认动画，对应测试都会失败。`action(forKey:)` 在这里对会动画的属性也返回 nil，不能用它判断。
+
+### 防回归规则
+
+- 浮层视图（`GestureOverlayView`、`GestureTrailView`）不要实现 `draw(_:)`（CLAUDE.md "Do NOT" 第 11 条）。
+- 浮层里新增的图层要关闭隐式动画。
+- `append` 里只记录点并请求下一帧渲染，不要直接改图层；开始、清除这类状态切换要立即渲染，浮层重新显示时才不会闪出上一次的轨迹。
+
+### 相关文件
+
+- [GestureTrailView.swift](../Sources/GestureFlowApp/Overlay/GestureTrailView.swift)
+- [GestureOverlayView.swift](../Sources/GestureFlowApp/Overlay/GestureOverlayView.swift)
+- [GestureOverlayWindowTests.swift](../Tests/GestureFlowAppTests/GestureOverlayWindowTests.swift)
