@@ -119,7 +119,8 @@ final class ActionExecutorTests: XCTestCase {
         let processActivator = SpyProcessActivator()
         let executor = ActionExecutor(
             keyEventPoster: keyEventPoster,
-            processActivator: processActivator
+            processActivator: processActivator,
+            activationWaiter: ImmediateActivationWaiter()
         )
         let targetPID: pid_t = 432
 
@@ -146,7 +147,8 @@ final class ActionExecutorTests: XCTestCase {
         let executor = ActionExecutor(
             keyEventPoster: keyEventPoster,
             processActivator: processActivator,
-            windowRaiser: windowRaiser
+            windowRaiser: windowRaiser,
+            activationWaiter: ImmediateActivationWaiter()
         )
 
         try executor.execute(
@@ -169,7 +171,8 @@ final class ActionExecutorTests: XCTestCase {
         let executor = ActionExecutor(
             keyEventPoster: keyEventPoster,
             processActivator: processActivator,
-            windowRaiser: windowRaiser
+            windowRaiser: windowRaiser,
+            activationWaiter: ImmediateActivationWaiter()
         )
 
         try executor.execute(
@@ -180,6 +183,122 @@ final class ActionExecutorTests: XCTestCase {
         )
 
         XCTAssertTrue(windowRaiser.raisedWindows.isEmpty)
+    }
+
+    func testKeyboardShortcutDefersWindowRaiseAndPostUntilTargetActivates() throws {
+        let keyEventPoster = SpyKeyboardEventPoster()
+        let processActivator = SpyProcessActivator()
+        let windowRaiser = SpyTargetWindowRaiser()
+        let activationWaiter = ManualActivationWaiter()
+        let targetPID: pid_t = 432
+        let executor = ActionExecutor(
+            keyEventPoster: keyEventPoster,
+            processActivator: processActivator,
+            frontmostQuery: StubFrontmostApplicationQuery(
+                frontmost: FrontmostApplicationInfo(processIdentifier: 7, bundleIdentifier: "com.example.other")
+            ),
+            windowRaiser: windowRaiser,
+            activationWaiter: activationWaiter
+        )
+
+        try executor.execute(
+            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
+            targetProcessIdentifier: targetPID,
+            targetBundleIdentifier: "com.example.app",
+            gestureOriginScreenPoint: CGPoint(x: 300, y: 400)
+        )
+
+        XCTAssertEqual(processActivator.activatedProcessIdentifiers, [targetPID])
+        XCTAssertEqual(activationWaiter.waitedProcessIdentifiers, [targetPID])
+        XCTAssertTrue(windowRaiser.raisedWindows.isEmpty)
+        XCTAssertTrue(keyEventPoster.postedEvents.isEmpty)
+
+        activationWaiter.completeActivations()
+
+        XCTAssertEqual(windowRaiser.raisedWindows.map(\.processIdentifier), [targetPID])
+        XCTAssertEqual(
+            keyEventPoster.postedEvents.map(\.targetProcessIdentifier),
+            [targetPID, targetPID]
+        )
+    }
+
+    func testKeyboardShortcutPostsWithoutWaitingWhenTargetIsFrontmost() throws {
+        let keyEventPoster = SpyKeyboardEventPoster()
+        let processActivator = SpyProcessActivator()
+        let activationWaiter = ManualActivationWaiter()
+        let targetPID: pid_t = 432
+        let executor = ActionExecutor(
+            keyEventPoster: keyEventPoster,
+            processActivator: processActivator,
+            frontmostQuery: StubFrontmostApplicationQuery(
+                frontmost: FrontmostApplicationInfo(processIdentifier: targetPID, bundleIdentifier: "com.example.app")
+            ),
+            activationWaiter: activationWaiter
+        )
+
+        try executor.execute(
+            .keyboardShortcut(KeyboardShortcutAction(keyCode: 9, modifiers: [.command])),
+            targetProcessIdentifier: targetPID,
+            targetBundleIdentifier: "com.example.app",
+            gestureOriginScreenPoint: CGPoint(x: 300, y: 400)
+        )
+
+        XCTAssertTrue(processActivator.activatedProcessIdentifiers.isEmpty)
+        XCTAssertTrue(activationWaiter.waitedProcessIdentifiers.isEmpty)
+        XCTAssertEqual(
+            keyEventPoster.postedEvents.map(\.targetProcessIdentifier),
+            [targetPID, targetPID]
+        )
+    }
+
+    func testWorkspaceActivationWaiterDeliversOnceWhenTargetActivates() {
+        let notificationCenter = NotificationCenter()
+        let waiter = WorkspaceActivationWaiter(notificationCenter: notificationCenter, timeout: 10)
+        let application = NSRunningApplication.current
+        var deliveredCount = 0
+
+        waiter.waitForActivation(processIdentifier: application.processIdentifier, bundleIdentifier: nil) {
+            deliveredCount += 1
+        }
+        for _ in 0..<2 {
+            notificationCenter.post(
+                name: NSWorkspace.didActivateApplicationNotification,
+                object: nil,
+                userInfo: [NSWorkspace.applicationUserInfoKey: application]
+            )
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+
+        XCTAssertEqual(deliveredCount, 1)
+    }
+
+    func testWorkspaceActivationWaiterIgnoresOtherApplications() {
+        let notificationCenter = NotificationCenter()
+        let waiter = WorkspaceActivationWaiter(notificationCenter: notificationCenter, timeout: 10)
+        var deliveredCount = 0
+
+        waiter.waitForActivation(processIdentifier: -1, bundleIdentifier: "com.example.absent") {
+            deliveredCount += 1
+        }
+        notificationCenter.post(
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            userInfo: [NSWorkspace.applicationUserInfoKey: NSRunningApplication.current]
+        )
+        RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+
+        XCTAssertEqual(deliveredCount, 0)
+    }
+
+    func testWorkspaceActivationWaiterDeliversAfterTimeout() {
+        let waiter = WorkspaceActivationWaiter(notificationCenter: NotificationCenter(), timeout: 0.05)
+        let delivered = expectation(description: "delivered after timeout")
+
+        waiter.waitForActivation(processIdentifier: -1, bundleIdentifier: nil) {
+            delivered.fulfill()
+        }
+
+        wait(for: [delivered], timeout: 1)
     }
 
     func testShowDesktopUsesCommandF3Shortcut() throws {
@@ -294,6 +413,44 @@ private final class SpyTargetWindowRaiser: TargetWindowRaising {
 
     func raiseWindow(at screenPoint: CGPoint, for processIdentifier: pid_t) {
         raisedWindows.append(RaisedWindow(screenPoint: screenPoint, processIdentifier: processIdentifier))
+    }
+}
+
+private struct StubFrontmostApplicationQuery: FrontmostApplicationQuerying {
+    let frontmost: FrontmostApplicationInfo?
+
+    func frontmostApplication() -> FrontmostApplicationInfo? {
+        frontmost
+    }
+}
+
+private struct ImmediateActivationWaiter: TargetActivationWaiting {
+    func waitForActivation(
+        processIdentifier: pid_t,
+        bundleIdentifier: String?,
+        then deliver: @escaping () -> Void
+    ) {
+        deliver()
+    }
+}
+
+private final class ManualActivationWaiter: TargetActivationWaiting {
+    private(set) var waitedProcessIdentifiers: [pid_t] = []
+    private var pendingDeliveries: [() -> Void] = []
+
+    func waitForActivation(
+        processIdentifier: pid_t,
+        bundleIdentifier: String?,
+        then deliver: @escaping () -> Void
+    ) {
+        waitedProcessIdentifiers.append(processIdentifier)
+        pendingDeliveries.append(deliver)
+    }
+
+    func completeActivations() {
+        let deliveries = pendingDeliveries
+        pendingDeliveries = []
+        deliveries.forEach { $0() }
     }
 }
 

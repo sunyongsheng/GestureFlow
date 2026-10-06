@@ -164,6 +164,7 @@
 		EA7A2A3B417BBAE2DE8B961B /* GestureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C483FF9C710FF74C05D13B /* GestureOverlayWindow.swift */; };
 		EE0E5FDB1FEE6C84A9031FC2 /* Settings/Shell/SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85597E92C5F3F66FC294009F /* Settings/Shell/SettingsViewModelTests.swift */; };
 		EF40A344F544A55448031305 /* GestureOverlayWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */; };
+		B8E4D2AF5C3E97F16D2CAB81 /* MemoryFootprintProbeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F3C19E4B2D86E05C1B9A70 /* MemoryFootprintProbeTests.swift */; };
 		EF67928BF8BD48EDB190E9CF /* ConfigurationDirectoryResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3148FD2F3B244647980C6715 /* ConfigurationDirectoryResolverTests.swift */; };
 		F16F621BBAE6A7CAD0B16081 /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 938F8FF11E6A912D4C3DD619 /* StatusBarController.swift */; };
 		F267789DB09549869BEC0FD2 /* ConfigurationDirectoryRelocationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3DE59F71F2497FB42125E7 /* ConfigurationDirectoryRelocationIntegrationTests.swift */; };
@@ -247,6 +248,7 @@
 		1D0EFB81A29343DE84D37DF8 /* GeneralConfigurationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GeneralConfigurationTests.swift; sourceTree = "<group>"; };
 		1E37DC1583A40D7D7DB11C88 /* GestureRecognizerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureRecognizerTests.swift; sourceTree = "<group>"; };
 		2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayWindowTests.swift; sourceTree = "<group>"; };
+		A7F3C19E4B2D86E05C1B9A70 /* MemoryFootprintProbeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MemoryFootprintProbeTests.swift; sourceTree = "<group>"; };
 		2548177E6E9F45B58683C38A /* Localization/LocalizationManagerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Localization/LocalizationManagerTests.swift; sourceTree = "<group>"; };
 		282FBEE420718AB2FDBF90E5 /* GestureOverlayGeometry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureOverlayGeometry.swift; sourceTree = "<group>"; };
 		29F74C1EC51067D5CBB87483 /* GestureMatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GestureMatcher.swift; sourceTree = "<group>"; };
@@ -563,6 +565,7 @@
 				A29B942B0099520B47401F7A /* GestureFlowApplicationTests.swift */,
 				88C40365794474B38BB09446 /* GestureOverlayGeometryTests.swift */,
 				2429483A7D8C34E792DFBC08 /* GestureOverlayWindowTests.swift */,
+				A7F3C19E4B2D86E05C1B9A70 /* MemoryFootprintProbeTests.swift */,
 				91DD517714E8953C5BFD0412 /* MouseEventTapTests.swift */,
 				2F90C2EF9595B5AC4AA4DCD1 /* PermissionServiceTests.swift */,
 				CDD7C0628561595B19BE5527 /* Settings/Window/Hosting/SettingsWindowCoordinatorTests.swift */,
@@ -1205,6 +1208,7 @@
 				9CE9A72563FDFB4D9FD4A6A5 /* GestureFlowApplicationTests.swift in Sources */,
 				29766FD4E68CB075B475182F /* GestureOverlayGeometryTests.swift in Sources */,
 				EF40A344F544A55448031305 /* GestureOverlayWindowTests.swift in Sources */,
+				B8E4D2AF5C3E97F16D2CAB81 /* MemoryFootprintProbeTests.swift in Sources */,
 				FE4E3FFAE7D1EED8C2093C96 /* MouseEventTapTests.swift in Sources */,
 				F5DBFD6162AF15B5B67EC30B /* PermissionServiceTests.swift in Sources */,
 				FC580C899A5782136F3908B9 /* Settings/Window/Hosting/SettingsWindowCoordinatorTests.swift in Sources */,

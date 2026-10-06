@@ -141,7 +141,7 @@ final class GestureFlowApplication: GestureFlowApplicationCoordinating {
             permissionService: permissionService,
             eventTap: MouseEventTap(
                 triggerConfigurationProvider: { runtimeState.appConfiguration.trigger },
-                gestureActivationGate: { activationGate.resolvedTargetForGestureActivation(at: $0) }
+                gestureActivationGate: { activationGate.gestureActivation(at: $0) }
             ),
             overlay: GestureOverlayWindow(localization: localizationManager)
         )

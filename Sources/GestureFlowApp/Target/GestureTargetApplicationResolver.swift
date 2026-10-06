@@ -41,6 +41,15 @@ protocol AccessibilityApplicationQuerying {
     func applicationAtScreenPoint(_ point: CGPoint) -> ResolvedGestureTarget?
 }
 
+enum AccessibilityMessaging {
+    /// Accessibility calls run on the main thread (the hit test inside the event tap callback), where the
+    /// system's multi-second default would let one unresponsive app freeze right clicks. Setting it on the
+    /// system-wide element makes it the process-wide default for every element.
+    static func applyTimeout() {
+        AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), 0.25)
+    }
+}
+
 enum GestureTargetWindowGeometry {
     /// Converts `CGWindowListCopyWindowInfo` bounds (global, top-left origin) into AppKit screen space.
     static func appKitScreenBounds(for windowBounds: CGRect, in screenFrame: CGRect) -> CGRect {
@@ -312,6 +321,7 @@ private struct AXApplicationQuery: AccessibilityApplicationQuerying {
         let mainScreenHeight = NSScreen.main?.frame.height ?? 0
         let quartzY = mainScreenHeight - point.y
 
+        AccessibilityMessaging.applyTimeout()
         let systemWide = AXUIElementCreateSystemWide()
         var element: AXUIElement?
         let status = AXUIElementCopyElementAtPosition(

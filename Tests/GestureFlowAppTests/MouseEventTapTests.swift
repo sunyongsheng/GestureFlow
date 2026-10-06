@@ -863,7 +863,7 @@ final class MouseEventTapTests: XCTestCase {
     func testRightMouseDownStillSuppressesWhenGateReturnsTrue() {
         let tap = makeMouseEventTap(
             gestureActivationGate: { _ in
-                ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: nil)
+                GestureActivation(target: ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: nil))
             }
         )
 
@@ -872,6 +872,55 @@ final class MouseEventTapTests: XCTestCase {
             .suppressEvent
         )
     }
+
+    func testPlainRightClickDoesNotResolveGestureTarget() {
+        var resolvedCount = 0
+        var replayedClicks: [GesturePoint] = []
+        let tap = makeMouseEventTap(
+            gestureActivationGate: { _ in
+                GestureActivation {
+                    resolvedCount += 1
+                    return ResolvedGestureTarget(bundleIdentifier: "com.example.app", processIdentifier: 42)
+                }
+            },
+            syntheticClickPoster: { _, point in replayedClicks.append(point) }
+        )
+
+        XCTAssertEqual(tap.handle(.rightMouseDown(at: GesturePoint(x: 10, y: 10))), .suppressEvent)
+        XCTAssertEqual(tap.handle(.rightMouseUp(at: GesturePoint(x: 10, y: 10))), .suppressEvent)
+
+        XCTAssertEqual(resolvedCount, 0)
+        XCTAssertEqual(replayedClicks, [GesturePoint(x: 10, y: 10)])
+    }
+
+    func testRightDragResolvesGestureTargetOnceWhenPromoted() {
+        var resolvedCount = 0
+        var beganTargets: [ResolvedGestureTarget] = []
+        let expectedTarget = ResolvedGestureTarget(bundleIdentifier: "com.example.app", processIdentifier: 42)
+        let tap = makeMouseEventTap(
+            gestureActivationGate: { _ in
+                GestureActivation {
+                    resolvedCount += 1
+                    return expectedTarget
+                }
+            },
+            mouseButtonResetter: { _, _ in }
+        )
+        tap.onGestureBegan = { _, _, target in
+            beganTargets.append(target)
+        }
+
+        _ = tap.handle(.rightMouseDown(at: GesturePoint(x: 10, y: 10)))
+        _ = tap.handle(.rightMouseDragged(to: GesturePoint(x: 20, y: 10)))
+        XCTAssertEqual(resolvedCount, 0)
+
+        _ = tap.handle(.rightMouseDragged(to: GesturePoint(x: 40, y: 10)))
+        _ = tap.handle(.rightMouseDragged(to: GesturePoint(x: 60, y: 10)))
+        _ = tap.handle(.rightMouseUp(at: GesturePoint(x: 60, y: 10)))
+
+        XCTAssertEqual(resolvedCount, 1)
+        XCTAssertEqual(beganTargets, [expectedTarget])
+    }
 }
 
 private func makeMouseEventTap(
@@ -879,8 +928,8 @@ private func makeMouseEventTap(
     holdTimeoutMilliseconds: Int = GestureTriggerConfiguration.default.holdTimeoutMilliseconds,
     maximumSampleDistance: Double = GestureTriggerConfiguration.default.maximumSampleDistance,
     triggerConfigurationProvider: (() -> GestureTriggerConfiguration)? = nil,
-    gestureActivationGate: @escaping (GesturePoint) -> ResolvedGestureTarget? = { _ in
-        ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: nil)
+    gestureActivationGate: @escaping (GesturePoint) -> GestureActivation? = { _ in
+        GestureActivation(target: ResolvedGestureTarget(bundleIdentifier: nil, processIdentifier: nil))
     },
     eventTapEnabler: @escaping (Bool) -> Void = { _ in },
     screenFramesProvider: @escaping () -> [CGRect] = {

@@ -41,12 +41,12 @@ Tests/
 
 ### Runtime Flow
 
-1. `MouseEventTap` receives right/middle mouse events and converts them to AppKit coordinates. On press it asks `GestureActivationGate` for the target app (`gestureTargetApplication`: foreground or under mouse); `nil` (an ignored app) lets the event pass through untouched.
+1. `MouseEventTap` receives right/middle mouse events and converts them to AppKit coordinates. On press it asks `GestureActivationGate` whether to track the press; `nil` (an ignored app) lets the event pass through untouched. The target app (`gestureTargetApplication`: foreground or under mouse) resolves lazily when the press becomes a gesture, or at press time when the ignore list needs it.
 2. Right button: the press is suppressed and held as a pending click. It becomes a gesture once the path exceeds `trigger.movementThreshold`; if it is released earlier or held past `holdTimeoutMilliseconds`, a synthetic right click is replayed so context menus keep working. Middle-button events pass through while being tracked.
-3. `GestureEngine` (main thread) updates the overlay on every sample with the live prefix match, and on release runs `GestureRecognizer` → `GestureMatcher` (exact match; an app-specific gesture beats a global one) → `ActionExecutor`.
-4. `ActionExecutor` activates the target and raises the window under the gesture origin (skipped when the target or its helper process is already frontmost), then posts the shortcut with `CGEvent.postToPid`. Failures surface as typed `GestureOverlayCompletion` cases on the feedback card.
+3. `GestureEngine` (main thread) updates the overlay on every sample with the live prefix match (`IncrementalGestureRecognizer`), and after the release's tap callback returns runs `GestureRecognizer` → `GestureMatcher` (exact match; an app-specific gesture beats a global one) → `ActionExecutor`.
+4. `ActionExecutor` posts the shortcut with `CGEvent.postToPid` right away when the target or its helper process is frontmost; otherwise it requests activation and, once the target is active (or after 0.5 s), raises the window under the gesture origin and posts. Failures surface as typed `GestureOverlayCompletion` cases on the feedback card.
 
-The target is resolved once at press time (before the overlay appears) and reused at release.
+The target is resolved once, before the overlay appears, and reused at release.
 
 ## Key Design Decisions
 
@@ -69,6 +69,7 @@ The target is resolved once at press time (before the overlay appears) and reuse
 
 ### Event Tap
 
+- The tap callback runs on the main thread and holds the system's mouse events until it returns: keep per-event work cheap and run anything slow (activation, LaunchServices, Accessibility) after it returns. Accessibility calls are capped by `AccessibilityMessaging.applyTimeout()`
 - Synthetic mouse events are tagged with `syntheticEventSignature` in `eventSourceUserData` and the tap passes tagged events through; tag any mouse event GestureFlow posts the same way or the tap intercepts it
 - When macOS disables the tap (`tapDisabledByTimeout` / `tapDisabledByUserInput`, e.g. across sleep/wake), the in-flight gesture is cancelled, the held button released, and the tap re-enabled
 
@@ -107,6 +108,7 @@ These are hard-won lessons from past bugs. Violating them will re-introduce issu
 7. **Do NOT make overlay panels key or activate the app from overlay code** — the app receiving the gesture would lose keyboard focus.
 8. **Do NOT add extra `NSApp.activate` / force-activation calls when presenting settings** — activation is owned by the single key-focus claim in `SettingsWindowFrontmostPresenter`; other paths only order the window so the app is activated once per open.
 9. **Do NOT drop the synthetic button-up in `MouseEventTap`** (after consumed gestures and tap-disabled recovery) — macOS then thinks the right button is still held and left clicks act as right clicks.
+10. **Do NOT block or spin a nested run loop inside the event tap callback** (e.g. waiting for app activation) — the system's mouse events stall until it returns; wait asynchronously instead.
 
 ## Mandatory Maintenance
 
@@ -146,4 +148,5 @@ xcodebuild -project GestureFlow.xcodeproj -scheme GestureFlow -destination "plat
 - `swift test` (SPM) and `xcodebuild test` (Xcode) may differ — always verify both if touching project config
 - Components take protocol/closure dependencies with production defaults; tests inject fakes instead of touching the real event tap, window server, file system or `UserDefaults`
 - `NSWindow.isVisible` is unreliable on headless CI — assert on spied calls (e.g. `close()` counts) instead
+- `MemoryFootprintProbeTests` is an opt-in diagnostic (`GESTUREFLOW_MEMORY_PROBE=1 swift test --filter MemoryFootprintProbeTests`) that shows real overlay and settings windows and prints the process footprint around them; it is skipped otherwise
 - Don't assert synthesized property-wrapper storage names via `Mirror`: `@State` stores `_name: State<T>` in older SDKs but is a macro storing `__name: LazyState<T>` in the macOS 27 SDK. Match on the stored type instead

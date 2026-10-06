@@ -42,7 +42,7 @@ final class MouseEventTap: MouseEventTapControlling {
     var onRightClickTimeoutCleared: (() -> Void)?
 
     private let triggerConfigurationProvider: () -> GestureTriggerConfiguration
-    private let gestureActivationGate: (GesturePoint) -> ResolvedGestureTarget?
+    private let gestureActivationGate: (GesturePoint) -> GestureActivation?
     private let eventTapEnabler: (Bool) -> Void
     private let screenFramesProvider: () -> [CGRect]
     private let desktopFrameProvider: () -> CGRect
@@ -66,7 +66,7 @@ final class MouseEventTap: MouseEventTapControlling {
 
     init(
         triggerConfigurationProvider: @escaping () -> GestureTriggerConfiguration,
-        gestureActivationGate: @escaping (GesturePoint) -> ResolvedGestureTarget?,
+        gestureActivationGate: @escaping (GesturePoint) -> GestureActivation?,
         eventTapEnabler: @escaping (Bool) -> Void = { _ in },
         screenFramesProvider: @escaping () -> [CGRect] = {
             NSScreen.screens.map(\.frame)
@@ -268,7 +268,7 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func beginPendingRightClick(at point: GesturePoint) -> MouseEventTapDecision {
-        guard let resolvedTarget = gestureActivationGate(point) else {
+        guard let activation = gestureActivationGate(point) else {
             return .passEvent
         }
 
@@ -279,7 +279,7 @@ final class MouseEventTap: MouseEventTapControlling {
             points: [point],
             beganAt: nowProvider(),
             exceededHoldTimeout: false,
-            resolvedTarget: resolvedTarget
+            activation: activation
         )
         pendingMouseButtonReset = nil
         schedulePendingRightClickTimeout()
@@ -369,7 +369,7 @@ final class MouseEventTap: MouseEventTapControlling {
         }
 
         if pathLength(of: pending.points) >= currentTriggerConfiguration().movementThreshold {
-            onGestureBegan?(.rightMouse, pending.points[0], pending.resolvedTarget)
+            onGestureBegan?(.rightMouse, pending.points[0], pending.activation.target)
             if pending.points.count > 2 {
                 for bufferedPoint in pending.points.dropFirst().dropLast() {
                     onGestureMoved?(bufferedPoint)
@@ -384,12 +384,13 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func promotePendingRightClickToGesture(_ pending: PendingRightClick) {
+        let resolvedTarget = pending.activation.target
         activeGesture = ActiveGesture(
             trigger: .rightMouse,
             points: pending.points,
-            resolvedTarget: pending.resolvedTarget
+            resolvedTarget: resolvedTarget
         )
-        onGestureBegan?(.rightMouse, pending.points[0], pending.resolvedTarget)
+        onGestureBegan?(.rightMouse, pending.points[0], resolvedTarget)
         for bufferedPoint in pending.points.dropFirst() {
             onGestureMoved?(bufferedPoint)
         }
@@ -408,13 +409,14 @@ final class MouseEventTap: MouseEventTapControlling {
     }
 
     private func begin(trigger: GestureTrigger, at point: GesturePoint) -> MouseEventTapDecision {
-        guard let resolvedTarget = gestureActivationGate(point) else {
+        guard let activation = gestureActivationGate(point) else {
             return .passEvent
         }
 
         if pendingMouseButtonReset?.trigger == trigger {
             pendingMouseButtonReset = nil
         }
+        let resolvedTarget = activation.target
         activeGesture = ActiveGesture(trigger: trigger, points: [point], resolvedTarget: resolvedTarget)
         onGestureBegan?(trigger, point, resolvedTarget)
         return .passEvent
@@ -654,7 +656,7 @@ private struct PendingRightClick {
     var points: [GesturePoint]
     var beganAt: TimeInterval
     var exceededHoldTimeout: Bool
-    var resolvedTarget: ResolvedGestureTarget
+    var activation: GestureActivation
 }
 
 private struct PendingMouseButtonReset {

@@ -23,10 +23,11 @@ final class GestureEngine {
     private let actionExecutor: ActionExecuting
     private let feedbackHandler: FeedbackHandler
     private let overlay: GestureOverlayDisplaying
+    private let scheduleGestureCompletion: (@escaping () -> Void) -> Void
     private var isTimeoutMarkerVisible = false
     /// Resolved at gesture start (before the fullscreen overlay is shown) for stable under-mouse targeting.
     private var pendingGestureTarget: ResolvedGestureTarget?
-    private var activeGesturePoints: [GesturePoint] = []
+    private var liveRecognizer = IncrementalGestureRecognizer()
     private var activeGestureTrigger: GestureTrigger?
     /// Memoizes the live match for the current gesture so a stable signature (the common case while
     /// dragging a straight segment) does not re-filter every configured gesture on each mouse sample.
@@ -47,6 +48,9 @@ final class GestureEngine {
         actionExecutor: ActionExecuting = ActionExecutor(),
         feedbackHandler: @escaping FeedbackHandler = { feedback in
             print("GestureFlow feedback: \(feedback)")
+        },
+        scheduleGestureCompletion: @escaping (@escaping () -> Void) -> Void = {
+            DispatchQueue.main.async(execute: $0)
         }
     ) {
         self.appConfigurationProvider = appConfigurationProvider
@@ -58,6 +62,7 @@ final class GestureEngine {
         self.overlay = overlay
         self.actionExecutor = actionExecutor
         self.feedbackHandler = feedbackHandler
+        self.scheduleGestureCompletion = scheduleGestureCompletion
         installCallbacks()
     }
 
@@ -116,7 +121,8 @@ final class GestureEngine {
         let work = { [self] in
             self.pendingGestureTarget = gestureTarget
             self.activeGestureTrigger = trigger
-            self.activeGesturePoints = [point]
+            self.liveRecognizer = IncrementalGestureRecognizer()
+            self.liveRecognizer.append(point)
             self.resetLiveMatchCache()
             let appearance = GestureTrailAppearance(feedback: self.appConfigurationProvider().feedback)
             self.overlay.beginGesture(at: self.displayPoint(for: point), appearance: appearance)
@@ -127,8 +133,8 @@ final class GestureEngine {
 
     private func handleGestureMoved(to point: GesturePoint) {
         let work = { [self] in
-            guard !self.activeGesturePoints.isEmpty else { return }
-            self.activeGesturePoints.append(point)
+            guard self.activeGestureTrigger != nil else { return }
+            self.liveRecognizer.append(point)
             let displayPoint = self.displayPoint(for: point)
             self.overlay.appendGesturePoint(displayPoint)
             self.refreshLiveGestureFeedback(at: point)
@@ -138,13 +144,23 @@ final class GestureEngine {
 
     private func handleGestureEnded(trigger: GestureTrigger, points: [GesturePoint]) {
         runOnMain { [self] in
-            self.finishGestureEnded(trigger: trigger, points: points)
+            let gestureTarget = self.pendingGestureTarget
+            self.pendingGestureTarget = nil
+            self.clearActiveGesture()
+            self.clearTimeoutMarkerIfNeeded()
+            // The tap reports the release from inside its event callback; activating the target and
+            // delivering the shortcut there would hold the system mouse event stream until they finish.
+            self.scheduleGestureCompletion { [weak self] in
+                self?.finishGestureEnded(trigger: trigger, points: points, gestureTarget: gestureTarget)
+            }
         }
     }
 
-    private func finishGestureEnded(trigger: GestureTrigger, points: [GesturePoint]) {
-        clearActiveGesture()
-        clearTimeoutMarkerIfNeeded()
+    private func finishGestureEnded(
+        trigger: GestureTrigger,
+        points: [GesturePoint],
+        gestureTarget: ResolvedGestureTarget?
+    ) {
         let completionPoint = points.last
 
         let hideAfter = overlayHideDelay()
@@ -155,13 +171,11 @@ final class GestureEngine {
             return
         }
 
-        guard let resolvedTarget = pendingGestureTarget else {
+        guard let resolvedTarget = gestureTarget else {
             overlay.completeGesture(with: .rejected, at: completionPoint, hideAfter: hideAfter)
             feedbackHandler(.rejected(trigger: trigger))
             return
         }
-        
-        pendingGestureTarget = nil
 
         let targetPolicy = appConfigurationProvider().gestureTargetApplication
         let match = matcher.match(
@@ -299,7 +313,7 @@ final class GestureEngine {
     private func refreshLiveGestureFeedback(at point: GesturePoint) {
         guard let trigger = activeGestureTrigger else { return }
 
-        let partialSignature = recognizer.recognize(points: activeGesturePoints)
+        let partialSignature = liveRecognizer.signature
         let liveMatch = liveMatchResult(trigger: trigger, signature: partialSignature)
         let isHighlighted = liveMatch.gesture != nil
         let appearance = GestureTrailAppearance(
@@ -358,7 +372,7 @@ final class GestureEngine {
     }
 
     private func clearActiveGesture() {
-        activeGesturePoints = []
+        liveRecognizer = IncrementalGestureRecognizer()
         activeGestureTrigger = nil
         resetLiveMatchCache()
     }

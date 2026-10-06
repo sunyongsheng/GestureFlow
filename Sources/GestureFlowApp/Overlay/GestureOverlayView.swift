@@ -186,15 +186,20 @@ final class GestureOverlayView: NSView {
         // (single-segment) redraws correct: the semi-transparent trail is re-stroked over a cleared
         // area instead of blending onto whatever was already there.
         NSGraphicsContext.current?.cgContext.clear(dirtyRect)
-        drawTrail()
+        drawTrail(in: dirtyRect)
         drawMarker()
     }
 
-    private func trailSegmentInvalidationRect(from start: GesturePoint, to end: GesturePoint) -> NSRect {
+    /// Distance around a segment that its stroke (plus anti-aliasing) can touch.
+    private var trailSegmentMargin: Double {
         let halfLineWidth = trailAppearance.strokeEnabled
             ? trailAppearance.width / 2 + trailAppearance.strokeWidth
             : trailAppearance.width / 2
-        let margin = halfLineWidth + 2
+        return halfLineWidth + 2
+    }
+
+    private func trailSegmentInvalidationRect(from start: GesturePoint, to end: GesturePoint) -> NSRect {
+        let margin = trailSegmentMargin
         let minX = min(start.x, end.x) - margin
         let minY = min(start.y, end.y) - margin
         let maxX = max(start.x, end.x) + margin
@@ -202,7 +207,7 @@ final class GestureOverlayView: NSView {
         return NSRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
     }
 
-    private func drawTrail() {
+    private func drawTrail(in dirtyRect: NSRect) {
         guard !points.isEmpty else { return }
 
         if points.count == 1, let point = points.first {
@@ -210,7 +215,8 @@ final class GestureOverlayView: NSView {
             return
         }
 
-        let path = makeTrailPath()
+        let path = makeTrailPath(intersecting: dirtyRect)
+        guard !path.isEmpty else { return }
         if trailAppearance.strokeEnabled {
             strokePath(
                 path,
@@ -245,18 +251,43 @@ final class GestureOverlayView: NSView {
         )
     }
 
-    private func makeTrailPath() -> NSBezierPath {
+    /// With round caps and joins the stroke is the union of per-segment capsules, so segments whose
+    /// capsule cannot reach the dirty rect are skipped without changing any pixel inside it. Subpaths stay
+    /// short because Core Graphics double-paints translucent self-overlaps within a subpath longer than
+    /// about 256 segments, which would make overlaps depend on how a dirty rect splits the trail.
+    private func makeTrailPath(intersecting dirtyRect: NSRect) -> NSBezierPath {
         let path = NSBezierPath()
         path.lineCapStyle = .round
         path.lineJoinStyle = .round
-        path.move(to: points[0].nsPoint)
+        let points = self.points
+        let margin = trailSegmentMargin
+        let minX = Double(dirtyRect.minX) - margin
+        let maxX = Double(dirtyRect.maxX) + margin
+        let minY = Double(dirtyRect.minY) - margin
+        let maxY = Double(dirtyRect.maxY) + margin
+        var segmentsInSubpath = 0
 
-        for point in points.dropFirst() {
-            path.line(to: point.nsPoint)
+        for index in 1..<points.count {
+            let start = points[index - 1]
+            let end = points[index]
+            guard max(start.x, end.x) >= minX,
+                  min(start.x, end.x) <= maxX,
+                  max(start.y, end.y) >= minY,
+                  min(start.y, end.y) <= maxY else {
+                segmentsInSubpath = 0
+                continue
+            }
+            if segmentsInSubpath == 0 {
+                path.move(to: start.nsPoint)
+            }
+            path.line(to: end.nsPoint)
+            segmentsInSubpath = (segmentsInSubpath + 1) % Self.maximumSegmentsPerSubpath
         }
 
         return path
     }
+
+    private static let maximumSegmentsPerSubpath = 128
 
     private func strokePath(
         _ path: NSBezierPath,

@@ -80,6 +80,15 @@ protocol TargetWindowRaising {
     func raiseWindow(at screenPoint: CGPoint, for processIdentifier: pid_t)
 }
 
+protocol TargetActivationWaiting {
+    /// Calls `deliver` on the main queue once the target becomes the active app, or when waiting times out.
+    func waitForActivation(
+        processIdentifier: pid_t,
+        bundleIdentifier: String?,
+        then deliver: @escaping () -> Void
+    )
+}
+
 final class ActionExecutor: ActionExecuting {
     private let keyEventPoster: KeyboardEventPosting
     private let workspaceOpener: WorkspaceOpening
@@ -88,6 +97,7 @@ final class ActionExecutor: ActionExecuting {
     private let processActivator: ProcessActivating
     private let frontmostQuery: FrontmostApplicationQuerying
     private let windowRaiser: TargetWindowRaising
+    private let activationWaiter: TargetActivationWaiting
     private let currentProcessIdentifier: Int32
 
     init(
@@ -98,6 +108,7 @@ final class ActionExecutor: ActionExecuting {
         processActivator: ProcessActivating = NSProcessActivator(),
         frontmostQuery: FrontmostApplicationQuerying = NSFrontmostApplicationQuery(),
         windowRaiser: TargetWindowRaising = AXTargetWindowRaiser(),
+        activationWaiter: TargetActivationWaiting = WorkspaceActivationWaiter(),
         currentProcessIdentifier: Int32 = ProcessInfo.processInfo.processIdentifier
     ) {
         self.keyEventPoster = keyEventPoster
@@ -107,6 +118,7 @@ final class ActionExecutor: ActionExecuting {
         self.processActivator = processActivator
         self.frontmostQuery = frontmostQuery
         self.windowRaiser = windowRaiser
+        self.activationWaiter = activationWaiter
         self.currentProcessIdentifier = currentProcessIdentifier
     }
 
@@ -172,25 +184,40 @@ final class ActionExecutor: ActionExecuting {
             skipActivation = false
         }
 
-        if !skipActivation {
-            _ = processActivator.activate(
-                processIdentifier: targetProcessIdentifier,
-                bundleIdentifier: targetBundleIdentifier
+        guard !skipActivation else {
+            try postKeyboardShortcut(
+                shortcut,
+                flags: flags,
+                targetProcessIdentifier: effectiveTargetPID
             )
+            return
+        }
 
+        _ = processActivator.activate(
+            processIdentifier: targetProcessIdentifier,
+            bundleIdentifier: targetBundleIdentifier
+        )
+        // Activation lands asynchronously; the window raise and the shortcut need the target active first.
+        activationWaiter.waitForActivation(
+            processIdentifier: targetProcessIdentifier,
+            bundleIdentifier: targetBundleIdentifier
+        ) { [self] in
             if let gestureOriginScreenPoint {
                 windowRaiser.raiseWindow(
                     at: gestureOriginScreenPoint,
                     for: targetProcessIdentifier
                 )
             }
+            do {
+                try postKeyboardShortcut(
+                    shortcut,
+                    flags: flags,
+                    targetProcessIdentifier: effectiveTargetPID
+                )
+            } catch {
+                print("[GestureFlow] 分发失败 detail=\(error.localizedDescription)")
+            }
         }
-
-        try postKeyboardShortcut(
-            shortcut,
-            flags: flags,
-            targetProcessIdentifier: effectiveTargetPID
-        )
     }
 
     private func isFrontmostRelatedToTarget(
@@ -355,59 +382,18 @@ private enum ApplicationActivationSupport {
         return activateTarget(application: activatableApplication(for: application))
     }
 
-    @discardableResult
-    static func activateTarget(bundleIdentifier: String) -> Bool {
-        if let application = NSRunningApplication
-            .runningApplications(withBundleIdentifier: bundleIdentifier)
-            .first(where: { $0.activationPolicy == .regular }),
-            activateTarget(application: application),
-            isTargetFrontmost(bundleIdentifier: bundleIdentifier)
-        {
-            return true
-        }
-
-        if activateViaWorkspace(bundleIdentifier: bundleIdentifier),
-           isTargetFrontmost(bundleIdentifier: bundleIdentifier)
-        {
-            return true
-        }
-
-        return false
-    }
-
-    static func isTargetFrontmost(bundleIdentifier: String) -> Bool {
-        NSWorkspace.shared.frontmostApplication?.bundleIdentifier == bundleIdentifier
-    }
-
-    @discardableResult
-    private static func activateViaWorkspace(bundleIdentifier: String) -> Bool {
+    static func requestActivationViaWorkspace(bundleIdentifier: String) {
         guard let applicationURL = NSWorkspace.shared.urlForApplication(
             withBundleIdentifier: bundleIdentifier
         ) else {
-            return false
+            return
         }
 
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
         configuration.createsNewApplicationInstance = false
         configuration.addsToRecentItems = false
-
-        final class ActivationState: @unchecked Sendable {
-            var completed = false
-            var error: Error?
-        }
-
-        let state = ActivationState()
-        NSWorkspace.shared.openApplication(at: applicationURL, configuration: configuration) { _, error in
-            state.error = error
-            state.completed = true
-        }
-
-        let deadline = Date().addingTimeInterval(0.5)
-        while !state.completed, Date() < deadline {
-            RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: 0.01))
-        }
-        return state.completed && state.error == nil
+        NSWorkspace.shared.openApplication(at: applicationURL, configuration: configuration)
     }
 
     @discardableResult
@@ -432,6 +418,7 @@ struct AXTargetWindowRaiser: TargetWindowRaising {
         let mainScreenHeight = mainScreenHeightProvider()
         let quartzPoint = CGPoint(x: screenPoint.x, y: mainScreenHeight - screenPoint.y)
 
+        AccessibilityMessaging.applyTimeout()
         let app = AXUIElementCreateApplication(processIdentifier)
         var windowsRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(
@@ -520,17 +507,96 @@ private struct NSApplicationActivator: ApplicationActivating {
 private struct NSProcessActivator: ProcessActivating {
     @discardableResult
     func activate(processIdentifier: pid_t, bundleIdentifier: String?) -> Bool {
-        _ = ApplicationActivationSupport.activateTarget(processIdentifier: processIdentifier)
-        if let bundleIdentifier,
-           ApplicationActivationSupport.isTargetFrontmost(bundleIdentifier: bundleIdentifier)
-        {
+        let didRequestActivation = ApplicationActivationSupport.activateTarget(processIdentifier: processIdentifier)
+        // Direct activation is cooperative on macOS 14+ and can be declined for a background agent.
+        if let bundleIdentifier {
+            ApplicationActivationSupport.requestActivationViaWorkspace(bundleIdentifier: bundleIdentifier)
+        }
+        return didRequestActivation
+    }
+}
+
+final class WorkspaceActivationWaiter: TargetActivationWaiting {
+    private let notificationCenter: NotificationCenter
+    private let timeout: TimeInterval
+
+    init(
+        notificationCenter: NotificationCenter = NSWorkspace.shared.notificationCenter,
+        timeout: TimeInterval = 0.5
+    ) {
+        self.notificationCenter = notificationCenter
+        self.timeout = timeout
+    }
+
+    func waitForActivation(
+        processIdentifier: pid_t,
+        bundleIdentifier: String?,
+        then deliver: @escaping () -> Void
+    ) {
+        // An app that is already active never posts another activation notification.
+        if let application = NSRunningApplication(processIdentifier: processIdentifier),
+           ApplicationActivationSupport.activatableApplication(for: application).isActive {
+            deliver()
+            return
+        }
+
+        let pending = PendingActivation(notificationCenter: notificationCenter, deliver: deliver)
+        pending.observer = notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { notification in
+            guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                  Self.isActivation(
+                      of: application,
+                      processIdentifier: processIdentifier,
+                      bundleIdentifier: bundleIdentifier
+                  ) else {
+                return
+            }
+            pending.finish()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+            pending.finish()
+        }
+    }
+
+    private static func isActivation(
+        of application: NSRunningApplication,
+        processIdentifier: pid_t,
+        bundleIdentifier: String?
+    ) -> Bool {
+        if application.processIdentifier == processIdentifier {
             return true
         }
-        guard let bundleIdentifier else {
-            return NSRunningApplication(processIdentifier: processIdentifier) != nil
-                && NSWorkspace.shared.frontmostApplication?.processIdentifier == processIdentifier
+        guard let bundleIdentifier, let activatedBundleIdentifier = application.bundleIdentifier else {
+            return false
         }
-        return ApplicationActivationSupport.activateTarget(bundleIdentifier: bundleIdentifier)
+        return activatedBundleIdentifier == bundleIdentifier
+            || ApplicationBundleIdentifierSupport.parentBundleIdentifier(
+                forHelperBundleIdentifier: activatedBundleIdentifier
+            ) == bundleIdentifier
+    }
+}
+
+private final class PendingActivation: @unchecked Sendable {
+    var observer: NSObjectProtocol?
+    private let notificationCenter: NotificationCenter
+    private var deliver: (() -> Void)?
+
+    init(notificationCenter: NotificationCenter, deliver: @escaping () -> Void) {
+        self.notificationCenter = notificationCenter
+        self.deliver = deliver
+    }
+
+    func finish() {
+        guard let deliver else { return }
+        self.deliver = nil
+        if let observer {
+            notificationCenter.removeObserver(observer)
+            self.observer = nil
+        }
+        deliver()
     }
 }
 

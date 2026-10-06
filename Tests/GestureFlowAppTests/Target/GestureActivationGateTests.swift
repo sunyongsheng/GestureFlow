@@ -14,9 +14,26 @@ final class GestureActivationGateTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            gate.resolvedTargetForGestureActivation(at: GesturePoint(x: 10, y: 10)),
+            gate.gestureActivation(at: GesturePoint(x: 10, y: 10))?.target,
             expectedTarget
         )
+    }
+
+    func testEmptyIgnoreListDefersTargetResolutionUntilFirstAccess() {
+        let resolver = CountingGestureTargetResolver(
+            resolvedTarget: ResolvedGestureTarget(bundleIdentifier: "com.example.app", processIdentifier: 42)
+        )
+        let gate = GestureActivationGate(
+            configurationProvider: { AppConfiguration(ignoredApplicationBundleIdentifiers: []) },
+            targetResolver: resolver
+        )
+
+        let activation = gate.gestureActivation(at: GesturePoint(x: 10, y: 10))
+        XCTAssertEqual(resolver.resolvedPoints, [])
+
+        XCTAssertEqual(activation?.target.processIdentifier, 42)
+        XCTAssertEqual(activation?.target.processIdentifier, 42)
+        XCTAssertEqual(resolver.resolvedPoints, [GesturePoint(x: 10, y: 10)])
     }
 
     func testIgnoredTargetReturnsNil() {
@@ -28,7 +45,7 @@ final class GestureActivationGateTests: XCTestCase {
             )
         )
 
-        XCTAssertNil(gate.resolvedTargetForGestureActivation(at: GesturePoint(x: 10, y: 10)))
+        XCTAssertNil(gate.gestureActivation(at: GesturePoint(x: 10, y: 10)))
     }
 
     func testNonIgnoredTargetReturnsResolvedTarget() {
@@ -42,7 +59,7 @@ final class GestureActivationGateTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            gate.resolvedTargetForGestureActivation(at: GesturePoint(x: 10, y: 10)),
+            gate.gestureActivation(at: GesturePoint(x: 10, y: 10))?.target,
             expectedTarget
         )
     }
@@ -54,7 +71,7 @@ final class GestureActivationGateTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            gate.resolvedTargetForGestureActivation(at: GesturePoint(x: 10, y: 10)),
+            gate.gestureActivation(at: GesturePoint(x: 10, y: 10))?.target,
             .invalid
         )
     }
@@ -71,7 +88,7 @@ final class GestureActivationGateTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            gate.resolvedTargetForGestureActivation(at: GesturePoint(x: 10, y: 10)),
+            gate.gestureActivation(at: GesturePoint(x: 10, y: 10))?.target,
             expectedTarget
         )
     }
@@ -100,5 +117,22 @@ private struct StubGestureTargetResolver: GestureTargetResolving {
         at startPoint: GesturePoint
     ) -> ResolvedGestureTarget {
         resolvedTarget
+    }
+}
+
+private final class CountingGestureTargetResolver: GestureTargetResolving, @unchecked Sendable {
+    let resolvedTarget: ResolvedGestureTarget
+    private(set) var resolvedPoints: [GesturePoint] = []
+
+    init(resolvedTarget: ResolvedGestureTarget) {
+        self.resolvedTarget = resolvedTarget
+    }
+
+    func resolve(
+        policy: GestureTargetApplication,
+        at startPoint: GesturePoint
+    ) -> ResolvedGestureTarget {
+        resolvedPoints.append(startPoint)
+        return resolvedTarget
     }
 }

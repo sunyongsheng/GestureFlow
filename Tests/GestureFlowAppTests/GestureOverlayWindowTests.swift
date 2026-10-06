@@ -277,6 +277,90 @@ final class GestureOverlayWindowTests: XCTestCase {
         XCTAssertLessThanOrEqual(labelFrameInCard.maxX, feedbackCardView.bounds.maxX)
     }
 
+    func testTrailRedrawOfDirtyRectMatchesFullRedraw() throws {
+        let view = GestureOverlayView(
+            frame: NSRect(x: 0, y: 0, width: 400, height: 300),
+            localization: LocalizationManager(language: .zhHans)
+        )
+        var feedback = FeedbackConfiguration.default
+        feedback.trailWidth = 6
+        feedback.trailOpacity = 0.6
+        let wave = (0..<160).map { index in
+            GesturePoint(x: 30 + Double(index) * 2, y: 150 + sin(Double(index) / 8) * 100)
+        }
+        let crossing = (0..<120).map { index in
+            GesturePoint(x: 350 - Double(index) * 2.6, y: 60 + Double(index) * 1.5)
+        }
+        let points = wave + crossing
+        view.begin(at: points[0], appearance: GestureTrailAppearance(feedback: feedback))
+        points.dropFirst().forEach { view.append($0) }
+
+        let fullRedraw = try renderPixels(of: view, dirtyRect: view.bounds)
+        let dirtyRects = [
+            NSRect(x: 60, y: 40, width: 24, height: 30),
+            NSRect(x: 150, y: 120, width: 60, height: 60),
+            NSRect(x: 200, y: 90, width: 18, height: 70),
+            NSRect(x: 280, y: 180, width: 40, height: 30),
+            NSRect(x: 0, y: 0, width: 400, height: 20)
+        ]
+        for dirtyRect in dirtyRects {
+            let partialRedraw = try renderPixels(of: view, dirtyRect: dirtyRect)
+            XCTAssertLessThanOrEqual(
+                partialRedraw.maxChannelDifference(from: fullRedraw, in: dirtyRect),
+                2,
+                "dirty rect \(dirtyRect)"
+            )
+        }
+    }
+
+    private struct RenderedPixels {
+        let height: Int
+        let bytesPerRow: Int
+        let bytes: [UInt8]
+
+        func maxChannelDifference(from other: RenderedPixels, in rect: NSRect) -> Int {
+            var maximum = 0
+            for row in (height - Int(rect.maxY))..<(height - Int(rect.minY)) {
+                for column in Int(rect.minX)..<Int(rect.maxX) {
+                    for channel in 0..<4 {
+                        let index = row * bytesPerRow + column * 4 + channel
+                        maximum = max(maximum, abs(Int(bytes[index]) - Int(other.bytes[index])))
+                    }
+                }
+            }
+            return maximum
+        }
+    }
+
+    private func renderPixels(of view: NSView, dirtyRect: NSRect) throws -> RenderedPixels {
+        let width = Int(view.bounds.width)
+        let height = Int(view.bounds.height)
+        let rep = try XCTUnwrap(NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: width,
+            pixelsHigh: height,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        ))
+        let context = try XCTUnwrap(NSGraphicsContext(bitmapImageRep: rep))
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = context
+        context.cgContext.clip(to: dirtyRect)
+        view.draw(dirtyRect)
+        NSGraphicsContext.restoreGraphicsState()
+        let data = try XCTUnwrap(rep.bitmapData)
+        return RenderedPixels(
+            height: height,
+            bytesPerRow: rep.bytesPerRow,
+            bytes: Array(UnsafeBufferPointer(start: data, count: rep.bytesPerRow * height))
+        )
+    }
+
     private func extractPanel(from overlayWindow: GestureOverlayWindow) -> NSPanel? {
         guard let firstOverlay = extractFirstScreenOverlay(from: overlayWindow) else { return nil }
         return Mirror(reflecting: firstOverlay).children

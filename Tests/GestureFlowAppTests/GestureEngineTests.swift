@@ -89,6 +89,83 @@ final class GestureEngineTests: XCTestCase {
         XCTAssertEqual(feedback, [.recognized(trigger: .rightMouse, name: "Back")])
     }
 
+    func testCompletedGestureDeliversOnlyAfterScheduledCompletionRuns() {
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Back",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let actionExecutor = SpyActionExecutor()
+        let overlay = SpyGestureOverlay()
+        var scheduledCompletions: [() -> Void] = []
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
+            eventTap: tap,
+            overlay: overlay,
+            actionExecutor: actionExecutor,
+            scheduleGestureCompletion: { scheduledCompletions.append($0) }
+        )
+
+        engine.start()
+        tap.simulateGestureEnded(
+            points: [GesturePoint(x: 100, y: 0), GesturePoint(x: 60, y: 0), GesturePoint(x: 20, y: 0)]
+        )
+
+        XCTAssertTrue(actionExecutor.executedActions.isEmpty)
+        XCTAssertFalse(overlay.events.contains { if case .completed = $0 { return true } else { return false } })
+        XCTAssertEqual(scheduledCompletions.count, 1)
+
+        scheduledCompletions.forEach { $0() }
+
+        XCTAssertEqual(actionExecutor.executedActions.map(\.targetProcessIdentifier), [1])
+        XCTAssertTrue(overlay.events.contains(.completed(
+            .recognized(gestureID: gestureConfiguration.gestures[0].id, storedName: "Back"),
+            GesturePoint(x: 20, y: 0)
+        )))
+    }
+
+    func testScheduledCompletionUsesTargetCapturedAtRelease() {
+        let gestureConfiguration = GestureConfiguration(
+            gestures: [
+                GestureDefinition(
+                    name: "Back",
+                    trigger: .rightMouse,
+                    signature: GestureSignature(tokens: [.left]),
+                    shortcut: KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
+                )
+            ]
+        )
+        let tap = SpyMouseEventTapController()
+        let actionExecutor = SpyActionExecutor()
+        var scheduledCompletions: [() -> Void] = []
+        let engine = makeEngine(
+            gestureConfiguration: gestureConfiguration,
+            eventTap: tap,
+            actionExecutor: actionExecutor,
+            scheduleGestureCompletion: { scheduledCompletions.append($0) }
+        )
+
+        engine.start()
+        tap.simulateGestureEnded(
+            points: [GesturePoint(x: 100, y: 0), GesturePoint(x: 60, y: 0), GesturePoint(x: 20, y: 0)],
+            gestureTarget: ResolvedGestureTarget(bundleIdentifier: "com.example.first", processIdentifier: 11)
+        )
+        tap.onGestureBegan?(
+            .rightMouse,
+            GesturePoint(x: 300, y: 300),
+            ResolvedGestureTarget(bundleIdentifier: "com.example.second", processIdentifier: 22)
+        )
+        scheduledCompletions.forEach { $0() }
+
+        XCTAssertEqual(actionExecutor.executedActions.map(\.targetProcessIdentifier), [11])
+    }
+
     func testAppSpecificGestureBeatsGlobalGesture() {
         let globalShortcut = KeyboardShortcutAction(keyCode: 123, modifiers: [.command])
         let safariShortcut = KeyboardShortcutAction(keyCode: 124, modifiers: [.command])
@@ -788,7 +865,8 @@ final class GestureEngineTests: XCTestCase {
         eventTap: SpyMouseEventTapController = SpyMouseEventTapController(),
         overlay: GestureOverlayDisplaying = NoopGestureOverlay(),
         actionExecutor: ActionExecuting = SpyActionExecutor(),
-        feedbackHandler: @escaping (GestureEngineFeedback) -> Void = { _ in }
+        feedbackHandler: @escaping (GestureEngineFeedback) -> Void = { _ in },
+        scheduleGestureCompletion: @escaping (@escaping () -> Void) -> Void = { $0() }
     ) -> GestureEngine {
         GestureEngine(
             appConfigurationProvider: { appConfiguration },
@@ -797,7 +875,8 @@ final class GestureEngineTests: XCTestCase {
             eventTap: eventTap,
             overlay: overlay,
             actionExecutor: actionExecutor,
-            feedbackHandler: feedbackHandler
+            feedbackHandler: feedbackHandler,
+            scheduleGestureCompletion: scheduleGestureCompletion
         )
     }
 }
